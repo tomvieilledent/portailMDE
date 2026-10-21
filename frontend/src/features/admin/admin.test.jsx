@@ -60,6 +60,7 @@ function renderAt(path, me) {
     if (url === '/users')
       return { items: [ada, { ...base, ...me }], total: 2, limit: 25, offset: 0 }
     if (url === '/companies') return { items: [acme], total: 1, limit: 25, offset: 0 }
+    if (url === '/directory/people') return { items: [ada], total: 1, limit: 20, offset: 0 }
     if (url === '/content/landing') return { key: 'landing', value: { slogan: 'Mon slogan' } }
     if (url === '/notifications/unread-count') return { count: 0 }
     throw new Error(`appel inattendu ${url}`)
@@ -168,14 +169,13 @@ describe('utilisateurs', () => {
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
         '/users',
-        expect.objectContaining({
-          email: 'new@x.fr',
-          role: 'member',
-          permissions: [],
-          company_id: null,
-        }),
+        expect.objectContaining({ email: 'new@x.fr', password: 'temporaire1' }),
       ),
     )
+    // Pas de choix d'entreprise ni de rôle à la création d'un compte.
+    const sent = api.post.mock.calls.find(([url]) => url === '/users')[1]
+    expect(sent).not.toHaveProperty('company_id')
+    expect(sent).not.toHaveProperty('role')
   })
 })
 
@@ -190,11 +190,15 @@ describe('entreprises', () => {
     })
     await userEvent.click(await screen.findByRole('button', { name: /Nouvelle entreprise/ }))
     await userEvent.type(await screen.findByLabelText(/^Nom( \*)?( \(obligatoire\))?$/), 'Globex')
-    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+    const save = screen.getByRole('button', { name: 'Enregistrer' })
+    expect(save).toBeDisabled() // le propriétaire est obligatoire
+    const dialog = screen.getByRole('dialog')
+    await userEvent.click(await within(dialog).findByRole('checkbox', { name: /Ada Lovelace/ }))
+    await userEvent.click(save)
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
         '/companies',
-        expect.objectContaining({ name: 'Globex', kind: 'company' }),
+        expect.objectContaining({ name: 'Globex', kind: 'company', owner_id: 'u2' }),
       ),
     )
   })

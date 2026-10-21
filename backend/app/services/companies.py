@@ -46,9 +46,14 @@ def list_companies(
 
 
 def create_company(session: Session, data) -> Company:
-    """Crée une entreprise."""
-    company = Company(**data.model_dump())
+    """Crée une entreprise et désigne son propriétaire, qui en devient administrateur."""
+    values = data.model_dump()
+    owner = _get_user(session, values.pop("owner_id"))
+    company = Company(**values)
     session.add(company)
+    session.flush()
+    owner.company_id = company.id
+    owner.is_company_admin = True
     session.commit()
     return company
 

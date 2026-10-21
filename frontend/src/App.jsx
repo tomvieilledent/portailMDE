@@ -15,6 +15,7 @@ import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
 import RealtimeEffects from './realtime/RealtimeEffects'
 import { RealtimeProvider } from './realtime/RealtimeProvider'
+import ChangePasswordPage from './pages/auth/ChangePasswordPage'
 import { LegalNoticePage, PrivacyPage } from './pages/LegalPages'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import LoginPage from './pages/auth/LoginPage'
@@ -65,6 +66,9 @@ export default function App() {
         <Route path="/connexion" element={<LoginPage />} />
         <Route path="/mot-de-passe-oublie" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route element={<RequireAuth allowPending />}>
+          <Route path="/changer-mot-de-passe" element={<ChangePasswordPage />} />
+        </Route>
         <Route element={<RequireAuth />}>
           <Route element={<Shell />}>
             <Route path="/annuaire" element={<PeoplePage />} />

@@ -53,7 +53,7 @@ export default function AdminPage() {
             {allowed.map(({ path, label }) => (
               <NavLink
                 key={path}
-                to={path}
+                to={`/administration/${path}`}
                 className={({ isActive }) =>
                   cn(
                     '-mb-px border-b-2 px-4 py-2 text-sm font-medium',
@@ -71,7 +71,10 @@ export default function AdminPage() {
             {allowed.map(({ path, element }) => (
               <Route key={path} path={path} element={element} />
             ))}
-            <Route path="*" element={<Navigate to={allowed[0].path} replace />} />
+            <Route
+              path="*"
+              element={<Navigate to={`/administration/${allowed[0].path}`} replace />}
+            />
           </Routes>
         </>
       )}

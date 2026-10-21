@@ -23,6 +23,12 @@ test("le super admin crée un compte puis l'utilise", async ({ browser, page }) 
   await nina.getByLabel('Email').fill(email)
   await nina.getByLabel('Mot de passe').fill('temporaire-123')
   await nina.getByRole('button', { name: 'Se connecter' }).click()
+  // Le mot de passe temporaire doit être remplacé avant d'accéder au portail.
+  await expect(nina).toHaveURL(/\/changer-mot-de-passe$/)
+  await nina.getByLabel('Mot de passe temporaire').fill('temporaire-123')
+  await nina.getByLabel('Nouveau mot de passe').fill('mon-mot-de-passe-1')
+  await nina.getByLabel('Confirmation').fill('mon-mot-de-passe-1')
+  await nina.getByRole('button', { name: 'Enregistrer' }).click()
   await expect(nina).toHaveURL(/\/annuaire$/)
   await context.close()
 

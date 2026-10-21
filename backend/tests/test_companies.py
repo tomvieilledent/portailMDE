@@ -12,19 +12,50 @@ def staff(make_user, email="staff@x.fr"):
 
 def test_create_requires_permission(client, make_user, login):
     """La création d'entreprise exige la permission dédiée."""
-    make_user()
-    assert client.post(API, headers=login(), json={"name": "Acme"}).status_code == 403
+    owner = make_user()
+    body = {"name": "Acme", "owner_id": str(owner.id)}
+    assert client.post(API, headers=login(), json=body).status_code == 403
 
 
 def test_staff_creates_and_lists(client, make_user, login):
     """Le staff crée une entreprise, la recherche et la filtre."""
     staff(make_user)
+    owner = make_user("owner@x.fr")
     headers = login("staff@x.fr")
-    created = client.post(API, headers=headers, json={"name": "Acme", "kind": "partner"})
+    created = client.post(
+        API, headers=headers, json={"name": "Acme", "kind": "partner", "owner_id": str(owner.id)}
+    )
     assert created.status_code == 201
     page = client.get(API, headers=headers, params={"search": "acm"}).json()
     assert page["total"] == 1 and page["items"][0]["kind"] == "partner"
     assert client.get(API, headers=headers, params={"kind": "company"}).json()["total"] == 0
+
+
+def test_owner_is_required(client, make_user, login):
+    """Créer une entreprise sans propriétaire est refusé."""
+    staff(make_user)
+    headers = login("staff@x.fr")
+    assert client.post(API, headers=headers, json={"name": "Acme"}).status_code == 422
+    unknown = {"name": "Acme", "owner_id": "00000000-0000-0000-0000-000000000000"}
+    assert client.post(API, headers=headers, json=unknown).status_code == 404
+
+
+def test_owner_becomes_company_admin(client, make_user, make_company, session, login):
+    """Le propriétaire est rattaché à l'entreprise créée et en devient administrateur."""
+    staff(make_user)
+    old = make_company("Old")
+    owner = make_user("owner@x.fr", company_id=old.id, is_company_admin=True)
+    headers = login("staff@x.fr")
+    created = client.post(
+        API, headers=headers, json={"name": "New", "owner_id": str(owner.id)}
+    ).json()
+    session.refresh(owner)
+    assert str(owner.company_id) == created["id"] and owner.is_company_admin is True
+    owner_headers = login("owner@x.fr")
+    patched = client.patch(
+        f"{API}/{created['id']}", headers=owner_headers, json={"location": "Rodez"}
+    )
+    assert patched.status_code == 200 and patched.json()["location"] == "Rodez"
 
 
 def test_inactive_hidden_from_members(client, make_user, make_company, login):
@@ -117,10 +148,17 @@ def test_delete_is_soft(client, make_user, make_company, login, session):
 def test_website_url_must_be_http(client, make_user, login):
     """Les URLs non http(s) (ex. javascript:) sont refusées."""
     staff(make_user)
+    owner = str(make_user("owner@x.fr").id)
     headers = login("staff@x.fr")
     bad = client.post(
-        API, headers=headers, json={"name": "Acme", "website_url": "javascript:alert(1)"}
+        API,
+        headers=headers,
+        json={"name": "Acme", "website_url": "javascript:alert(1)", "owner_id": owner},
     )
     assert bad.status_code == 422
-    ok = client.post(API, headers=headers, json={"name": "Acme", "website_url": "https://acme.fr"})
+    ok = client.post(
+        API,
+        headers=headers,
+        json={"name": "Acme", "website_url": "https://acme.fr", "owner_id": owner},
+    )
     assert ok.status_code == 201

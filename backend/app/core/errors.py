@@ -54,6 +54,13 @@ class ForbiddenError(AppError):
     code = "FORBIDDEN"
 
 
+class PasswordChangeRequiredError(AppError):
+    """Le mot de passe temporaire doit d'abord être remplacé (403)."""
+
+    status_code = HTTPStatus.FORBIDDEN
+    code = "PASSWORD_CHANGE_REQUIRED"
+
+
 def error_response(status: int, code: str, message: str, details: object = None) -> JSONResponse:
     """Construit la réponse JSON d'erreur au format uniforme."""
     return JSONResponse(
