@@ -86,13 +86,13 @@ export default function UsersAdmin() {
       {users.isError && <p role="alert">Impossible de charger les comptes.</p>}
       {users.data && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-          <table className="w-full text-left text-sm">
+          <table className="w-full table-fixed text-left text-sm">
             <thead className="border-b border-slate-200 text-xs text-slate-500 uppercase dark:border-slate-800">
               <tr>
-                <th className="p-3">Compte</th>
-                <th className="p-3">Rôle</th>
-                <th className="p-3">Entreprise</th>
-                <th className="p-3">Statut</th>
+                <th className="w-[28%] p-3">Compte</th>
+                <th className="w-28 p-3">Rôle</th>
+                <th className="w-[20%] p-3">Entreprise</th>
+                <th className="w-32 p-3 text-center">Statut</th>
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -124,7 +124,7 @@ export default function UsersAdmin() {
                       </Badge>
                     )}
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 text-center">
                     {u.is_active ? (
                       <Badge tone="success">Actif</Badge>
                     ) : (
