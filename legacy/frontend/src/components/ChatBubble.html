@@ -1,0 +1,49 @@
+<!-- Chat Bubble Component - Received Message -->
+<div class="flex items-start gap-2.5 group">
+   <img class="w-8 h-8 rounded-full" src="/docs/images/people/profile-picture-3.jpg" alt="User image">
+   <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 bg-gray-100 rounded-2xl rounded-tl-none">
+      <div class="flex items-center space-x-1.5 rtl:space-x-reverse">
+         <span class="text-sm font-semibold text-gray-900">Bonnie Green</span>
+         <span class="text-sm text-gray-500">11:46</span>
+      </div>
+      <p class="text-sm py-2.5 text-gray-700">That's awesome. I think our users will really appreciate the improvements.</p>
+      <span class="text-sm text-gray-500">Delivered</span>
+   </div>
+   <button id="dropdownMenuIconButton" data-dropdown-toggle="dropdownDots" data-dropdown-placement="bottom-start" class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded-base p-1.5 focus:outline-none transition" type="button">
+      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M12 6h.01M12 12h.01M12 18h.01"/></svg>
+   </button>
+   <div id="dropdownDots" class="z-10 bg-white border border-gray-200 rounded-base shadow-lg w-40 hidden">
+      <ul class="p-2 text-sm text-gray-700 font-medium">
+         <li>
+            <a href="#" class="block w-full p-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition">Reply</a>
+         </li>
+         <li>
+            <a href="#" class="block w-full p-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition">Forward</a>
+         </li>
+         <li>
+            <a href="#" class="block w-full p-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition">Copy</a>
+         </li>
+         <li>
+            <a href="#" class="block w-full p-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition">Report</a>
+         </li>
+         <li>
+            <a href="#" class="block w-full p-2 hover:bg-gray-100 hover:text-gray-900 rounded-md transition">Delete</a>
+         </li>
+      </ul>
+   </div>
+</div>
+
+<!-- Chat Bubble Component - Sent Message -->
+<div class="flex items-start gap-2.5 justify-end group">
+   <div class="flex flex-col w-full max-w-[320px] leading-1.5 p-4 bg-green-500 text-white rounded-2xl rounded-tr-none">
+      <div class="flex items-center space-x-1.5 rtl:space-x-reverse">
+         <span class="text-sm font-semibold">You</span>
+         <span class="text-sm text-green-100">11:50</span>
+      </div>
+      <p class="text-sm py-2.5">That's great to hear! Let me know if you need any help with the implementation.</p>
+      <span class="text-sm text-green-100">Delivered</span>
+   </div>
+   <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded-base p-1.5 focus:outline-none transition" type="button">
+      <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-width="3" d="M12 6h.01M12 12h.01M12 18h.01"/></svg>
+   </button>
+</div>

@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"name": "portfolio-MDE_dashboard",
+			"path": ".."
+		},
+		{
+			"name": "Screenshots Maquette FIGMA - Tableau de Bord MDE",
+			"path": "../../Desktop/Screenshots Maquette FIGMA - Tableau de Bord MDE"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "portfolio-MDE_dashboard"
+	}
+}

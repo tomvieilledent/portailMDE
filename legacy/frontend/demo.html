@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Styles de Chat Bubble - Démo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto py-12 px-4">
+        <h1 class="text-4xl font-bold mb-2 text-gray-900">Chat Bubble Styles</h1>
+        <p class="text-gray-600 mb-8">Démo des différents styles de bulles de messages</p>
+
+        <!-- Messages reçus -->
+        <div class="bg-white rounded-lg shadow mb-8 p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Messages Reçus</h2>
+            <div class="space-y-4">
+                <!-- Message simple -->
+                <div class="flex items-start gap-2.5 group">
+                    <img class="w-8 h-8 rounded-full" src="https://via.placeholder.com/32?text=BD" alt="User image">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-gray-100 rounded-2xl rounded-tl-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold text-gray-900">Bonnie Green</span>
+                            <span class="text-sm text-gray-500">11:46</span>
+                        </div>
+                        <p class="text-sm py-2.5 text-gray-700">That's awesome. I think our users will really appreciate the improvements.</p>
+                        <span class="text-sm text-gray-500">Delivered</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Message multi-ligne -->
+                <div class="flex items-start gap-2.5 group">
+                    <img class="w-8 h-8 rounded-full" src="https://via.placeholder.com/32?text=ML" alt="User image">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-gray-100 rounded-2xl rounded-tl-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold text-gray-900">Marc Laurent</span>
+                            <span class="text-sm text-gray-500">10:30</span>
+                        </div>
+                        <p class="text-sm py-2.5 text-gray-700">Voici les documents de la formation. Vous pouvez les consulter à votre rythme.</p>
+                        <p class="text-sm py-2.5 text-gray-700">N'hésitez pas à me poser des questions si vous avez besoin de précisions !</p>
+                        <span class="text-sm text-gray-500">Delivered</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages envoyés -->
+        <div class="bg-white rounded-lg shadow mb-8 p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Messages Envoyés</h2>
+            <div class="space-y-4">
+                <!-- Simple sent message -->
+                <div class="flex items-start gap-2.5 justify-end group">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-green-500 text-white rounded-2xl rounded-tr-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold">You</span>
+                            <span class="text-sm text-green-100">11:50</span>
+                        </div>
+                        <p class="text-sm py-2.5">That's great! Thank you for sharing those resources.</p>
+                        <span class="text-sm text-green-100">Delivered</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Sent message pending -->
+                <div class="flex items-start gap-2.5 justify-end group">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-green-500 text-white rounded-2xl rounded-tr-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold">You</span>
+                            <span class="text-sm text-green-100">Just now</span>
+                        </div>
+                        <p class="text-sm py-2.5">I'll review this tomorrow morning and get back to you.</p>
+                        <span class="text-sm text-green-100">Sending...</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversation complète -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4 text-gray-900">Exemple de Conversation</h2>
+            <div class="space-y-4">
+                <div class="flex items-start gap-2.5 group">
+                    <img class="w-8 h-8 rounded-full" src="https://via.placeholder.com/32?text=SD" alt="User image">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-gray-100 rounded-2xl rounded-tl-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold text-gray-900">Sophie Dubois</span>
+                            <span class="text-sm text-gray-500">10:15</span>
+                        </div>
+                        <p class="text-sm py-2.5 text-gray-700">Bonjour, avez-vous reçu les documents pour la formation ?</p>
+                        <span class="text-sm text-gray-500">Delivered</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex items-start gap-2.5 justify-end group">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-green-500 text-white rounded-2xl rounded-tr-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold">You</span>
+                            <span class="text-sm text-green-100">10:20</span>
+                        </div>
+                        <p class="text-sm py-2.5">Oui, j'ai bien reçu. Très complet comme contenu !</p>
+                        <span class="text-sm text-green-100">Delivered</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="flex items-start gap-2.5 group">
+                    <img class="w-8 h-8 rounded-full" src="https://via.placeholder.com/32?text=SD" alt="User image">
+                    <div class="flex flex-col w-full max-w-xs leading-1.5 p-4 bg-gray-100 rounded-2xl rounded-tl-none">
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-sm font-semibold text-gray-900">Sophie Dubois</span>
+                            <span class="text-sm text-gray-500">10:30</span>
+                        </div>
+                        <p class="text-sm py-2.5 text-gray-700">Merci pour l'aide !</p>
+                        <span class="text-sm text-gray-500">Delivered</span>
+                    </div>
+                    <button class="inline-flex self-center items-center opacity-0 group-hover:opacity-100 text-gray-500 hover:text-gray-700 bg-white box-border border border-transparent hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 rounded p-1.5 focus:outline-none transition" type="button">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

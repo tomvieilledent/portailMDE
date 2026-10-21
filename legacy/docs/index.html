@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDE Dashboard — Maison de l'Économie, Rodez Agglomération</title>
+<style>
+  :root{
+    --primary:#5da020; --primary-dark:#4a7a1a;
+    --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb; --bg:#ffffff; --soft:#f9fafb;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px}
+  .btn{display:inline-block;padding:12px 24px;border-radius:8px;font-weight:600;font-size:15px;transition:background .15s,border-color .15s,color .15s;cursor:pointer}
+  .btn-primary{background:var(--primary);color:#fff}
+  .btn-primary:hover{background:var(--primary-dark)}
+  .btn-outline{border:1px solid var(--line);color:var(--ink)}
+  .btn-outline:hover{border-color:var(--primary)}
+  .btn-light{background:#fff;color:var(--primary-dark)}
+  .btn-light:hover{background:#f0f7e8}
+  /* Bouton présent mais inactif tant que l'app n'est pas déployée */
+  .btn.is-disabled{opacity:.6;pointer-events:none;cursor:not-allowed}
+
+  /* Header */
+  header{border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);z-index:10}
+  nav{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:17px}
+  .brand .logo-img{height:40px;width:auto;display:block}
+  .brand small{display:block;font-weight:400;font-size:12px;color:var(--muted);line-height:1}
+  .nav-right{display:flex;align-items:center;gap:26px}
+  .nav-links{display:flex;gap:24px;font-size:15px;color:var(--muted)}
+  .nav-links a:hover{color:var(--primary)}
+  @media(max-width:680px){.nav-links{display:none}}
+
+  /* 0. INTRO / COVER */
+  .cover{
+    background:linear-gradient(180deg,#5da020,#4a7a1a);
+    color:#fff;text-align:center;padding:96px 0 70px;border-bottom:1px solid var(--line)
+  }
+  .cover-shot{max-width:940px;margin:48px auto 0;padding:0 24px}
+  .cover-shot img{width:100%;height:auto;border-radius:12px;border:1px solid rgba(255,255,255,.3);box-shadow:0 22px 55px rgba(0,0,0,.28)}
+  .cover .badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+    padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600;margin-bottom:22px}
+  .cover h1{font-size:clamp(34px,6vw,58px);font-weight:800;letter-spacing:-1px;line-height:1.08}
+  .cover .tagline{margin:18px auto 34px;font-size:19px;max-width:620px;color:rgba(255,255,255,.92)}
+  .cover .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  /* 1. FEATURES */
+  .features-intro{padding:70px 0 6px;text-align:center}
+  .features-intro h2{font-size:27px;font-weight:800;margin-bottom:8px}
+  .features-intro p{color:var(--muted);max-width:560px;margin:0 auto}
+  .feature-row{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;padding:54px 0;border-bottom:1px solid var(--line)}
+  @media(max-width:800px){.feature-row{grid-template-columns:1fr;gap:26px;padding:42px 0}}
+  .feature-row .txt .eyebrow{color:var(--primary);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.8px}
+  .feature-row .txt h3{font-size:23px;font-weight:800;margin:8px 0 10px;letter-spacing:-.3px}
+  .feature-row .txt p{color:var(--muted);font-size:16px}
+  .shot{border:1px solid var(--line);border-radius:10px;overflow:hidden;box-shadow:0 6px 20px rgba(17,24,39,.06)}
+  .shot img{display:block;width:100%;height:auto}
+  @media(min-width:801px){.feature-row.reverse .txt{order:2}.feature-row.reverse .media{order:1}}
+
+  /* 2. ABOUT */
+  .about{background:var(--soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:72px 0}
+  .about h2{font-size:27px;font-weight:800;text-align:center;margin-bottom:8px}
+  .about .lead{color:var(--muted);text-align:center;max-width:600px;margin:0 auto 40px}
+  .story{max-width:720px;margin:0 auto 48px;font-size:16px;color:#374151}
+  .story p{margin-bottom:16px}
+  .story a{color:var(--primary-dark);font-weight:600;text-decoration:underline}
+
+  .team{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:40px}
+  @media(max-width:720px){.team{grid-template-columns:1fr}}
+  .member{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;text-align:center}
+  .member .avatar{width:64px;height:64px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:800;font-size:22px;margin:0 auto 12px}
+  .member h4{font-size:17px;font-weight:700}
+  .member .role{color:var(--muted);font-size:14px;margin-bottom:12px}
+  .member .socials{display:flex;gap:14px;justify-content:center;font-size:14px;font-weight:600}
+  .member .socials a{color:var(--primary-dark)}
+  .member .socials a:hover{text-decoration:underline}
+
+  .repo-cta{text-align:center}
+  .repo-cta a{display:inline-flex;align-items:center;gap:8px}
+
+  footer{padding:26px 0;color:var(--muted);font-size:14px}
+  footer .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header>
+  <div class="wrap">
+    <nav>
+      <div class="brand">
+        <img src="screenshots/logo-rodez.png" alt="Maison de l'Économie — Rodez Agglomération" class="logo-img">
+        <span>MDE Dashboard<small>Maison de l'Économie · Rodez Agglomération</small></span>
+      </div>
+      <div class="nav-right">
+        <div class="nav-links">
+          <a href="#features">Fonctionnalités</a>
+          <a href="#about">À propos</a>
+        </div>
+        <!-- Pas de déploiement pour le moment : bouton présent mais inactif.
+             Quand l'app sera en ligne, mettre le href et retirer la classe is-disabled. -->
+        <a href="#" class="btn btn-primary is-disabled" aria-disabled="true" title="Déploiement à venir">Ouvrir l'application</a>
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- ================= 0. INTRO / COVER ================= -->
+  <section class="cover">
+    <div class="wrap">
+      <span class="badge">Projet portfolio · Holberton School</span>
+      <h1>MDE Dashboard</h1>
+      <p class="tagline">La plateforme unique pour piloter un incubateur d'entreprises :
+         annuaires, formations, agenda, veille économique et messagerie en temps réel.</p>
+      <div class="actions">
+        <a href="#" class="btn btn-light is-disabled" aria-disabled="true" title="Déploiement à venir">Ouvrir l'application</a>
+        <a href="https://github.com/tomvieilledent/portfolio-MDE_dashboard" target="_blank" rel="noopener" class="btn btn-outline" style="border-color:rgba(255,255,255,.5);color:#fff">Voir le code sur GitHub</a>
+      </div>
+      <p style="margin-top:16px;font-size:13px;color:rgba(255,255,255,.82)">Application bientôt déployée — démo en local pour l'instant.</p>
+    </div>
+    <div class="cover-shot">
+      <img src="screenshots/page%20acceuil.png" alt="Aperçu de l'application MDE Dashboard">
+    </div>
+  </section>
+
+  <!-- ================= 1. FEATURES ================= -->
+  <div class="wrap">
+    <div class="features-intro" id="features">
+      <h2>Fonctionnalités</h2>
+      <p>Tout ce dont la Maison de l'Économie a besoin au quotidien, réuni au même endroit.</p>
+    </div>
+
+    <!-- Feature 1 -->
+    <section class="feature-row">
+      <div class="txt">
+        <div class="eyebrow">Annuaire</div>
+        <h3>Annuaire des entreprises</h3>
+        <p>Le répertoire de toutes les entreprises hébergées et accompagnées : fiche,
+           statut d'hébergement, coordonnées et administrateur. Un référentiel unique,
+           tenu à jour, pour suivre tout l'écosystème local.</p>
+      </div>
+      <div class="media">
+        <div class="shot"><img src="screenshots/annuaire%20des%20entreprises.png" alt="Annuaire des entreprises"></div>
+      </div>
+    </section>
+
+    <!-- Feature 2 -->
+    <section class="feature-row reverse">
+      <div class="txt">
+        <div class="eyebrow">Annuaire</div>
+        <h3>Annuaire des professionnels</h3>
+        <p>Un carnet de contacts partagé : dirigeants, formateurs et membres de la
+           structure. La mise en relation est facilitée, avec un accès direct à la
+           messagerie pour échanger.</p>
+      </div>
+      <div class="media">
+        <div class="shot"><img src="screenshots/annuaire%20pro.png" alt="Annuaire des professionnels"></div>
+      </div>
+    </section>
+
+    <!-- Feature 3 -->
+    <section class="feature-row">
+      <div class="txt">
+        <div class="eyebrow">Formation</div>
+        <h3>Formations & sessions</h3>
+        <p>Un catalogue de formations et d'ateliers, des sessions datées, la gestion
+           des inscriptions et le suivi des participants. Chacun retrouve ses formations
+           et ses sessions à venir dans son espace.</p>
+      </div>
+      <div class="media">
+        <div class="shot"><img src="screenshots/formation.png" alt="Formations"></div>
+      </div>
+    </section>
+
+    <!-- Feature 4 -->
+    <section class="feature-row reverse">
+      <div class="txt">
+        <div class="eyebrow">Agenda</div>
+        <h3>Calendrier</h3>
+        <p>Visualisez événements et sessions de formation dans un calendrier clair.
+           Invitez les participants, gérez les réponses et générez une fiche d'agenda
+           mensuelle prête à imprimer.</p>
+      </div>
+      <div class="media">
+        <div class="shot"><img src="screenshots/calendrier.png" alt="Calendrier"></div>
+      </div>
+    </section>
+
+    <!-- Feature 5 -->
+    <section class="feature-row">
+      <div class="txt">
+        <div class="eyebrow">Veille</div>
+        <h3>Veille économique</h3>
+        <p>Une veille économique et réglementaire mise à jour automatiquement à partir
+           de sources officielles françaises. Sauvegardez les articles utiles pour les
+           retrouver à tout moment.</p>
+      </div>
+      <div class="media">
+        <div class="shot"><img src="screenshots/veille%20economique.png" alt="Veille économique"></div>
+      </div>
+    </section>
+
+    <!-- Feature 6 -->
+    <section class="feature-row reverse">
+      <div class="txt">
+        <div class="eyebrow">Messagerie</div>
+        <h3>Chat en temps réel</h3>
+        <p>Une messagerie interne instantanée, en conversation individuelle ou en groupe :
+           présence en ligne, accusés de lecture et pièces jointes. Toute la communication
+           de la structure, centralisée.</p>
+      </div>
+      <div class="media">
+        <div class="shot"><img src="screenshots/CHAT.png" alt="Chat en temps réel"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= 2. ABOUT ================= -->
+  <section class="about" id="about">
+    <div class="wrap">
+      <h2>À propos</h2>
+      <p class="lead">L'histoire derrière le projet.</p>
+
+      <!-- TODO: personnalise cette histoire avec ton vécu réel (à réécrire). -->
+      <div class="story">
+        <p>Tout est parti d'un constat simple, sur notre territoire : la Maison de l'Économie
+           accompagne des dizaines d'entreprises, mais l'information vivait éparpillée — des
+           tableurs pour suivre les sociétés hébergées, des e-mails pour les inscriptions aux
+           formations, des groupes de messagerie séparés pour communiquer. Nous voulions offrir
+           à ces structures qui font vivre l'économie locale un outil à la hauteur de leur travail.</p>
+        <p>Nous avons donc imaginé <strong>MDE Dashboard</strong> : un espace unique où les
+           entreprises, les formations, l'agenda, la veille réglementaire et la messagerie se
+           rejoignent. Ce qui nous a portés, c'est l'idée que la technologie pouvait rendre plus
+           simple et plus humain le lien entre un incubateur et les entrepreneurs qu'il soutient.</p>
+        <p>Le projet a été conçu et développé en 2026 sur plusieurs semaines, du modèle de données
+           jusqu'au temps réel. C'est notre <strong>Portfolio Project</strong> pour
+           <a href="https://www.holbertonschool.com" target="_blank" rel="noopener">Holberton School</a> —
+           l'aboutissement de ce que nous y avons appris.</p>
+      </div>
+
+      <!-- ÉQUIPE — TODO: renseigner noms, rôles et liens réels de chaque membre -->
+      <div class="team">
+        <div class="member">
+          <div class="avatar">TV</div>
+          <h4>Tom Vieilledent</h4>
+          <div class="role">Développeur backend</div>
+          <div class="socials">
+            <a href="https://github.com/tomvieilledent" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <div class="member">
+          <div class="avatar">NZ</div>
+          <h4>Nabil Zinini</h4>
+          <div class="role">Développeur frontend</div>
+          <div class="socials">
+            <a href="https://github.com/zinininabil-stack" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+        <div class="member">
+          <div class="avatar">FR</div>
+          <h4>Florian Roosebeke</h4>
+          <div class="role">Développeur backend</div>
+          <div class="socials">
+            <a href="https://github.com/FlorianRoosebeke" target="_blank" rel="noopener">GitHub</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="repo-cta">
+        <a href="https://github.com/tomvieilledent/portfolio-MDE_dashboard" target="_blank" rel="noopener" class="btn btn-outline">
+          ⭐ Voir le dépôt GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap row">
+    <span>© 2026 MDE Dashboard — Maison de l'Économie, Rodez Agglomération</span>
+    <span>Portfolio Project · Holberton School</span>
+  </div>
+</footer>
+
+</body>
+</html>
