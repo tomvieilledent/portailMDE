@@ -34,12 +34,6 @@ export default function HomePage() {
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <a
-            href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
-            className="hidden text-sm font-medium text-white/85 hover:text-white hover:underline lg:block"
-          >
-            Pour plus de renseignements, appelez le {CONTACT_PHONE}
-          </a>
           <Link
             to="/connexion"
             className="border border-white/50 px-5 py-2 text-sm font-semibold transition hover:bg-white hover:text-[#4a7a1a]"
@@ -67,6 +61,16 @@ export default function HomePage() {
           Accéder au portail
           <span aria-hidden="true">→</span>
         </Link>
+        <a
+          href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
+          aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
+          className="mt-8 flex w-fit flex-col gap-1 border-l-4 border-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 sm:flex-row sm:items-baseline sm:gap-3"
+        >
+          <span className="text-base text-white/85">Pour plus de renseignements, appelez le</span>
+          <strong className="text-2xl font-bold tracking-wide text-[#7ec843]">
+            {CONTACT_PHONE}
+          </strong>
+        </a>
       </main>
 
       <section
@@ -92,11 +96,6 @@ export default function HomePage() {
       </section>
 
       <footer className="relative z-10 pb-6 text-center text-xs text-white/50">
-        <p className="mb-2 lg:hidden">
-          <a href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`} className="text-white/80 underline">
-            Pour plus de renseignements, appelez le {CONTACT_PHONE}
-          </a>
-        </p>
         <LegalLinks className="mb-2" />© {new Date().getFullYear()} Maison de l'Entreprise
       </footer>
     </div>
