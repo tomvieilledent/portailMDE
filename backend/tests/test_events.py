@@ -125,4 +125,4 @@ def test_ics_export(client, make_user, login):
     response = client.get(f"{API}/events/export.ics", headers=headers)
     assert response.headers["content-type"].startswith("text/calendar")
     assert "DTSTART:20261105T090000" in response.text
-    assert r"SUMMARY:Réunion; importante" in response.text
+    assert "SUMMARY:Réunion" + chr(92) + "; importante" in response.text
