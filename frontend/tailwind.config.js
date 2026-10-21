@@ -5,18 +5,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Identité visuelle du portail (bleu institutionnel)
+        // Identité visuelle du portail (vert de la Maison de l'Économie)
         brand: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#1d63c7',
-          700: '#0f4c81',
-          800: '#0c3b66',
-          900: '#0a2f52',
+          50: '#f4faea',
+          100: '#e4f3d1',
+          200: '#cbe8a6',
+          300: '#a8d672',
+          400: '#7ec843',
+          500: '#5da020',
+          600: '#4f861b',
+          700: '#3f6b16',
+          800: '#315512',
+          900: '#233d0d',
         },
       },
       fontFamily: {

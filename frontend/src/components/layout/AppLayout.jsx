@@ -8,6 +8,7 @@ import LegalLinks from '../LegalLinks'
 import { cn } from '../../lib/cn'
 import { navItems } from '../../navigation'
 import { useTheme } from '../ThemeProvider'
+import Logo from '../Logo'
 
 /** Liste des liens du menu principal. */
 function NavList({ items, onNavigate }) {
@@ -58,7 +59,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
     const apply = () => {
       const heading = main?.querySelector('h1')
       if (!heading?.textContent) return false
-      document.title = `${heading.textContent} – portailMDE`
+      document.title = heading.textContent
       if (!isFirst) {
         heading.tabIndex = -1
         heading.focus({ preventScroll: false })
@@ -66,7 +67,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
       return true
     }
     if (!apply()) {
-      document.title = 'portailMDE'
+      document.title = 'Accueil'
       // Titre dépendant de données chargées : on attend l'apparition du <h1>.
       if (main) {
         observer = new MutationObserver(() => {
@@ -121,7 +122,9 @@ export default function AppLayout({ items = navItems, actions = null }) {
         Aller au contenu
       </a>
       <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block dark:border-slate-800 dark:bg-slate-900">
-        <p className="text-brand-700 dark:text-brand-300 mb-6 px-3 text-xl font-bold">portailMDE</p>
+        <div className="mb-6 space-y-2 px-3">
+          <Logo />
+        </div>
         <NavList items={items} />
       </aside>
 
@@ -140,7 +143,9 @@ export default function AppLayout({ items = navItems, actions = null }) {
             className="absolute inset-y-0 left-0 w-64 bg-white p-4 shadow-xl dark:bg-slate-900"
           >
             <div className="mb-6 flex items-center justify-between px-3">
-              <p className="text-brand-700 dark:text-brand-300 text-xl font-bold">portailMDE</p>
+              <div className="space-y-2">
+                <Logo />
+              </div>
               <button
                 ref={closeButton}
                 type="button"

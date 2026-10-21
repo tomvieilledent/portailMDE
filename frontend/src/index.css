@@ -3,3 +3,8 @@
 
 /* Mode sombre piloté par la classe `dark` sur <html> (ThemeProvider). */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Titre ciblé par le focus programmatique au changement de page : pas de cadre. */
+h1[tabindex='-1']:focus {
+  outline: none;
+}
