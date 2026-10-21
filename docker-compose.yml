@@ -13,6 +13,11 @@ services:
       timeout: 3s
       retries: 10
 
+  mailpit:
+    image: axllent/mailpit:v1.20
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+
   api:
     build:
       context: ./backend
@@ -26,6 +31,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s
@@ -36,6 +43,8 @@ services:
     build:
       context: ./frontend
       target: dev
+    environment:
+      VITE_API_PROXY: http://api:8000
     ports:
       - "${WEB_PORT:-5290}:5173"
     volumes:

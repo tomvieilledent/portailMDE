@@ -105,3 +105,5 @@ class TrainingEnrollment(UUIDPrimaryKeyMixin, Base):
     )
     enrolled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    user: Mapped["User"] = relationship(lazy="joined")  # noqa: F821

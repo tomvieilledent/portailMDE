@@ -45,6 +45,8 @@ class ConversationParticipant(Base):
 
 
 class Message(UUIDPrimaryKeyMixin, SoftDeleteMixin, Base):
+    """Message d'une conversation ; ``content`` peut être vide s'il y a une pièce jointe."""
+
     __tablename__ = "messages"
     __table_args__ = (Index("ix_messages_conversation_created", "conversation_id", "created_at"),)
 
@@ -60,3 +62,5 @@ class Message(UUIDPrimaryKeyMixin, SoftDeleteMixin, Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
+
+    author: Mapped["User | None"] = relationship(lazy="joined")  # noqa: F821
