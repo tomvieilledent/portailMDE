@@ -1,3 +1,5 @@
+/** Tests de la structure des pages connectées. */
+
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
@@ -6,6 +8,7 @@ import { describe, expect, it } from 'vitest'
 import { ThemeProvider } from '../ThemeProvider'
 import AppLayout from './AppLayout'
 
+/** Menu et en-tête de la structure. */
 describe('AppLayout', () => {
   it('affiche le menu et ouvre le tiroir mobile', async () => {
     render(

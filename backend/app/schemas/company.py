@@ -1,3 +1,5 @@
+"""Schémas des entreprises."""
+
 import uuid
 from datetime import datetime
 
@@ -7,6 +9,8 @@ from app.models.enums import CompanyKind
 
 
 class CompanyRead(BaseModel):
+    """Entreprise en lecture."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -21,6 +25,8 @@ class CompanyRead(BaseModel):
 
 
 class CompanyCreate(BaseModel):
+    """Création d'une entreprise."""
+
     name: str = Field(min_length=1, max_length=200)
     description: str | None = None
     location: str | None = Field(None, max_length=200)
@@ -29,6 +35,8 @@ class CompanyCreate(BaseModel):
 
 
 class CompanyUpdate(BaseModel):
+    """Modification partielle d'une entreprise."""
+
     name: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = None
     location: str | None = Field(None, max_length=200)

@@ -1,3 +1,5 @@
+/** Tests de la messagerie. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -30,6 +32,7 @@ const me = {
 }
 const ada = { id: 'ada', first_name: 'Ada', last_name: 'Lovelace', avatar_path: null }
 const bob = { id: 'bob', first_name: 'Bob', last_name: 'Martin', avatar_path: null }
+/** Fabrique un message de test. */
 const msg = (id, content, author = ada) => ({
   id,
   conversation_id: 'c1',
@@ -61,6 +64,7 @@ const group = {
   created_at: '2026-10-20T09:00:00Z',
 }
 
+/** Affiche la messagerie à l'adresse donnée. */
 function renderAt(path) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   return render(
@@ -98,6 +102,7 @@ beforeEach(() => {
   api.post.mockResolvedValue(null)
 })
 
+/** Utilitaires d'affichage. */
 describe('helpers', () => {
   it('nomme les conversations', () => {
     expect(conversationTitle(direct, 'me')).toBe('Ada Lovelace')
@@ -110,6 +115,7 @@ describe('helpers', () => {
   })
 })
 
+/** Conversations, messages et groupes. */
 describe('messagerie', () => {
   it('liste les conversations avec les messages non lus', async () => {
     renderAt('/messagerie')

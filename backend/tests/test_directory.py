@@ -1,11 +1,15 @@
+"""Tests de l'annuaire : recherche des personnes et liste des entreprises."""
+
 API = "/api/v1/directory"
 
 
 def test_requires_auth(client):
+    """L'annuaire exige une authentification."""
     assert client.get(f"{API}/people").status_code == 401
 
 
 def test_people_search_and_company_filter(client, make_user, make_company, login):
+    """Recherche de personnes et filtre par entreprise."""
     acme, zeta = make_company("Acme"), make_company("Zeta")
     make_user("me@x.fr", first_name="Moi", last_name="Zzz", company_id=acme.id)
     make_user(
@@ -27,6 +31,7 @@ def test_people_search_and_company_filter(client, make_user, make_company, login
 
 
 def test_people_hides_inactive_users_and_companies(client, make_user, make_company, login):
+    """Les utilisateurs et entreprises inactifs sont masqués."""
     dead = make_company("Dead", is_active=False)
     make_user("me@x.fr")
     make_user("off@x.fr", is_active=False)
@@ -38,12 +43,14 @@ def test_people_hides_inactive_users_and_companies(client, make_user, make_compa
 
 
 def test_people_never_exposes_credentials(client, make_user, login):
+    """Les données sensibles ne sont jamais exposées."""
     make_user("me@x.fr")
     person = client.get(f"{API}/people", headers=login("me@x.fr")).json()["items"][0]
     assert not {"password_hash", "role", "permissions"} & set(person)
 
 
 def test_companies_with_member_count(client, make_user, make_company, login):
+    """Les entreprises sont listées avec leur nombre de membres actifs."""
     acme = make_company("Acme", kind="partner")
     make_company("Hidden", is_active=False)
     make_company("Other")

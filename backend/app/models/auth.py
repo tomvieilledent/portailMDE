@@ -1,3 +1,5 @@
+"""Modèle des jetons d'authentification révoqués."""
+
 from datetime import datetime
 
 from sqlalchemy import DateTime, String
@@ -7,7 +9,7 @@ from app.db.base import Base
 
 
 class RevokedToken(Base):
-    """Jetons révoqués (logout, rotation du refresh). Purgeables après ``expires_at``."""
+    """Jeton révoqué (déconnexion, rotation du jeton de rafraîchissement), purgeable après ``expires_at``."""
 
     __tablename__ = "revoked_tokens"
 

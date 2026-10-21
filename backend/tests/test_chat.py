@@ -1,3 +1,5 @@
+"""Tests de la messagerie : conversations directes et de groupe, messages, pièces jointes et WebSocket."""
+
 import io
 
 import pytest
@@ -7,16 +9,19 @@ API = "/api/v1"
 
 @pytest.fixture
 def trio(make_user):
+    """Trois utilisateurs (a, b, c) pour les scénarios de conversation."""
     return make_user("a@x.fr"), make_user("b@x.fr"), make_user("c@x.fr")
 
 
 def direct(client, headers, other):
+    """Crée une conversation directe avec un autre utilisateur."""
     return client.post(
         f"{API}/conversations", headers=headers, json={"kind": "direct", "user_id": str(other.id)}
     )
 
 
 def test_direct_conversation_is_reused(client, trio, login):
+    """Une conversation directe existante est réutilisée, quel que soit l'initiateur."""
     a, b, _ = trio
     first = direct(client, login("a@x.fr"), b)
     assert first.status_code == 201
@@ -26,6 +31,7 @@ def test_direct_conversation_is_reused(client, trio, login):
 
 
 def test_direct_with_self_or_unknown_rejected(client, trio, login):
+    """Une conversation avec soi-même ou un inconnu est rejetée."""
     a, _, _ = trio
     assert direct(client, login("a@x.fr"), a).status_code == 400
     body = {"kind": "direct", "user_id": "00000000-0000-0000-0000-000000000000"}
@@ -35,6 +41,7 @@ def test_direct_with_self_or_unknown_rejected(client, trio, login):
 
 
 def test_group_validation(client, trio, login):
+    """La création d'un groupe sans données valides est rejetée (422)."""
     headers = login("a@x.fr")
     assert (
         client.post(f"{API}/conversations", headers=headers, json={"kind": "group"}).status_code
@@ -43,6 +50,7 @@ def test_group_validation(client, trio, login):
 
 
 def test_send_list_and_unread(client, trio, login):
+    """Envoi, liste des messages et compteur de messages non lus."""
     a, b, _ = trio
     conv = direct(client, login("a@x.fr"), b).json()
     ha, hb = login("a@x.fr"), login("b@x.fr")
@@ -61,6 +69,7 @@ def test_send_list_and_unread(client, trio, login):
 
 
 def test_non_participant_gets_404(client, trio, login):
+    """Un non-participant reçoit 404 sur la conversation."""
     _, b, _ = trio
     conv = direct(client, login("a@x.fr"), b).json()
     url = f"{API}/conversations/{conv['id']}"
@@ -71,6 +80,7 @@ def test_non_participant_gets_404(client, trio, login):
 
 
 def test_empty_message_rejected(client, trio, login):
+    """Un message vide est rejeté (400)."""
     _, b, _ = trio
     conv = direct(client, login("a@x.fr"), b).json()
     response = client.post(f"{API}/conversations/{conv['id']}/messages", headers=login("a@x.fr"))
@@ -78,6 +88,7 @@ def test_empty_message_rejected(client, trio, login):
 
 
 def test_attachment_download_restricted_to_participants(client, trio, login):
+    """Le téléchargement d'une pièce jointe est réservé aux participants."""
     _, b, _ = trio
     ha = login("a@x.fr")
     conv = direct(client, ha, b).json()
@@ -94,6 +105,7 @@ def test_attachment_download_restricted_to_participants(client, trio, login):
 
 
 def test_delete_message_author_only(client, trio, login):
+    """Seul l'auteur peut supprimer son message."""
     _, b, _ = trio
     ha, hb = login("a@x.fr"), login("b@x.fr")
     conv = direct(client, ha, b).json()
@@ -106,6 +118,7 @@ def test_delete_message_author_only(client, trio, login):
 
 
 def test_group_lifecycle(client, trio, login):
+    """Cycle de vie d'un groupe : renommage, ajout et retrait de participants."""
     a, b, c = trio
     ha, hb = login("a@x.fr"), login("b@x.fr")
     body = {"kind": "group", "title": "Équipe", "user_ids": [str(b.id)]}
@@ -125,6 +138,7 @@ def test_group_lifecycle(client, trio, login):
 
 
 def test_websocket_requires_valid_token(client):
+    """Le WebSocket refuse un jeton invalide."""
     from starlette.websockets import WebSocketDisconnect
 
     with pytest.raises(WebSocketDisconnect), client.websocket_connect(f"{API}/ws?token=bad"):
@@ -132,6 +146,7 @@ def test_websocket_requires_valid_token(client):
 
 
 def test_websocket_receives_new_message(client, trio, login):
+    """Le WebSocket reçoit les nouveaux messages en temps réel."""
     _, b, _ = trio
     ha = login("a@x.fr")
     token_b = login("b@x.fr")["Authorization"].split()[1]

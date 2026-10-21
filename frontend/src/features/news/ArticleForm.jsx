@@ -1,3 +1,5 @@
+/** Formulaire de publication d'une actualité. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 

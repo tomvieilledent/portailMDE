@@ -1,3 +1,5 @@
+"""Schémas des utilisateurs : profil, création, rôles et mot de passe."""
+
 import uuid
 from datetime import datetime
 
@@ -8,6 +10,8 @@ from app.models.enums import UserRole
 
 
 class UserRead(BaseModel):
+    """Utilisateur en lecture."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -27,6 +31,8 @@ class UserRead(BaseModel):
 
 
 class UserCreate(BaseModel):
+    """Création d'un utilisateur."""
+
     email: EmailStr
     password: str = Field(min_length=8, max_length=256)
     first_name: str | None = Field(None, max_length=100)
@@ -42,6 +48,8 @@ class UserCreate(BaseModel):
 
 
 class UserUpdate(BaseModel):
+    """Modification du profil d'un utilisateur."""
+
     first_name: str | None = Field(None, max_length=100)
     last_name: str | None = Field(None, max_length=100)
     job_title: str | None = Field(None, max_length=120)
@@ -49,11 +57,15 @@ class UserUpdate(BaseModel):
 
 
 class PasswordChange(BaseModel):
+    """Changement de mot de passe."""
+
     current_password: str
     new_password: str = Field(min_length=8, max_length=256)
 
 
 class RoleUpdate(BaseModel):
+    """Modification du rôle et des permissions d'un utilisateur."""
+
     role: UserRole
     permissions: list[str] = []
 
@@ -61,4 +73,6 @@ class RoleUpdate(BaseModel):
 
 
 class CompanyAdminUpdate(BaseModel):
+    """Statut d'administrateur d'entreprise."""
+
     is_company_admin: bool

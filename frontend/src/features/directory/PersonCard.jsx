@@ -1,3 +1,5 @@
+/** Carte d'une personne de l'annuaire. */
+
 import { Avatar, Card, uploadUrl } from '../../components/ui'
 import { fullName } from './labels'
 

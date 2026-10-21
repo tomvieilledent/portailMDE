@@ -1,3 +1,5 @@
+"""Modèles des formations : catalogue, sessions et inscriptions."""
+
 import uuid
 from datetime import datetime
 
@@ -19,6 +21,8 @@ from app.models.enums import SessionStatus, TrainingKind
 
 
 class Training(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
+    """Formation ou atelier du catalogue."""
+
     __tablename__ = "trainings"
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)
@@ -49,6 +53,8 @@ class Training(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
 
 
 class TrainingSession(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    """Session datée d'une formation, avec un nombre de places limité."""
+
     __tablename__ = "training_sessions"
     __table_args__ = (
         CheckConstraint("end_at >= start_at", name="dates_order"),

@@ -1,7 +1,10 @@
+/** Tests E2E des formations : inscription à une session et droits de gestion du staff. */
+
 import { expect, test } from '@playwright/test'
 
 import { login } from './helpers'
 
+/** Un membre s'inscrit puis se désinscrit d'une session. */
 test('un membre s’inscrit puis se désinscrit d’une session', async ({ page }) => {
   await login(page, 'karim@demo.fr')
   await page.getByRole('link', { name: 'Formations' }).first().click()
@@ -17,6 +20,7 @@ test('un membre s’inscrit puis se désinscrit d’une session', async ({ page 
   await expect(page.getByRole('button', { name: "S'inscrire" })).toBeVisible()
 })
 
+/** Le staff voit les boutons de gestion des formations. */
 test('le staff voit les boutons de gestion', async ({ page }) => {
   await login(page, 'staff@demo.fr')
   await page.goto('/formations')

@@ -1,3 +1,5 @@
+/** Cloche de notifications de l'en-tête. */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'

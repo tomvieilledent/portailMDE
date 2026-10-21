@@ -1,3 +1,5 @@
+/** Annuaire des entreprises. */
+
 import { Building2, Globe, MapPin, Search } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -9,6 +11,7 @@ import { uploadUrl } from '../../lib/uploads'
 import { COMPANY_KINDS } from './labels'
 import { PAGE_SIZE, useCompanies } from './queries'
 
+/** Logo de l'entreprise, ou ses initiales à défaut. */
 export function CompanyLogo({ company, className = 'h-14 w-14' }) {
   return company.logo_path ? (
     <img

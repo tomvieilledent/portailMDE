@@ -1,3 +1,5 @@
+"""Routes de la messagerie : conversations, participants, messages et pièces jointes."""
+
 import uuid
 from datetime import datetime
 from typing import Annotated
@@ -22,11 +24,13 @@ router = APIRouter(tags=["chat"])
 
 
 def _event(kind: str, conversation_id: uuid.UUID, **data) -> dict:
+    """Construit l'événement temps réel diffusé aux participants d'une conversation."""
     return {"type": kind, "conversation_id": str(conversation_id), **data}
 
 
 @router.get("/conversations", response_model=list[ConversationRead])
 def list_conversations(session: SessionDep, current: CurrentUser):
+    """Liste les conversations de l'utilisateur courant."""
     return service.list_conversations(session, current)
 
 
@@ -37,6 +41,7 @@ def create_conversation(
     current: CurrentUser,
     background: BackgroundTasks,
 ):
+    """Crée une conversation directe ou de groupe et en informe les participants."""
     if body.kind == "direct":
         conversation = service.create_direct(session, current, body.user_id)
     else:
@@ -51,6 +56,7 @@ def create_conversation(
 
 @router.get("/conversations/{conversation_id}", response_model=ConversationRead)
 def read_conversation(conversation_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Retourne une conversation dont l'utilisateur est participant."""
     conversation = service.get_conversation(session, conversation_id, current)
     return service.to_read(session, conversation, current)
 
@@ -59,6 +65,7 @@ def read_conversation(conversation_id: uuid.UUID, session: SessionDep, current: 
 def rename_conversation(
     conversation_id: uuid.UUID, body: ConversationUpdate, session: SessionDep, current: CurrentUser
 ):
+    """Renomme une conversation de groupe."""
     conversation = service.get_conversation(session, conversation_id, current)
     service.rename_group(session, conversation, current, body.title)
     return service.to_read(session, conversation, current)
@@ -72,6 +79,7 @@ def add_participants(
     current: CurrentUser,
     background: BackgroundTasks,
 ):
+    """Ajoute des participants à une conversation de groupe."""
     conversation = service.get_conversation(session, conversation_id, current)
     service.add_participants(session, conversation, current, body.user_ids)
     background.add_task(
@@ -90,6 +98,7 @@ def remove_participant(
     current: CurrentUser,
     background: BackgroundTasks,
 ):
+    """Retire un participant d'une conversation de groupe."""
     conversation = service.get_conversation(session, conversation_id, current)
     audience = service.participant_ids(conversation)
     service.remove_participant(session, conversation, current, user_id)
@@ -101,6 +110,7 @@ def remove_participant(
 
 @router.post("/conversations/{conversation_id}/read", status_code=204)
 def mark_read(conversation_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Marque la conversation comme lue par l'utilisateur courant."""
     conversation = service.get_conversation(session, conversation_id, current)
     service.mark_read(session, conversation, current)
     return Response(status_code=204)
@@ -114,6 +124,7 @@ def list_messages(
     limit: Annotated[int, Query(ge=1, le=100)] = 30,
     before: datetime | None = None,
 ):
+    """Liste les messages d'une conversation, du plus récent au plus ancien, avec pagination."""
     conversation = service.get_conversation(session, conversation_id, current)
     return service.list_messages(session, conversation, limit=limit, before=before)
 
@@ -129,6 +140,7 @@ def send_message(
     content: Annotated[str, Form()] = "",
     file: UploadFile | None = None,
 ):
+    """Envoie un message (texte et/ou pièce jointe) et le diffuse en temps réel."""
     conversation = service.get_conversation(session, conversation_id, current)
     message = service.send_message(session, conversation, current, content, file)
     payload = MessageRead.model_validate(message).model_dump(mode="json")
@@ -144,6 +156,7 @@ def send_message(
 def delete_message(
     message_id: uuid.UUID, session: SessionDep, current: CurrentUser, background: BackgroundTasks
 ):
+    """Supprime un message et en informe les participants."""
     message = service.delete_message(session, message_id, current)
     conversation = service.get_conversation(session, message.conversation_id, current)
     background.add_task(

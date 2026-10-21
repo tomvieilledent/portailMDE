@@ -1,3 +1,5 @@
+/** Page de choix d'un nouveau mot de passe. */
+
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 
@@ -5,6 +7,7 @@ import { Button, Input, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
 import AuthShell from './AuthShell'
 
+/** Formulaire de nouveau mot de passe à partir du lien reçu. */
 export default function ResetPasswordPage() {
   const [params] = useSearchParams()
   const navigate = useNavigate()

@@ -1,3 +1,5 @@
+/** Champs de formulaire (saisie, zone de texte, liste de sélection) accessibles. */
+
 import { forwardRef, useId } from 'react'
 
 import { cn } from '../../lib/cn'
@@ -28,6 +30,7 @@ function FieldShell({ label, error, hint, id, children }) {
   )
 }
 
+/** Attributs d'accessibilité communs aux contrôles. */
 function controlProps(id, error) {
   return {
     id,
@@ -36,8 +39,10 @@ function controlProps(id, error) {
   }
 }
 
+/** Classe de bordure, rouge en cas d'erreur. */
 const borderClass = (error) => (error ? 'border-red-500' : 'border-slate-300 dark:border-slate-700')
 
+/** Champ de saisie avec libellé, aide et erreur. */
 export const Input = forwardRef(function Input({ label, error, hint, className, ...props }, ref) {
   const id = useId()
   return (
@@ -52,6 +57,7 @@ export const Input = forwardRef(function Input({ label, error, hint, className, 
   )
 })
 
+/** Zone de texte avec libellé, aide et erreur. */
 export const Textarea = forwardRef(function Textarea(
   { label, error, hint, className, rows = 4, ...props },
   ref,
@@ -70,6 +76,7 @@ export const Textarea = forwardRef(function Textarea(
   )
 })
 
+/** Liste de sélection avec libellé, aide et erreur. */
 export const Select = forwardRef(function Select(
   { label, error, hint, className, children, ...props },
   ref,

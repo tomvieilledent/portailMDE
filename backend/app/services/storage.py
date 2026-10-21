@@ -21,17 +21,21 @@ DOCUMENT_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx"
 
 
 class UploadTooLargeError(AppError):
+    """Fichier téléversé dépassant la taille maximale autorisée (413)."""
+
     status_code = 413
     code = "PAYLOAD_TOO_LARGE"
 
 
 def upload_root() -> Path:
+    """Retourne le dossier racine des fichiers téléversés (créé si besoin)."""
     root = Path(get_settings().upload_dir)
     root.mkdir(parents=True, exist_ok=True)
     return root
 
 
 def _read_limited(file: UploadFile, limit: int) -> bytes:
+    """Lit le fichier en refusant les fichiers vides ou dépassant la limite en octets."""
     data = file.file.read(limit + 1)
     if len(data) > limit:
         raise UploadTooLargeError(f"Fichier trop volumineux (maximum {limit // (1024 * 1024)} Mo)")
@@ -41,6 +45,7 @@ def _read_limited(file: UploadFile, limit: int) -> bytes:
 
 
 def _extension(file: UploadFile) -> str:
+    """Retourne l'extension du fichier en minuscules."""
     return Path(file.filename or "").suffix.lower()
 
 
@@ -68,6 +73,7 @@ def save_document(file: UploadFile, category: str) -> tuple[str, str]:
 
 
 def _write(data: bytes, category: str, ext: str) -> str:
+    """Écrit le fichier sous un nom aléatoire et retourne son chemin relatif."""
     relative = f"{category}/{uuid.uuid4().hex}{ext}"
     target = upload_root() / relative
     target.parent.mkdir(parents=True, exist_ok=True)

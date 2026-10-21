@@ -1,3 +1,5 @@
+/** Tests du routage de l'application selon l'état de connexion. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -9,6 +11,7 @@ import { AuthProvider } from './auth/AuthProvider'
 import { ThemeProvider } from './components/ThemeProvider'
 import { ToastProvider } from './components/ui'
 
+/** Affiche l'application à l'adresse donnée. */
 const renderAt = (path) =>
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -24,6 +27,7 @@ const renderAt = (path) =>
     </QueryClientProvider>,
   )
 
+/** Routage de l'application. */
 describe('App', () => {
   it("affiche l'accueil public", () => {
     renderAt('/')

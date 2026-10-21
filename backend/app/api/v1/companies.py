@@ -1,3 +1,5 @@
+"""Routes de gestion des entreprises : fiche, membres, logo, activation et suppression."""
+
 import uuid
 from typing import Annotated
 
@@ -26,6 +28,7 @@ def list_companies(
     search: str | None = None,
     kind: CompanyKind | None = None,
 ):
+    """Liste les entreprises avec pagination, recherche et filtre par type."""
     items, total = service.list_companies(
         session, current, limit=limit, offset=offset, search=search, kind=kind
     )
@@ -34,11 +37,13 @@ def list_companies(
 
 @router.post("", response_model=CompanyRead, status_code=201)
 def create_company(body: CompanyCreate, session: SessionDep, _: ManageCompanies):
+    """Crée une entreprise (droit de gestion des entreprises requis)."""
     return service.create_company(session, body)
 
 
 @router.get("/me", response_model=CompanyRead)
 def my_company(session: SessionDep, current: CurrentUser):
+    """Retourne l'entreprise de l'utilisateur courant."""
     if not current.company_id:
         raise NotFoundError("Vous n'êtes rattaché à aucune entreprise")
     return service.get_company(session, current.company_id, current)
@@ -46,6 +51,7 @@ def my_company(session: SessionDep, current: CurrentUser):
 
 @router.get("/{company_id}", response_model=CompanyRead)
 def read_company(company_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Retourne la fiche d'une entreprise."""
     return service.get_company(session, company_id, current)
 
 
@@ -53,27 +59,32 @@ def read_company(company_id: uuid.UUID, session: SessionDep, current: CurrentUse
 def update_company(
     company_id: uuid.UUID, body: CompanyAdminUpdate, session: SessionDep, current: CurrentUser
 ):
+    """Met à jour une entreprise (administrateur de l'entreprise ou gestionnaire)."""
     return service.update_company(session, current, company_id, body)
 
 
 @router.post("/{company_id}/deactivate", response_model=CompanyRead)
 def deactivate_company(company_id: uuid.UUID, session: SessionDep, current: ManageCompanies):
+    """Désactive une entreprise."""
     return service.set_active(session, company_id, current, False)
 
 
 @router.post("/{company_id}/reactivate", response_model=CompanyRead)
 def reactivate_company(company_id: uuid.UUID, session: SessionDep, current: ManageCompanies):
+    """Réactive une entreprise."""
     return service.set_active(session, company_id, current, True)
 
 
 @router.delete("/{company_id}", status_code=204)
 def delete_company(company_id: uuid.UUID, session: SessionDep, current: ManageCompanies):
+    """Supprime une entreprise."""
     service.delete_company(session, company_id, current)
     return Response(status_code=204)
 
 
 @router.get("/{company_id}/members", response_model=list[UserRead])
 def list_members(company_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Liste les membres d'une entreprise."""
     return service.list_members(session, company_id, current)
 
 
@@ -81,6 +92,7 @@ def list_members(company_id: uuid.UUID, session: SessionDep, current: CurrentUse
 def add_member(
     company_id: uuid.UUID, user_id: uuid.UUID, session: SessionDep, current: CurrentUser
 ):
+    """Rattache un utilisateur à une entreprise."""
     return service.add_member(session, current, company_id, user_id)
 
 
@@ -88,10 +100,12 @@ def add_member(
 def remove_member(
     company_id: uuid.UUID, user_id: uuid.UUID, session: SessionDep, current: CurrentUser
 ):
+    """Détache un utilisateur d'une entreprise."""
     service.remove_member(session, current, company_id, user_id)
     return Response(status_code=204)
 
 
 @router.put("/{company_id}/logo", response_model=CompanyRead)
 def upload_logo(company_id: uuid.UUID, session: SessionDep, current: CurrentUser, file: UploadFile):
+    """Téléverse le logo d'une entreprise."""
     return service.set_logo(session, current, company_id, file)

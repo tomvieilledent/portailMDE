@@ -1,3 +1,5 @@
+/** Page de demande de réinitialisation du mot de passe. */
+
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -5,6 +7,7 @@ import { Button, Input } from '../../components/ui'
 import { api } from '../../lib/api'
 import AuthShell from './AuthShell'
 
+/** Formulaire de demande de lien de réinitialisation. */
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState(false)

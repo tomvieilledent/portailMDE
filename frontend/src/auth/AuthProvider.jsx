@@ -1,9 +1,12 @@
+/** Contexte d'authentification : session de l'utilisateur, connexion et déconnexion. */
+
 import { useQueryClient } from '@tanstack/react-query'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
 import { api } from '../lib/api'
 import { tokens } from '../lib/tokens'
 
+/** Contexte portant la session courante. */
 const AuthContext = createContext(null)
 
 /**
@@ -63,6 +66,7 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+/** Accès à la session de l'utilisateur connecté. */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)

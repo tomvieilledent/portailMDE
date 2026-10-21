@@ -1,3 +1,5 @@
+/** Annuaire des personnes (trombinoscope). */
+
 import { Search, Users } from 'lucide-react'
 import { useState } from 'react'
 

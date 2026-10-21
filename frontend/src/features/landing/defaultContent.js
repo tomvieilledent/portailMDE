@@ -1,3 +1,5 @@
+/** Contenu par défaut de la page d'accueil. */
+
 /** Contenu affiché tant que l'API n'a pas répondu (ou si elle est indisponible). */
 export const defaultLanding = {
   slogan: "De l'idée à la création",

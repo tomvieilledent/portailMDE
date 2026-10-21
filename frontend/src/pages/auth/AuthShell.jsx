@@ -1,3 +1,5 @@
+/** Cadre commun des pages d'authentification. */
+
 import { Link } from 'react-router-dom'
 
 import { Card } from '../../components/ui'

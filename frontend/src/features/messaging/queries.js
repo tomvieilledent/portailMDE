@@ -1,9 +1,13 @@
+/** Requêtes de la messagerie. */
+
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 
 import { api } from '../../lib/api'
 
+/** Nombre de messages par page. */
 export const MESSAGES_PAGE = 30
 
+/** Conversations de l'utilisateur. */
 export const useConversations = () =>
   useQuery({ queryKey: ['conversations'], queryFn: () => api.get('/conversations') })
 

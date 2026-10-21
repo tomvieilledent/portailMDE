@@ -1,3 +1,5 @@
+/** Point d'entrée des composants d'interface réutilisables. */
+
 export { uploadUrl } from '../../lib/uploads'
 export { default as Avatar } from './Avatar'
 export { default as Badge } from './Badge'

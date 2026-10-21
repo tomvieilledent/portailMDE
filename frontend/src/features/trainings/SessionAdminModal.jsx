@@ -1,3 +1,5 @@
+/** Modale d'administration d'une session. */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check } from 'lucide-react'
 import { useState } from 'react'

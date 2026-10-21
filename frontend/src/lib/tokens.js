@@ -1,7 +1,10 @@
+/** Stockage des jetons de session. */
+
 // Stockage des jetons JWT. localStorage peut être indisponible (navigation privée) : tout est protégé.
 const ACCESS = 'access_token'
 const REFRESH = 'refresh_token'
 
+/** Lit une valeur sans échouer si le stockage est indisponible. */
 function read(key) {
   try {
     return localStorage.getItem(key)
@@ -10,6 +13,7 @@ function read(key) {
   }
 }
 
+/** Accès aux jetons d'accès et de renouvellement. */
 export const tokens = {
   get access() {
     return read(ACCESS)

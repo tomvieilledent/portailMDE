@@ -1,3 +1,5 @@
+/** Garde de route réservant l'accès aux utilisateurs connectés et autorisés. */
+
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 
 import { Spinner } from '../components/ui'

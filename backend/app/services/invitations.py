@@ -60,6 +60,7 @@ def invite(
 
 
 def _email_invitees(session: Session, inviter: User, ids: list[uuid.UUID], label: str) -> None:
+    """Envoie un email d'invitation à chaque utilisateur invité."""
     from app.core.config import get_settings
     from app.emails import templates
 
@@ -96,6 +97,7 @@ def list_for_user(
 def respond(
     session: Session, user: User, invitation_id: uuid.UUID, status: InvitationStatus
 ) -> Invitation:
+    """Enregistre la réponse à une invitation et notifie l'invitant."""
     if status == InvitationStatus.PENDING:
         raise AppError("La réponse doit être 'accepted' ou 'declined'")
     invitation = session.get(Invitation, invitation_id)
@@ -117,6 +119,7 @@ def respond(
 
 
 def mark_read(session: Session, user: User, invitation_id: uuid.UUID) -> Invitation:
+    """Marque une invitation comme lue."""
     invitation = session.get(Invitation, invitation_id)
     if not invitation or invitation.invitee_id != user.id:
         raise NotFoundError("Invitation introuvable")

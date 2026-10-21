@@ -1,3 +1,5 @@
+/** Modale de programmation d'une session. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 

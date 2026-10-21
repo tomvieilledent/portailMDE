@@ -1,3 +1,5 @@
+"""Modèles SQLAlchemy : importés ici pour être enregistrés dans les métadonnées (Alembic)."""
+
 from app.models.auth import RevokedToken
 from app.models.chat import Conversation, ConversationParticipant, Message
 from app.models.company import Company

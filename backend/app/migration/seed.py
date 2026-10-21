@@ -30,6 +30,7 @@ def create_admin(session: Session, email: str, password: str, *, first_name=None
 
 
 def _user(session, email, password, **fields) -> User:
+    """Retourne l'utilisateur correspondant à l'email, en le créant s'il n'existe pas."""
     user = session.scalar(select(User).where(func.lower(User.email) == email))
     if not user:
         user = User(email=email, password_hash=hash_password(password), **fields)

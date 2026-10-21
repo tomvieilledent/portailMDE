@@ -1,3 +1,5 @@
+/** Hook de lecture du contenu de la page d'accueil. */
+
 import { useQuery } from '@tanstack/react-query'
 
 import { api } from '../../lib/api'

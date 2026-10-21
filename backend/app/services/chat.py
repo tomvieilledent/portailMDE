@@ -15,6 +15,7 @@ from app.services import notifications, storage
 
 
 def _active_users(session: Session, ids: list[uuid.UUID]) -> list[User]:
+    """Retourne les utilisateurs actifs demandés, ou lève une erreur si l'un d'eux est introuvable."""
     users = session.scalars(
         select(User).where(User.id.in_(ids), User.deleted_at.is_(None), User.is_active.is_(True))
     ).all()
@@ -36,10 +37,12 @@ def get_conversation(session: Session, conversation_id: uuid.UUID, actor: User) 
 
 
 def participant_ids(conversation: Conversation) -> list[uuid.UUID]:
+    """Retourne les identifiants des participants d'une conversation."""
     return [p.user_id for p in conversation.participants]
 
 
 def create_direct(session: Session, actor: User, other_id: uuid.UUID) -> Conversation:
+    """Crée (ou retrouve) la conversation directe entre l'utilisateur et un autre."""
     if other_id == actor.id:
         raise AppError("Impossible de discuter avec soi-même")
     _active_users(session, [other_id])
@@ -68,6 +71,7 @@ def create_direct(session: Session, actor: User, other_id: uuid.UUID) -> Convers
 def create_group(
     session: Session, actor: User, title: str, user_ids: list[uuid.UUID]
 ) -> Conversation:
+    """Crée une conversation de groupe et notifie les membres ajoutés."""
     members = set(user_ids) | {actor.id}
     _active_users(session, list(members))
     conversation = Conversation(kind=ConversationKind.GROUP, title=title, creator_id=actor.id)
@@ -79,6 +83,7 @@ def create_group(
 
 
 def _ensure_group_owner(conversation: Conversation, actor: User) -> None:
+    """Vérifie que la conversation est un groupe et que l'utilisateur en est le créateur."""
     if conversation.kind != ConversationKind.GROUP:
         raise AppError("Cette opération ne concerne que les groupes")
     if conversation.creator_id != actor.id and actor.role != UserRole.SUPER_ADMIN:
@@ -86,6 +91,7 @@ def _ensure_group_owner(conversation: Conversation, actor: User) -> None:
 
 
 def _notify_added(session: Session, conversation: Conversation, actor: User, user_ids) -> None:
+    """Notifie les utilisateurs ajoutés à un groupe."""
     notifications.notify(
         session,
         user_ids,
@@ -96,6 +102,7 @@ def _notify_added(session: Session, conversation: Conversation, actor: User, use
 
 
 def rename_group(session: Session, conversation: Conversation, actor: User, title: str):
+    """Renomme un groupe (réservé à son créateur)."""
     _ensure_group_owner(conversation, actor)
     conversation.title = title
     session.commit()
@@ -105,6 +112,7 @@ def rename_group(session: Session, conversation: Conversation, actor: User, titl
 def add_participants(
     session: Session, conversation: Conversation, actor: User, user_ids: list[uuid.UUID]
 ):
+    """Ajoute des participants à un groupe (réservé à son créateur) et les notifie."""
     _ensure_group_owner(conversation, actor)
     current = set(participant_ids(conversation))
     new_ids = [uid for uid in set(user_ids) if uid not in current]
@@ -132,12 +140,14 @@ def remove_participant(
 
 
 def mark_read(session: Session, conversation: Conversation, actor: User) -> None:
+    """Marque la conversation comme lue pour l'utilisateur."""
     participant = next(p for p in conversation.participants if p.user_id == actor.id)
     participant.last_read_at = datetime.now(UTC)
     session.commit()
 
 
 def _unread_count(session: Session, conversation: Conversation, actor: User) -> int:
+    """Compte les messages non lus de l'utilisateur dans la conversation."""
     participant = next(p for p in conversation.participants if p.user_id == actor.id)
     since = participant.last_read_at or participant.joined_at
     return (
@@ -154,6 +164,7 @@ def _unread_count(session: Session, conversation: Conversation, actor: User) -> 
 
 
 def _last_message(session: Session, conversation: Conversation) -> Message | None:
+    """Retourne le dernier message non supprimé de la conversation."""
     return session.scalar(
         select(Message)
         .where(Message.conversation_id == conversation.id, Message.deleted_at.is_(None))
@@ -163,6 +174,7 @@ def _last_message(session: Session, conversation: Conversation) -> Message | Non
 
 
 def to_read(session: Session, conversation: Conversation, actor: User) -> ConversationRead:
+    """Construit la représentation de lecture d'une conversation pour l'utilisateur."""
     users = session.scalars(select(User).where(User.id.in_(participant_ids(conversation)))).all()
     last = _last_message(session, conversation)
     return ConversationRead(
@@ -178,6 +190,7 @@ def to_read(session: Session, conversation: Conversation, actor: User) -> Conver
 
 
 def list_conversations(session: Session, actor: User) -> list[ConversationRead]:
+    """Liste les conversations de l'utilisateur, la plus récente activité en premier."""
     conversations = session.scalars(
         select(Conversation)
         .join(ConversationParticipant)
@@ -214,6 +227,7 @@ def send_message(
     content: str,
     file: UploadFile | None = None,
 ) -> Message:
+    """Enregistre un message (texte et/ou pièce jointe) et le marque lu pour son auteur."""
     content = (content or "").strip()
     if not content and file is None:
         raise AppError("Le message est vide")
@@ -240,6 +254,7 @@ def send_message(
 
 
 def get_message(session: Session, message_id: uuid.UUID, actor: User) -> Message:
+    """Retourne un message si l'utilisateur participe à sa conversation."""
     message = session.get(Message, message_id)
     if not message or message.deleted_at is not None:
         raise NotFoundError("Message introuvable")
@@ -248,6 +263,7 @@ def get_message(session: Session, message_id: uuid.UUID, actor: User) -> Message
 
 
 def delete_message(session: Session, message_id: uuid.UUID, actor: User) -> Message:
+    """Supprime logiquement un message (son auteur ou un super administrateur)."""
     message = get_message(session, message_id, actor)
     if message.author_id != actor.id and actor.role != UserRole.SUPER_ADMIN:
         raise ForbiddenError("Vous ne pouvez supprimer que vos messages")

@@ -1,3 +1,5 @@
+"""Routes de l'agenda : événements, export iCalendar et invitations."""
+
 import uuid
 from datetime import date
 
@@ -23,6 +25,7 @@ router = APIRouter(tags=["events"])
 def list_events(
     session: SessionDep, current: CurrentUser, start: date | None = None, end: date | None = None
 ):
+    """Liste les événements visibles par l'utilisateur sur une période."""
     return service.list_events(session, current, start=start, end=end)
 
 
@@ -30,6 +33,7 @@ def list_events(
 def export_events(
     session: SessionDep, current: CurrentUser, start: date | None = None, end: date | None = None
 ):
+    """Exporte les événements visibles au format iCalendar (.ics)."""
     events = service.list_events(session, current, start=start, end=end)
     return Response(
         service.export_ics(events),
@@ -40,27 +44,32 @@ def export_events(
 
 @router.post("/events", response_model=EventRead, status_code=201)
 def create_event(body: EventCreate, session: SessionDep, current: CurrentUser):
+    """Crée un événement."""
     return service.create_event(session, current, body)
 
 
 @router.get("/events/{event_id}", response_model=EventRead)
 def read_event(event_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Retourne un événement."""
     return service.get_event(session, event_id, current)
 
 
 @router.patch("/events/{event_id}", response_model=EventRead)
 def update_event(event_id: uuid.UUID, body: EventUpdate, session: SessionDep, current: CurrentUser):
+    """Met à jour un événement."""
     return service.update_event(session, current, event_id, body)
 
 
 @router.delete("/events/{event_id}", status_code=204)
 def delete_event(event_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Supprime un événement."""
     service.delete_event(session, current, event_id)
     return Response(status_code=204)
 
 
 @router.get("/events/{event_id}/invitations", response_model=list[InvitationRead])
 def event_invitations(event_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Liste les invitations d'un événement."""
     return service.list_event_invitations(session, current, event_id)
 
 
@@ -68,6 +77,7 @@ def event_invitations(event_id: uuid.UUID, session: SessionDep, current: Current
 def invite_to_event(
     event_id: uuid.UUID, body: InviteRequest, session: SessionDep, current: CurrentUser
 ):
+    """Invite des utilisateurs à un événement."""
     return service.invite_to_event(session, current, event_id, body.user_ids)
 
 
@@ -75,6 +85,7 @@ def invite_to_event(
 def my_invitations(
     session: SessionDep, current: CurrentUser, status: InvitationStatus | None = None
 ):
+    """Liste les invitations de l'utilisateur courant, filtrables par statut."""
     result = []
     for invitation, title in invitations.list_for_user(session, current, status):
         item = InvitationRead.model_validate(invitation)
@@ -87,9 +98,11 @@ def my_invitations(
 def respond(
     invitation_id: uuid.UUID, body: InvitationResponse, session: SessionDep, current: CurrentUser
 ):
+    """Répond à une invitation (accepter ou refuser)."""
     return invitations.respond(session, current, invitation_id, body.status)
 
 
 @router.post("/invitations/{invitation_id}/read", response_model=InvitationRead)
 def read_invitation(invitation_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Marque une invitation comme lue."""
     return invitations.mark_read(session, current, invitation_id)

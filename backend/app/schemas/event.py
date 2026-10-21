@@ -1,3 +1,5 @@
+"""Schémas de l'agenda : événements et invitations."""
+
 import uuid
 from datetime import date, datetime, time
 
@@ -7,6 +9,8 @@ from app.models.enums import InvitationStatus
 
 
 class EventRead(BaseModel):
+    """Événement en lecture."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -21,6 +25,8 @@ class EventRead(BaseModel):
 
 
 class EventCreate(BaseModel):
+    """Création d'un événement, avec les invités éventuels."""
+
     title: str = Field(min_length=1, max_length=200)
     description: str | None = None
     event_date: date
@@ -31,6 +37,8 @@ class EventCreate(BaseModel):
 
 
 class EventUpdate(BaseModel):
+    """Modification partielle d'un événement."""
+
     title: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = None
     event_date: date | None = None
@@ -40,10 +48,14 @@ class EventUpdate(BaseModel):
 
 
 class InviteRequest(BaseModel):
+    """Liste des utilisateurs à inviter."""
+
     user_ids: list[uuid.UUID] = Field(min_length=1)
 
 
 class InvitationRead(BaseModel):
+    """Invitation en lecture, avec le titre de l'événement ou de la formation ciblée."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -59,4 +71,6 @@ class InvitationRead(BaseModel):
 
 
 class InvitationResponse(BaseModel):
+    """Réponse à une invitation."""
+
     status: InvitationStatus

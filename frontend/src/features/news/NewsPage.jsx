@@ -1,3 +1,5 @@
+/** Page de la veille économique (actualités). */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Bookmark, ExternalLink, Newspaper, Plus, RefreshCw, Search, Trash2 } from 'lucide-react'
 import { useState } from 'react'
@@ -21,6 +23,7 @@ import { useDebounce } from '../../lib/useDebounce'
 import ArticleForm from './ArticleForm'
 import { NEWS_PAGE, formatPublished, useNews, useSavedNews } from './queries'
 
+/** Carte d'une actualité : favori et suppression. */
 function ArticleCard({ article, saved, onToggleSave, onDelete }) {
   return (
     <Card className="flex flex-col gap-2">

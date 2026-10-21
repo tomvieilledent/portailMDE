@@ -1,3 +1,5 @@
+/** Page cible d'une notification. */
+
 /** Page cible d'une notification selon son type. */
 export function notificationTarget(notification) {
   const data = notification.data ?? {}

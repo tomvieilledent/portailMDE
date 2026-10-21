@@ -1,3 +1,5 @@
+/** Page d'accueil des membres. */
+
 import { ArrowRight, Building2, Moon, Rocket, Sprout, Sun } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
@@ -8,6 +10,7 @@ import { useLanding } from '../features/landing/useLanding'
 // Les icônes sont associées aux cartes par position (seul le texte est éditable).
 const icons = [Rocket, Sprout, Building2]
 
+/** Page d'accueil : contenu éditorial et accès rapides. */
 export default function HomePage() {
   const { content } = useLanding()
   const { theme, toggle } = useTheme()

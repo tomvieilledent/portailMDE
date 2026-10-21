@@ -1,18 +1,23 @@
+"""Tests de l'API des entreprises : droits, visibilité, membres et suppression logique."""
+
 from app.models.enums import UserRole
 
 API = "/api/v1/companies"
 
 
 def staff(make_user, email="staff@x.fr"):
+    """Crée un membre du staff autorisé à gérer les entreprises."""
     return make_user(email, role=UserRole.STAFF, permissions=["manage_companies"])
 
 
 def test_create_requires_permission(client, make_user, login):
+    """La création d'entreprise exige la permission dédiée."""
     make_user()
     assert client.post(API, headers=login(), json={"name": "Acme"}).status_code == 403
 
 
 def test_staff_creates_and_lists(client, make_user, login):
+    """Le staff crée une entreprise, la recherche et la filtre."""
     staff(make_user)
     headers = login("staff@x.fr")
     created = client.post(API, headers=headers, json={"name": "Acme", "kind": "partner"})
@@ -23,6 +28,7 @@ def test_staff_creates_and_lists(client, make_user, login):
 
 
 def test_inactive_hidden_from_members(client, make_user, make_company, login):
+    """Une entreprise désactivée est masquée aux membres."""
     staff(make_user)
     make_user("m@x.fr")
     company = make_company("Ghost")
@@ -34,6 +40,7 @@ def test_inactive_hidden_from_members(client, make_user, make_company, login):
 
 
 def test_my_company(client, make_user, make_company, login):
+    """L'endpoint « mon entreprise » renvoie celle de l'utilisateur."""
     company = make_company("Mine")
     make_user(company_id=company.id)
     assert client.get(f"{API}/me", headers=login()).json()["name"] == "Mine"
@@ -42,6 +49,7 @@ def test_my_company(client, make_user, make_company, login):
 
 
 def test_company_admin_edits_own_company_not_kind(client, make_user, make_company, login):
+    """Un admin d'entreprise modifie la sienne, mais pas son type."""
     mine, other = make_company("Mine"), make_company("Other")
     make_user(company_id=mine.id, is_company_admin=True)
     headers = login()
@@ -53,6 +61,7 @@ def test_company_admin_edits_own_company_not_kind(client, make_user, make_compan
 
 
 def test_plain_member_cannot_edit(client, make_user, make_company, login):
+    """Un simple membre ne peut pas modifier l'entreprise."""
     company = make_company()
     make_user(company_id=company.id)
     assert (
@@ -61,6 +70,7 @@ def test_plain_member_cannot_edit(client, make_user, make_company, login):
 
 
 def test_members_management(client, make_user, make_company, login):
+    """Ajout, liste et retrait des membres d'une entreprise."""
     staff(make_user)
     company = make_company()
     user = make_user("u@x.fr")
@@ -78,6 +88,7 @@ def test_members_management(client, make_user, make_company, login):
 
 
 def test_company_admin_can_remove_but_not_add(client, make_user, make_company, login):
+    """Un admin d'entreprise peut retirer des membres mais pas en ajouter."""
     company = make_company()
     make_user("boss@x.fr", company_id=company.id, is_company_admin=True)
     colleague = make_user("c@x.fr", company_id=company.id)
@@ -93,6 +104,7 @@ def test_company_admin_can_remove_but_not_add(client, make_user, make_company, l
 
 
 def test_delete_is_soft(client, make_user, make_company, login, session):
+    """La suppression d'une entreprise est logique (deleted_at renseigné)."""
     staff(make_user)
     company = make_company()
     headers = login("staff@x.fr")

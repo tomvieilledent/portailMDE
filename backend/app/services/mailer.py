@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class Mail:
+    """Email à envoyer (destinataire, sujet, texte et HTML optionnel)."""
+
     to: str
     subject: str
     text: str

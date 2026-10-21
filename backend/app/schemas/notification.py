@@ -1,3 +1,5 @@
+"""Schémas des notifications."""
+
 import uuid
 from datetime import datetime
 from typing import Any
@@ -6,6 +8,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class NotificationRead(BaseModel):
+    """Notification en lecture."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -17,9 +21,13 @@ class NotificationRead(BaseModel):
 
 
 class BroadcastRequest(BaseModel):
+    """Diffusion d'une notification à des utilisateurs."""
+
     content: str = Field(min_length=1, max_length=1000)
     user_ids: list[uuid.UUID] = []
 
 
 class UnreadCount(BaseModel):
+    """Nombre de notifications non lues."""
+
     count: int

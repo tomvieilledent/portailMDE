@@ -1,3 +1,5 @@
+/** Page « Mon entreprise » : fiche et équipe. */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -22,6 +24,7 @@ import { CompanyLogo } from '../directory/CompaniesPage'
 import { fullName } from '../directory/labels'
 import { api } from '../../lib/api'
 
+/** Formulaire de la fiche de l'entreprise. */
 function CompanyForm({ company, canEdit }) {
   const toast = useToast()
   const queryClient = useQueryClient()
@@ -99,6 +102,7 @@ function CompanyForm({ company, canEdit }) {
   )
 }
 
+/** Modale d'ajout d'un membre à l'entreprise. */
 function AddMemberModal({ company, onClose }) {
   const toast = useToast()
   const queryClient = useQueryClient()
@@ -159,6 +163,7 @@ function AddMemberModal({ company, onClose }) {
   )
 }
 
+/** Liste des membres de l'entreprise et leur gestion. */
 function MembersCard({ company, canEdit }) {
   const { user } = useAuth()
   const toast = useToast()

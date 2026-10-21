@@ -1,3 +1,5 @@
+/** Tests de l'authentification, des droits et de la réinitialisation du mot de passe. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -32,6 +34,7 @@ const member = {
   avatar_path: null,
 }
 
+/** Affiche l'application à l'adresse donnée. */
 function renderApp(path) {
   return render(
     <QueryClientProvider client={new QueryClient()}>
@@ -58,6 +61,7 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
+/** Calcul des droits selon le rôle. */
 describe('permissions', () => {
   it('applique les droits par rôle', () => {
     const root = { role: 'super_admin', permissions: [] }
@@ -78,6 +82,7 @@ describe('permissions', () => {
   })
 })
 
+/** Connexion, déconnexion et protection des routes. */
 describe('authentification', () => {
   it('redirige un visiteur vers la connexion', async () => {
     renderApp('/annuaire')
@@ -145,6 +150,7 @@ describe('authentification', () => {
   })
 })
 
+/** Demande et réinitialisation du mot de passe. */
 describe('mot de passe oublié', () => {
   it('affiche toujours le même message', async () => {
     api.post.mockRejectedValue(new ApiError(500, 'X', 'x'))

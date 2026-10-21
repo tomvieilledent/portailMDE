@@ -1,3 +1,5 @@
+/** Bouton d'intérêt pour une formation. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Star } from 'lucide-react'
 

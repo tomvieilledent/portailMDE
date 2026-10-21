@@ -1,3 +1,5 @@
+/** Effets globaux des événements temps réel. */
+
 import { useQueryClient } from '@tanstack/react-query'
 import { useRef } from 'react'
 

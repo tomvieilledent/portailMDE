@@ -1,3 +1,5 @@
+"""Sécurité : hachage des mots de passe (Argon2, bcrypt hérité) et jetons JWT."""
+
 import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Literal
@@ -15,14 +17,18 @@ TokenType = Literal["access", "refresh", "reset"]
 
 
 class InvalidTokenError(Exception):
+    """Jeton JWT invalide, expiré ou d'un type inattendu."""
+
     pass
 
 
 def hash_password(password: str) -> str:
+    """Hache un mot de passe avec Argon2."""
     return _hasher.hash(password)
 
 
 def _is_legacy_bcrypt(password_hash: str) -> bool:
+    """Indique si le hash provient de bcrypt (ancienne application)."""
     return password_hash.startswith(("$2a$", "$2b$", "$2y$"))
 
 
@@ -70,6 +76,7 @@ def create_token(
 
 
 def decode_token(token: str, expected_type: TokenType) -> dict:
+    """Décode un jeton JWT et vérifie qu'il est du type attendu."""
     settings = get_settings()
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])

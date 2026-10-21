@@ -1,3 +1,5 @@
+/** Utilitaires d'affichage de la messagerie. */
+
 import { fullName } from '../directory/labels'
 
 /** Nom affiché d'une conversation : titre du groupe, ou nom de l'interlocuteur. */
@@ -14,6 +16,7 @@ export function previewText(message) {
   return message.file_name ? `📎 ${message.file_name}` : ''
 }
 
+/** Heure du message, ou date s'il est plus ancien. */
 export function formatTime(iso) {
   const date = new Date(iso)
   const sameDay = date.toDateString() === new Date().toDateString()

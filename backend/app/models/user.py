@@ -1,3 +1,5 @@
+"""Modèle des utilisateurs."""
+
 import uuid
 
 from sqlalchemy import Boolean, ForeignKey, Index, String, func, text
@@ -9,6 +11,8 @@ from app.models.enums import UserRole
 
 
 class User(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
+    """Compte utilisateur, rattaché à une entreprise, avec son rôle et ses permissions."""
+
     __tablename__ = "users"
     __table_args__ = (Index("uq_users_email_lower", func.lower(text("email")), unique=True),)
 

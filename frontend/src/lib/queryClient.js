@@ -1,7 +1,10 @@
+/** Configuration du client de requêtes. */
+
 import { QueryClient } from '@tanstack/react-query'
 
 import { ApiError } from './api'
 
+/** Client de requêtes partagé par l'application. */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {

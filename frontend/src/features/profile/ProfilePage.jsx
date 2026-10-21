@@ -1,3 +1,5 @@
+/** Page de profil de l'utilisateur. */
+
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -6,12 +8,14 @@ import PageHeader from '../../components/layout/PageHeader'
 import { Avatar, Button, Card, ImageUpload, Input, uploadUrl, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
 
+/** Encapsule un fichier dans un `FormData`. */
 const toFormData = (file) => {
   const form = new FormData()
   form.append('file', file)
   return form
 }
 
+/** Formulaire des informations personnelles. */
 function InfoForm() {
   const { user, setUser } = useAuth()
   const toast = useToast()
@@ -76,6 +80,7 @@ function useImageUpload(path, success) {
   })
 }
 
+/** Photo de profil et image de couverture. */
 function ImagesCard() {
   const { user } = useAuth()
   const avatar = useImageUpload('/users/me/avatar', 'Photo mise à jour.')
@@ -117,6 +122,7 @@ function ImagesCard() {
   )
 }
 
+/** Formulaire de changement de mot de passe. */
 function PasswordForm() {
   const toast = useToast()
   const [current, setCurrent] = useState('')
@@ -184,6 +190,7 @@ function PasswordForm() {
   )
 }
 
+/** Page de profil : informations, images et mot de passe. */
 export default function ProfilePage() {
   return (
     <>

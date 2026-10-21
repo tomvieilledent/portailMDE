@@ -1,3 +1,5 @@
+"""Dépendances FastAPI : session de base de données, authentification et contrôle des droits."""
+
 from typing import Annotated
 
 from fastapi import Depends
@@ -21,6 +23,7 @@ def get_access_payload(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
     session: SessionDep,
 ) -> dict:
+    """Extrait et valide le jeton d'accès (type, expiration, révocation) et retourne ses claims."""
     if credentials is None:
         raise UnauthorizedError("Authentification requise")
     try:
@@ -35,6 +38,7 @@ def get_access_payload(
 def get_current_user(
     payload: Annotated[dict, Depends(get_access_payload)], session: SessionDep
 ) -> User:
+    """Retourne l'utilisateur authentifié, actif et non supprimé."""
     user = session.get(User, payload["sub"])
     if not user or not user.is_active or user.deleted_at is not None:
         raise UnauthorizedError("Utilisateur inactif ou introuvable")
@@ -48,6 +52,7 @@ def require_permission(permission: Permission):
     """Dépendance : l'utilisateur doit détenir ``permission`` (super admin inclus)."""
 
     def checker(user: CurrentUser) -> User:
+        """Vérifie que l'utilisateur courant détient la permission requise."""
         if not has_permission(user, permission):
             raise ForbiddenError("Droits insuffisants")
         return user
@@ -56,6 +61,7 @@ def require_permission(permission: Permission):
 
 
 def require_super_admin(user: CurrentUser) -> User:
+    """Dépendance : réserve la route au super administrateur."""
     if user.role != UserRole.SUPER_ADMIN:
         raise ForbiddenError("Réservé au super administrateur")
     return user

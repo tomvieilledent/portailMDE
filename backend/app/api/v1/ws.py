@@ -1,3 +1,5 @@
+"""Point d'entrée WebSocket des événements temps réel."""
+
 import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
@@ -34,6 +36,7 @@ async def websocket_endpoint(websocket: WebSocket, session: SessionDep, token: s
 
 
 def _authenticate(session, token: str) -> User | None:
+    """Retourne l'utilisateur correspondant au jeton d'accès, ou ``None`` s'il est invalide."""
     try:
         payload = decode_token(token, "access")
     except InvalidTokenError:

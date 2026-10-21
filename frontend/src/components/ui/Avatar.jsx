@@ -1,3 +1,5 @@
+/** Composant d'avatar (photo de profil ou initiales). */
+
 import { cn } from '../../lib/cn'
 
 const sizes = {

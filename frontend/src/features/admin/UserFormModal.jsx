@@ -1,3 +1,5 @@
+/** Modale de création d'un compte utilisateur. */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -7,6 +9,7 @@ import { Button, Input, Modal, Select, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
 import { PERMISSION_LABELS, ROLES } from './labels'
 
+/** Cases à cocher des droits du staff. */
 function PermissionCheckboxes({ value, onChange }) {
   return (
     <fieldset className="space-y-1">

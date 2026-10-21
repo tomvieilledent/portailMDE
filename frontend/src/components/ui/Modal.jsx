@@ -1,3 +1,5 @@
+/** Boîte de dialogue modale accessible. */
+
 import { X } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
 

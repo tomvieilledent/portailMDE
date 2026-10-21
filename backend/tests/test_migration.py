@@ -1,3 +1,5 @@
+"""Tests de la migration des données depuis l'ancienne base, de la création d'admin et du jeu de démo."""
+
 import sqlite3
 import uuid
 
@@ -67,6 +69,7 @@ CREATE TABLE site_content (key TEXT PRIMARY KEY, value TEXT, updated_at TEXT);
 
 @pytest.fixture
 def legacy_url(tmp_path):
+    """Crée une base SQLite de l'ancienne application et retourne son URL."""
     path = tmp_path / "legacy.db"
     old_hash = bcrypt.hashpw(b"ancien-mdp-123", bcrypt.gensalt(4)).decode()
     db = sqlite3.connect(path)
@@ -258,6 +261,7 @@ def legacy_url(tmp_path):
 
 
 def test_full_import(session, legacy_url):
+    """L'import complet reprend toutes les entités de l'ancienne base."""
     counts = LegacyImporter(legacy_url, session).run()
     assert counts["companies"] == 1
     assert counts["users"] == 4 and counts["users_ignorés_email_dupliqué"] == 1
@@ -287,6 +291,7 @@ def test_full_import(session, legacy_url):
 
 
 def test_conversations_and_messages(session, legacy_url):
+    """Les conversations et messages sont importés, dont les directs implicites."""
     counts = LegacyImporter(legacy_url, session).run()
     group = session.get(Conversation, uuid.UUID(ids["conv"]))
     assert group.kind == "group" and len(group.participants) == 3
@@ -302,6 +307,7 @@ def test_conversations_and_messages(session, legacy_url):
 
 
 def test_import_is_idempotent(session, legacy_url):
+    """Rejouer l'import ne crée aucun doublon."""
     LegacyImporter(legacy_url, session).run()
     second = LegacyImporter(legacy_url, session).run()
     assert sum(v for k, v in second.items() if not k.startswith(("users_", "invitations_"))) == 0
@@ -310,6 +316,7 @@ def test_import_is_idempotent(session, legacy_url):
 
 
 def test_migrated_users_can_log_in_with_old_password(client, session, legacy_url):
+    """Les utilisateurs migrés se connectent avec leur ancien mot de passe."""
     LegacyImporter(legacy_url, session).run()
     response = client.post(
         f"{API}/auth/login", json={"email": "bob@old.fr", "password": "ancien-mdp-123"}
@@ -325,6 +332,7 @@ def test_migrated_users_can_log_in_with_old_password(client, session, legacy_url
 
 
 def test_uploaded_files_are_copied(session, legacy_url, tmp_path):
+    """Les fichiers téléversés de l'ancienne application sont copiés."""
     uploads = tmp_path / "old_uploads"
     (uploads / "users" / "profile_pictures").mkdir(parents=True)
     (uploads / "users" / "profile_pictures" / "a.png").write_bytes(b"png")
@@ -336,6 +344,7 @@ def test_uploaded_files_are_copied(session, legacy_url, tmp_path):
 
 
 def test_create_admin(session):
+    """Création d'un super admin, avec refus des doublons."""
     user = create_admin(session, "Root@Site.fr", "motdepasse-solide")
     assert user.email == "root@site.fr" and user.role == "super_admin"
     with pytest.raises(ConflictError):
@@ -343,6 +352,7 @@ def test_create_admin(session):
 
 
 def test_seed_demo_is_idempotent_and_usable(client, session):
+    """Le jeu de démo est idempotent et utilisable."""
     first = seed_demo(session)
     assert first["entreprises"] == 4
     assert seed_demo(session) == {}
@@ -354,6 +364,7 @@ def test_seed_demo_is_idempotent_and_usable(client, session):
 
 
 def test_cli_seed_and_refuses_in_production(monkeypatch, capsys):
+    """La commande de seed est refusée en production."""
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.setenv("JWT_SECRET", "s" * 40)
     from app.core.config import get_settings

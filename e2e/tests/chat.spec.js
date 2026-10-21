@@ -1,9 +1,13 @@
+/** Tests E2E de la messagerie : discussion en temps réel entre deux utilisateurs. */
+
 import { expect, test } from '@playwright/test'
 
 import { login } from './helpers'
 
+/** Zone de discussion de la page. */
 const thread = (page) => page.getByRole('region', { name: 'Discussion' })
 
+/** Deux utilisateurs échangent des messages reçus en direct, sans rechargement. */
 test('deux utilisateurs discutent en temps réel', async ({ browser }) => {
   const leaCtx = await browser.newContext()
   const hugoCtx = await browser.newContext()

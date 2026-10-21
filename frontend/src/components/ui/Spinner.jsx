@@ -1,5 +1,8 @@
+/** Indicateur de chargement. */
+
 import { cn } from '../../lib/cn'
 
+/** Indicateur de chargement animé. */
 export default function Spinner({ className }) {
   return (
     <span

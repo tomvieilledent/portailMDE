@@ -41,6 +41,7 @@ logger = logging.getLogger(__name__)
 
 
 def _uuid(value) -> uuid.UUID | None:
+    """Convertit une valeur en UUID (``None`` si invalide)."""
     try:
         return uuid.UUID(str(value))
     except (ValueError, TypeError, AttributeError):
@@ -48,6 +49,7 @@ def _uuid(value) -> uuid.UUID | None:
 
 
 def _dt(value) -> datetime | None:
+    """Convertit une valeur en datetime avec fuseau UTC par défaut (``None`` si invalide)."""
     if value is None:
         return None
     if isinstance(value, datetime):
@@ -60,10 +62,12 @@ def _dt(value) -> datetime | None:
 
 
 def _csv(value) -> list[str]:
+    """Découpe une chaîne séparée par des virgules en liste de valeurs non vides."""
     return [part.strip() for part in str(value or "").split(",") if part.strip()]
 
 
 def _bool(value, default=False) -> bool:
+    """Convertit une valeur en booléen, avec une valeur par défaut si elle est absente."""
     return default if value is None else bool(value)
 
 
@@ -71,6 +75,7 @@ class LegacyImporter:
     """Lit une base héritée via la réflexion SQLAlchemy et alimente la nouvelle base."""
 
     def __init__(self, source_url: str, session: Session, uploads_dir: Path | None = None):
+        """Ouvre la base héritée (réflexion du schéma) et prépare les compteurs d'import."""
         self.engine = create_engine(source_url)
         self.metadata = MetaData()
         self.metadata.reflect(self.engine)
@@ -82,6 +87,7 @@ class LegacyImporter:
     # --- Utilitaires ---------------------------------------------------------------------
 
     def rows(self, table: str) -> list[dict]:
+        """Retourne les lignes d'une table héritée (liste vide si la table est absente)."""
         if table not in self.metadata.tables:
             logger.warning("Table héritée absente : %s", table)
             return []
@@ -89,9 +95,11 @@ class LegacyImporter:
             return [dict(r._mapping) for r in conn.execute(select(self.metadata.tables[table]))]
 
     def exists(self, model, pk) -> bool:
+        """Indique si une ligne de la nouvelle base existe déjà pour cette clé primaire."""
         return self.session.get(model, pk) is not None
 
     def add(self, label: str, obj) -> None:
+        """Ajoute un objet à la session et incrémente le compteur de son type."""
         self.session.add(obj)
         self.counts[label] += 1
 
@@ -116,6 +124,7 @@ class LegacyImporter:
     # --- Tables --------------------------------------------------------------------------
 
     def companies(self) -> None:
+        """Importe les entreprises."""
         for row in self.rows("companies"):
             pk = _uuid(row["id"])
             if not pk or self.exists(Company, pk):
@@ -136,6 +145,7 @@ class LegacyImporter:
         self.session.flush()
 
     def users(self) -> None:
+        """Importe les utilisateurs et leurs rattachements aux entreprises."""
         for row in self.rows("users"):
             pk = _uuid(row["id"])
             if not pk or self.exists(User, pk):
@@ -183,6 +193,7 @@ class LegacyImporter:
         self.user_ids |= set(self.session.scalars(select(User.id)).all())
 
     def trainings(self) -> None:
+        """Importe les formations."""
         for row in self.rows("trainings"):
             pk = _uuid(row["id"])
             if not pk or self.exists(Training, pk):
@@ -207,6 +218,7 @@ class LegacyImporter:
         self.session.flush()
 
     def _documents(self, raw) -> list[str]:
+        """Convertit les documents d'une formation héritée en chemins copiés."""
         if not raw:
             return []
         try:
@@ -222,6 +234,7 @@ class LegacyImporter:
         return documents
 
     def sessions(self) -> None:
+        """Importe les sessions de formation."""
         for row in self.rows("training_sessions"):
             pk = _uuid(row["id"])
             training_id = _uuid(row.get("training_id"))
@@ -249,6 +262,7 @@ class LegacyImporter:
         self.session.flush()
 
     def enrollments(self) -> None:
+        """Importe les inscriptions et marques d'intérêt aux formations."""
         seen: set[tuple[uuid.UUID, uuid.UUID]] = set()
         for row in self.rows("formation_users"):
             pk = _uuid(row["id"])
@@ -282,6 +296,7 @@ class LegacyImporter:
         self.session.flush()
 
     def events(self) -> None:
+        """Importe les événements de l'agenda."""
         for row in self.rows("events"):
             pk = _uuid(row["id"])
             if not pk or self.exists(Event, pk):
@@ -309,6 +324,7 @@ class LegacyImporter:
         self.session.flush()
 
     def invitations(self) -> None:
+        """Importe les invitations aux événements et aux sessions."""
         for row in self.rows("invitations"):
             pk = _uuid(row["id"])
             inviter, invitee = _uuid(row.get("inviter_id")), _uuid(row.get("invitee_id"))
@@ -342,7 +358,7 @@ class LegacyImporter:
         self.session.flush()
 
     def conversations(self) -> None:
-        """Conversations nommées (groupes) puis messages directs rattachés à une conversation."""
+        """Importe les conversations et leurs participants."""
         participants_table = {}
         for row in self.rows("conversation_participants"):
             participants_table.setdefault(row["conversation_id"], set()).add(_uuid(row["user_id"]))
@@ -375,6 +391,7 @@ class LegacyImporter:
         self.session.flush()
 
     def _direct_between(self, a: uuid.UUID, b: uuid.UUID) -> Conversation:
+        """Retourne la conversation directe entre deux utilisateurs, en la créant au besoin."""
         pair = {a, b}
         cache = self.__dict__.setdefault("_direct_cache", {})
         key = frozenset(pair)
@@ -388,6 +405,7 @@ class LegacyImporter:
         return cache[key]
 
     def messages(self) -> None:
+        """Importe les messages des conversations."""
         for row in self.rows("messages"):
             pk = _uuid(row["id"])
             author = _uuid(row.get("author_id"))
@@ -422,6 +440,7 @@ class LegacyImporter:
         self.session.flush()
 
     def notifications(self) -> None:
+        """Importe les notifications."""
         for row in self.rows("notifications"):
             pk = _uuid(row["id"])
             recipient = _uuid(row.get("recipient_id"))
@@ -440,6 +459,7 @@ class LegacyImporter:
         self.session.flush()
 
     def news(self) -> None:
+        """Importe les actualités."""
         for row in self.rows("news"):
             pk = _uuid(row["id"])
             url = row.get("url")
@@ -463,6 +483,7 @@ class LegacyImporter:
         self.session.flush()
 
     def saved_news(self) -> None:
+        """Importe les articles enregistrés par les utilisateurs."""
         for row in self.rows("saved_news"):
             pk = _uuid(row["id"])
             user_id = _uuid(row.get("user_id"))
@@ -489,6 +510,7 @@ class LegacyImporter:
         self.session.flush()
 
     def site_content(self) -> None:
+        """Importe les contenus éditoriaux du site."""
         for row in self.rows("site_content"):
             if self.exists(SiteContent, row["key"]):
                 continue

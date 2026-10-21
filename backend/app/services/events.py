@@ -1,3 +1,5 @@
+"""Agenda : événements, visibilité, invitations et export iCalendar."""
+
 import uuid
 from datetime import UTC, date, datetime
 
@@ -11,15 +13,18 @@ from app.services import invitations
 
 
 def _can_see_all(user: User) -> bool:
+    """Indique si l'utilisateur voit tous les événements (gestionnaire des formations)."""
     return has_permission(user, Permission.MANAGE_TRAININGS)
 
 
 def _visible_filter(user: User):
+    """Filtre des événements visibles : publics, créés par l'utilisateur ou auxquels il est invité."""
     invited = exists().where(Invitation.event_id == Event.id, Invitation.invitee_id == user.id)
     return or_(Event.is_public.is_(True), Event.created_by == user.id, invited)
 
 
 def get_event(session: Session, event_id: uuid.UUID, user: User) -> Event:
+    """Retourne un événement visible par l'utilisateur."""
     event = session.get(Event, event_id)
     if not event or event.deleted_at is not None:
         raise NotFoundError("Événement introuvable")
@@ -35,6 +40,7 @@ def get_event(session: Session, event_id: uuid.UUID, user: User) -> Event:
 def list_events(
     session: Session, user: User, *, start: date | None = None, end: date | None = None
 ) -> list[Event]:
+    """Liste les événements visibles sur une période."""
     query = select(Event).where(Event.deleted_at.is_(None))
     if not _can_see_all(user):
         query = query.where(_visible_filter(user))
@@ -46,6 +52,7 @@ def list_events(
 
 
 def create_event(session: Session, user: User, data) -> Event:
+    """Crée un événement et invite les participants indiqués."""
     values = data.model_dump(exclude={"invitee_ids"})
     event = Event(**values, created_by=user.id)
     session.add(event)
@@ -56,11 +63,13 @@ def create_event(session: Session, user: User, data) -> Event:
 
 
 def _ensure_owner(event: Event, user: User) -> None:
+    """Vérifie que l'utilisateur peut modifier l'événement (créateur ou gestionnaire)."""
     if event.created_by != user.id and not _can_see_all(user):
         raise ForbiddenError("Seul le créateur peut modifier cet événement")
 
 
 def update_event(session: Session, user: User, event_id: uuid.UUID, data) -> Event:
+    """Met à jour un événement (créateur ou gestionnaire)."""
     event = get_event(session, event_id, user)
     _ensure_owner(event, user)
     for field, value in data.model_dump(exclude_unset=True).items():
@@ -70,6 +79,7 @@ def update_event(session: Session, user: User, event_id: uuid.UUID, data) -> Eve
 
 
 def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:
+    """Supprime logiquement un événement (créateur ou gestionnaire)."""
     event = get_event(session, event_id, user)
     _ensure_owner(event, user)
     event.deleted_at = datetime.now(UTC)
@@ -77,12 +87,14 @@ def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:
 
 
 def invite_to_event(session: Session, user: User, event_id: uuid.UUID, user_ids):
+    """Invite des utilisateurs à un événement (créateur ou gestionnaire)."""
     event = get_event(session, event_id, user)
     _ensure_owner(event, user)
     return invitations.invite(session, user, user_ids, event_id=event.id, label=event.title)
 
 
 def list_event_invitations(session: Session, user: User, event_id: uuid.UUID) -> list[Invitation]:
+    """Liste les invitations d'un événement (créateur ou gestionnaire)."""
     event = get_event(session, event_id, user)
     _ensure_owner(event, user)
     return list(session.scalars(select(Invitation).where(Invitation.event_id == event.id)).all())

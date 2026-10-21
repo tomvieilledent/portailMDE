@@ -1,3 +1,5 @@
+"""Schémas de l'annuaire : fiches des personnes et des entreprises."""
+
 import uuid
 
 from pydantic import BaseModel, ConfigDict
@@ -6,6 +8,8 @@ from app.models.enums import CompanyKind
 
 
 class CompanyBrief(BaseModel):
+    """Résumé d'une entreprise (nom et logo)."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

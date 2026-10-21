@@ -1,3 +1,6 @@
+/** Utilitaires de calendrier et de dates. */
+
+/** Complète sur deux chiffres. */
 const pad = (n) => String(n).padStart(2, '0')
 
 /** Date locale au format `YYYY-MM-DD` (sans passer par l'UTC, qui décalerait le jour). */
@@ -23,11 +26,14 @@ export function buildMonthGrid(year, month) {
   return weeks
 }
 
+/** Jours de la semaine, du lundi au dimanche. */
 export const WEEKDAYS = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 
+/** Libellé « mois année ». */
 export const monthLabel = (year, month) =>
   new Date(year, month, 1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
 
+/** Date longue en français. */
 export const formatLongDate = (iso) =>
   new Date(`${iso}T00:00:00`).toLocaleDateString('fr-FR', {
     weekday: 'long',

@@ -1,3 +1,5 @@
+/** Page de la messagerie. */
+
 import { MessageSquare } from 'lucide-react'
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'

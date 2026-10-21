@@ -1,3 +1,5 @@
+"""Routes d'authentification : connexion, jetons, déconnexion et réinitialisation du mot de passe."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Response
@@ -17,11 +19,13 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/login", response_model=TokenPair)
 def login(body: LoginRequest, session: SessionDep):
+    """Authentifie un utilisateur et retourne une paire de jetons."""
     return auth_service.login(session, body.email, body.password)
 
 
 @router.post("/refresh", response_model=TokenPair)
 def refresh(body: RefreshRequest, session: SessionDep):
+    """Renouvelle la paire de jetons à partir d'un jeton de rafraîchissement."""
     return auth_service.refresh(session, body.refresh_token)
 
 
@@ -32,6 +36,7 @@ def logout(
     payload: Annotated[dict, Depends(get_access_payload)],
     body: RefreshRequest | None = None,
 ):
+    """Révoque le jeton d'accès courant (et le jeton de rafraîchissement fourni)."""
     auth_service.logout(session, payload, body.refresh_token if body else None)
     return Response(status_code=204)
 
@@ -45,5 +50,6 @@ def forgot_password(body: ForgotPasswordRequest, session: SessionDep):
 
 @router.post("/reset-password", status_code=204)
 def reset_password(body: ResetPasswordRequest, session: SessionDep):
+    """Définit un nouveau mot de passe à partir d'un jeton de réinitialisation."""
     auth_service.reset_password(session, body.token, body.new_password)
     return Response(status_code=204)

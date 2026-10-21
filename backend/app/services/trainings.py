@@ -16,6 +16,7 @@ from app.services import storage
 
 
 def _is_manager(user: User) -> bool:
+    """Indique si l'utilisateur gère les formations."""
     return has_permission(user, Permission.MANAGE_TRAININGS)
 
 
@@ -23,6 +24,7 @@ def _is_manager(user: User) -> bool:
 
 
 def get_training(session: Session, training_id: uuid.UUID, user: User) -> Training:
+    """Retourne une formation ; une formation inactive n'est visible que des gestionnaires."""
     training = session.get(Training, training_id)
     if not training or training.deleted_at is not None:
         raise NotFoundError("Formation introuvable")
@@ -41,6 +43,7 @@ def list_trainings(
     category: str | None = None,
     kind: TrainingKind | None = None,
 ) -> tuple[list[Training], int]:
+    """Liste les formations (actives uniquement pour les non-gestionnaires) avec recherche et filtres."""
     query = select(Training).where(Training.deleted_at.is_(None))
     if not _is_manager(user):
         query = query.where(Training.is_active.is_(True))
@@ -57,6 +60,7 @@ def list_trainings(
 
 
 def create_training(session: Session, data) -> Training:
+    """Crée une formation."""
     training = Training(**data.model_dump())
     session.add(training)
     session.commit()
@@ -64,6 +68,7 @@ def create_training(session: Session, data) -> Training:
 
 
 def update_training(session: Session, user: User, training_id: uuid.UUID, data) -> Training:
+    """Met à jour une formation."""
     training = get_training(session, training_id, user)
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(training, field, value)
@@ -72,6 +77,7 @@ def update_training(session: Session, user: User, training_id: uuid.UUID, data) 
 
 
 def set_training_active(session: Session, user: User, training_id: uuid.UUID, active: bool):
+    """Active ou désactive une formation."""
     training = get_training(session, training_id, user)
     training.is_active = active
     session.commit()
@@ -79,6 +85,7 @@ def set_training_active(session: Session, user: User, training_id: uuid.UUID, ac
 
 
 def delete_training(session: Session, user: User, training_id: uuid.UUID) -> None:
+    """Supprime logiquement une formation."""
     training = get_training(session, training_id, user)
     training.deleted_at = datetime.now(UTC)
     training.is_active = False
@@ -86,6 +93,7 @@ def delete_training(session: Session, user: User, training_id: uuid.UUID) -> Non
 
 
 def set_picture(session: Session, user: User, training_id: uuid.UUID, file: UploadFile):
+    """Remplace l'image de la formation et supprime l'ancien fichier."""
     training = get_training(session, training_id, user)
     new_path = storage.save_image(file, "trainings")
     old_path = training.picture_path
@@ -96,6 +104,7 @@ def set_picture(session: Session, user: User, training_id: uuid.UUID, file: Uplo
 
 
 def add_document(session: Session, user: User, training_id: uuid.UUID, file: UploadFile):
+    """Ajoute un document joint à la formation."""
     training = get_training(session, training_id, user)
     path, _ = storage.save_document(file, "trainings")
     training.documents = [*training.documents, path]
@@ -107,6 +116,7 @@ def add_document(session: Session, user: User, training_id: uuid.UUID, file: Upl
 
 
 def _enrollment(session: Session, user_id: uuid.UUID, training_id: uuid.UUID, create=False):
+    """Retourne l'inscription de l'utilisateur à la formation, en la créant si demandé."""
     enrollment = session.scalar(
         select(TrainingEnrollment).where(
             TrainingEnrollment.user_id == user_id, TrainingEnrollment.training_id == training_id
@@ -119,6 +129,7 @@ def _enrollment(session: Session, user_id: uuid.UUID, training_id: uuid.UUID, cr
 
 
 def set_interest(session: Session, user: User, training_id: uuid.UUID, interested: bool):
+    """Marque ou retire l'intérêt de l'utilisateur pour une formation."""
     training = get_training(session, training_id, user)
     enrollment = _enrollment(session, user.id, training.id, create=interested)
     if enrollment:
@@ -128,6 +139,7 @@ def set_interest(session: Session, user: User, training_id: uuid.UUID, intereste
 
 
 def list_interested(session: Session, training_id: uuid.UUID, user: User):
+    """Liste les utilisateurs intéressés par une formation."""
     training = get_training(session, training_id, user)
     return list(
         session.scalars(
@@ -140,6 +152,7 @@ def list_interested(session: Session, training_id: uuid.UUID, user: User):
 
 
 def my_enrollments(session: Session, user: User) -> list[TrainingEnrollment]:
+    """Liste les inscriptions et marques d'intérêt de l'utilisateur."""
     return list(
         session.scalars(
             select(TrainingEnrollment).where(TrainingEnrollment.user_id == user.id)
@@ -151,6 +164,7 @@ def my_enrollments(session: Session, user: User) -> list[TrainingEnrollment]:
 
 
 def _enrolled_count(session: Session, session_id: uuid.UUID) -> int:
+    """Compte les inscrits à une session."""
     return (
         session.scalar(
             select(func.count()).where(
@@ -163,6 +177,7 @@ def _enrolled_count(session: Session, session_id: uuid.UUID) -> int:
 
 
 def session_view(session: Session, ts: TrainingSession, user: User) -> SessionRead:
+    """Représentation d'une session avec le nombre d'inscrits et l'inscription de l'utilisateur."""
     view = SessionRead.model_validate(ts)
     view.enrolled_count = _enrolled_count(session, ts.id)
     view.is_enrolled = bool(
@@ -178,6 +193,7 @@ def session_view(session: Session, ts: TrainingSession, user: User) -> SessionRe
 
 
 def _session_visible(user: User):
+    """Filtre des sessions visibles : publiques, créées par l'utilisateur ou auxquelles il est invité."""
     invited = exists().where(
         Invitation.session_id == TrainingSession.id, Invitation.invitee_id == user.id
     )
@@ -185,6 +201,7 @@ def _session_visible(user: User):
 
 
 def get_session(session: Session, session_id: uuid.UUID, user: User) -> TrainingSession:
+    """Retourne une session visible par l'utilisateur."""
     ts = session.get(TrainingSession, session_id)
     if not ts:
         raise NotFoundError("Session introuvable")
@@ -204,6 +221,7 @@ def list_sessions(
     start: datetime | None = None,
     end: datetime | None = None,
 ) -> list[TrainingSession]:
+    """Liste les sessions visibles, filtrables par formation et par période."""
     query = (
         select(TrainingSession)
         .join(Training)
@@ -221,6 +239,7 @@ def list_sessions(
 
 
 def create_session(session: Session, user: User, training_id: uuid.UUID, data) -> TrainingSession:
+    """Crée une session pour une formation."""
     training = get_training(session, training_id, user)
     ts = TrainingSession(training_id=training.id, created_by=user.id, **data.model_dump())
     session.add(ts)
@@ -229,6 +248,7 @@ def create_session(session: Session, user: User, training_id: uuid.UUID, data) -
 
 
 def update_session(session: Session, user: User, session_id: uuid.UUID, data) -> TrainingSession:
+    """Met à jour une session (capacité et dates contrôlées)."""
     ts = get_session(session, session_id, user)
     values = data.model_dump(exclude_unset=True)
     if "max_participants" in values and values["max_participants"] < _enrolled_count(
@@ -244,12 +264,14 @@ def update_session(session: Session, user: User, session_id: uuid.UUID, data) ->
 
 
 def delete_session(session: Session, user: User, session_id: uuid.UUID) -> None:
+    """Supprime une session."""
     ts = get_session(session, session_id, user)
     session.delete(ts)
     session.commit()
 
 
 def enroll(session: Session, user: User, session_id: uuid.UUID) -> TrainingEnrollment:
+    """Inscrit l'utilisateur à une session, dans la limite des places disponibles."""
     ts = get_session(session, session_id, user)
     if ts.status in (SessionStatus.DONE, SessionStatus.CANCELLED):
         raise AppError("Les inscriptions à cette session sont closes")
@@ -269,6 +291,7 @@ def enroll(session: Session, user: User, session_id: uuid.UUID) -> TrainingEnrol
 
 
 def unenroll(session: Session, user: User, session_id: uuid.UUID) -> None:
+    """Annule l'inscription de l'utilisateur à une session."""
     ts = get_session(session, session_id, user)
     enrollment = _enrollment(session, user.id, ts.training_id)
     if not enrollment or enrollment.session_id != ts.id or not enrollment.enrolled_at:
@@ -279,6 +302,7 @@ def unenroll(session: Session, user: User, session_id: uuid.UUID) -> None:
 
 
 def list_enrollments(session: Session, user: User, session_id: uuid.UUID):
+    """Liste les inscrits à une session."""
     ts = get_session(session, session_id, user)
     return list(
         session.scalars(
@@ -293,6 +317,7 @@ def list_enrollments(session: Session, user: User, session_id: uuid.UUID):
 def mark_completed(
     session: Session, user: User, session_id: uuid.UUID, user_id: uuid.UUID
 ) -> TrainingEnrollment:
+    """Marque la participation d'un utilisateur à une session comme terminée."""
     ts = get_session(session, session_id, user)
     enrollment = _enrollment(session, user_id, ts.training_id)
     if not enrollment or enrollment.session_id != ts.id:

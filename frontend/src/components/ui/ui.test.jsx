@@ -1,3 +1,5 @@
+/** Tests des composants d'interface réutilisables. */
+
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
@@ -14,6 +16,7 @@ import {
   useToast,
 } from './index'
 
+/** Bouton : clic et état de chargement. */
 describe('Button', () => {
   it('désactive pendant le chargement', () => {
     render(<Button loading>Envoyer</Button>)
@@ -22,6 +25,7 @@ describe('Button', () => {
   })
 })
 
+/** Champ de saisie : libellé et erreur. */
 describe('Input', () => {
   it("relie le libellé et l'erreur au champ", () => {
     render(<Input label="Email" error="Email invalide" />)
@@ -31,6 +35,7 @@ describe('Input', () => {
   })
 })
 
+/** Modale : ouverture, fermeture et focus. */
 describe('Modal', () => {
   function Demo({ onClose }) {
     const [open, setOpen] = useState(true)
@@ -63,6 +68,7 @@ describe('Modal', () => {
   })
 })
 
+/** Notifications éphémères. */
 describe('Toast', () => {
   it('affiche puis retire le message', () => {
     vi.useFakeTimers()
@@ -83,6 +89,7 @@ describe('Toast', () => {
   })
 })
 
+/** Avatar : photo et initiales. */
 describe('Avatar', () => {
   it('affiche les initiales sans photo', () => {
     render(<Avatar firstName="Ada" lastName="Lovelace" />)
@@ -95,6 +102,7 @@ describe('Avatar', () => {
   })
 })
 
+/** Pagination : navigation entre pages. */
 describe('Pagination', () => {
   it('navigue entre les pages', async () => {
     const onChange = vi.fn()

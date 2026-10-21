@@ -1,3 +1,5 @@
+/** Routage de l'application : routes publiques (connexion, mot de passe) et pages protégées par rôle. */
+
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { useAuth } from './auth/AuthProvider'
@@ -26,6 +28,7 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import LoginPage from './pages/auth/LoginPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
 
+/** Structure commune des pages connectées, avec menu filtré selon les droits de l'utilisateur. */
 function Shell() {
   const { user } = useAuth()
   const items = navItems.filter(
@@ -47,6 +50,7 @@ function Shell() {
   )
 }
 
+/** Déclaration des routes de l'application. */
 export default function App() {
   const { user } = useAuth()
   return (

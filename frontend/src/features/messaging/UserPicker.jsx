@@ -1,3 +1,5 @@
+/** Sélecteur de personnes de la messagerie. */
+
 import { useQuery } from '@tanstack/react-query'
 import { Check } from 'lucide-react'
 

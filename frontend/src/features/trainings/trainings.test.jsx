@@ -1,3 +1,5 @@
+/** Tests du catalogue et des fiches de formation. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -56,6 +58,7 @@ const session = {
 }
 
 let mineData
+/** Affiche la page avec l'utilisateur et les sessions donnés. */
 function setup(path, user = member, sessions = [session]) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   api.get.mockImplementation(async (url) => {
@@ -92,6 +95,7 @@ beforeEach(() => {
   mineData = []
 })
 
+/** Liste, filtres et favoris. */
 describe('catalogue', () => {
   it('liste et filtre les formations', async () => {
     setup('/formations')
@@ -154,6 +158,7 @@ describe('catalogue', () => {
   })
 })
 
+/** Détail, sessions et inscription. */
 describe('fiche formation', () => {
   it('affiche description, documents et sessions', async () => {
     setup('/formations/t1')

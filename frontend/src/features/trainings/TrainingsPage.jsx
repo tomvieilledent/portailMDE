@@ -1,3 +1,5 @@
+/** Page du catalogue des formations. */
+
 import { GraduationCap, Plus, Search } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'

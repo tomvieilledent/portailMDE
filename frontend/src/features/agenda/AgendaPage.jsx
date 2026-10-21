@@ -1,3 +1,5 @@
+/** Page de l'agenda mensuel. */
+
 import { ChevronLeft, ChevronRight, Download, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 

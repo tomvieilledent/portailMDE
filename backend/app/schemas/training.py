@@ -1,3 +1,5 @@
+"""Schémas des formations, sessions et inscriptions."""
+
 import uuid
 from datetime import datetime
 
@@ -8,6 +10,8 @@ from app.schemas.chat import UserBrief
 
 
 class TrainingRead(BaseModel):
+    """Formation en lecture."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -23,6 +27,8 @@ class TrainingRead(BaseModel):
 
 
 class TrainingCreate(BaseModel):
+    """Création d'une formation."""
+
     title: str = Field(min_length=1, max_length=200)
     description: str | None = None
     category: str | None = Field(None, max_length=100)
@@ -31,6 +37,8 @@ class TrainingCreate(BaseModel):
 
 
 class TrainingUpdate(BaseModel):
+    """Modification partielle d'une formation."""
+
     title: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = None
     category: str | None = Field(None, max_length=100)
@@ -39,6 +47,8 @@ class TrainingUpdate(BaseModel):
 
 
 class SessionRead(BaseModel):
+    """Session en lecture, avec le nombre d'inscrits et l'inscription de l'utilisateur courant."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
@@ -56,6 +66,8 @@ class SessionRead(BaseModel):
 
 
 class SessionCreate(BaseModel):
+    """Création d'une session."""
+
     start_at: datetime
     end_at: datetime
     max_participants: int = Field(gt=0)
@@ -65,12 +77,15 @@ class SessionCreate(BaseModel):
 
     @model_validator(mode="after")
     def _dates(self):
+        """Vérifie que la fin de la session n'est pas antérieure à son début."""
         if self.end_at < self.start_at:
             raise ValueError("end_at doit être postérieure à start_at")
         return self
 
 
 class SessionUpdate(BaseModel):
+    """Modification partielle d'une session."""
+
     start_at: datetime | None = None
     end_at: datetime | None = None
     max_participants: int | None = Field(None, gt=0)
@@ -81,6 +96,8 @@ class SessionUpdate(BaseModel):
 
 
 class EnrollmentRead(BaseModel):
+    """Inscription (ou marque d'intérêt) à une formation en lecture."""
+
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID

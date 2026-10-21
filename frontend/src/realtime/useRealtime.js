@@ -1,3 +1,5 @@
+/** Hook d'abonnement aux événements temps réel. */
+
 import { useContext, useEffect, useRef } from 'react'
 
 import { RealtimeContext } from './context'
