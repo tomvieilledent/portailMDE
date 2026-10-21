@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portail MDE — le réseau d'une pépinière d'entreprises</title>
+<meta name="description" content="Portail MDE : annuaire, messagerie en temps réel, agenda, formations et actualités pour les entreprises d'une pépinière. Projet de Tom Vieilledent." />
+<link rel="canonical" href="https://vlldnt.fr/portail-mde/" />
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<meta name="theme-color" content="#0f4c81" />
+<style>
+:root{--bg:#f8fafc;--card:#fff;--text:#1e293b;--muted:#475569;--border:#e2e8f0;--heading:#0a2f52;--accent:#0f4c81;--accent-text:#fff;color-scheme:light dark}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1220;--card:#111a2e;--text:#e2e8f0;--muted:#a3b2c8;--border:#1f2c47;--heading:#f1f5f9;--accent:#60a5fa;--accent-text:#0b1220}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.65}
+a{color:var(--accent)}img{max-width:100%;height:auto;display:block}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+.wrap{max-width:62rem;margin:0 auto;padding:0 20px}
+header{padding:18px 0}header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-weight:700;font-size:1.15rem;color:var(--heading);text-decoration:none}
+.brand img{width:30px;height:30px;border-radius:7px}
+nav a{color:var(--muted);text-decoration:none;font-size:.95rem;margin-left:18px}nav a:hover{color:var(--heading);text-decoration:underline}
+.hero{padding:clamp(36px,7vw,80px) 0 clamp(24px,5vw,44px);text-align:center}
+.badge{display:inline-block;padding:6px 14px;border-radius:999px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-size:.85rem;font-weight:600}
+h1{margin:18px auto 0;max-width:22ch;font-size:clamp(2.1rem,6.5vw,3.5rem);line-height:1.1;letter-spacing:-.02em;color:var(--heading)}
+.lead{margin:20px auto 0;max-width:40rem;font-size:clamp(1.02rem,2.3vw,1.15rem);color:var(--muted)}
+.cta{margin-top:28px;display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.btn{display:inline-block;padding:12px 24px;border-radius:999px;font-weight:600;text-decoration:none;border:1px solid var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-text)}.btn.ghost{color:var(--heading);border-color:var(--border);background:transparent}
+.shot{margin-top:clamp(28px,5vw,48px);border:1px solid var(--border);border-radius:16px;overflow:hidden;background:var(--card)}
+section{padding:clamp(28px,5vw,56px) 0}
+h2{margin:0 0 10px;font-size:clamp(1.5rem,4vw,2rem);color:var(--heading)}
+.sub{margin:0 0 26px;color:var(--muted);max-width:42rem}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+.card h3{margin:0 0 6px;font-size:1.05rem;color:var(--heading)}.card p{margin:0;color:var(--muted);font-size:.96rem}
+.stack{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:0;list-style:none}
+.stack li{padding:6px 14px;border:1px solid var(--border);border-radius:999px;background:var(--card);font-size:.92rem}
+footer{padding:32px 0 48px;color:var(--muted);font-size:.92rem;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="./"><img src="./favicon.svg" alt="" width="30" height="30" />Portail MDE</a>
+  <nav aria-label="Navigation principale"><a href="#fonctionnalites">Fonctionnalités</a><a href="#technique">Technique</a><a href="https://github.com/tomvieilledent/portailMDE">GitHub</a></nav>
+</div></header>
+<main>
+<div class="hero"><div class="wrap">
+  <span class="badge">Projet en production</span>
+  <h1>Le réseau numérique d'une pépinière d'entreprises</h1>
+  <p class="lead">Un portail unique pour que les entreprises hébergées se trouvent, échangent, s'inscrivent aux formations et suivent la vie de la pépinière.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://portail-mde.vlldnt.fr">Ouvrir le portail</a>
+    <a class="btn ghost" href="https://github.com/tomvieilledent/portailMDE">Code source sur GitHub</a>
+  </div>
+  <div class="shot"><img src="./portfolio.png" width="1440" height="900" alt="Page d'accueil du portail MDE" /></div>
+</div></div>
+
+<section id="fonctionnalites"><div class="wrap">
+  <h2>Fonctionnalités</h2>
+  <p class="sub">Pensé pour les équipes de la pépinière comme pour les entreprises accueillies.</p>
+  <div class="grid">
+    <div class="card"><h3>Annuaire</h3><p>Trombinoscope des personnes et des entreprises, avec recherche et fiches détaillées.</p></div>
+    <div class="card"><h3>Messagerie</h3><p>Conversations directes et de groupe en temps réel, pièces jointes et notifications.</p></div>
+    <div class="card"><h3>Agenda</h3><p>Événements, invitations avec réponse, et export au format calendrier.</p></div>
+    <div class="card"><h3>Formations</h3><p>Catalogue, sessions, intérêt et inscriptions, avec suivi pour les gestionnaires.</p></div>
+    <div class="card"><h3>Actualités</h3><p>Flux d'actualités de la pépinière et articles enregistrés en favoris.</p></div>
+    <div class="card"><h3>Administration</h3><p>Rôles et droits fins, gestion des entreprises et des comptes, contenu éditable.</p></div>
+  </div>
+</div></section>
+
+<section id="technique"><div class="wrap">
+  <h2>Sous le capot</h2>
+  <p class="sub">API REST et WebSocket, authentification JWT, suite de tests complète et déploiement automatisé.</p>
+  <ul class="stack" aria-label="Technologies">
+    <li>FastAPI</li><li>SQLAlchemy 2</li><li>PostgreSQL</li><li>React</li><li>Vite</li><li>Tailwind CSS</li><li>Docker Compose</li><li>GitHub Actions</li><li>Playwright</li>
+  </ul>
+</div></section>
+</main>
+<footer><div class="wrap">
+  Conçu et développé par Tom Vieilledent · <a href="https://github.com/tomvieilledent/portailMDE">Dépôt GitHub</a> · <a href="https://vlldnt.fr">vlldnt.fr</a>
+</div></footer>
+</body>
+</html>
