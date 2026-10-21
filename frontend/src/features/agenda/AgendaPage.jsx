@@ -105,7 +105,7 @@ export default function AgendaPage() {
                 key={day.iso}
                 role="cell"
                 className={cn(
-                  'min-h-20 border-r border-b border-slate-100 p-1 sm:min-h-28 dark:border-slate-800',
+                  'h-[4.5rem] overflow-hidden border-r border-b border-slate-100 p-1 dark:border-slate-800',
                   !day.inMonth && 'bg-slate-50 text-slate-500 dark:bg-slate-950/40',
                 )}
               >
@@ -126,7 +126,7 @@ export default function AgendaPage() {
                   {day.date.getDate()}
                 </button>
                 <ul className="space-y-0.5">
-                  {(byDay.get(day.iso) ?? []).map((event) => (
+                  {(byDay.get(day.iso) ?? []).slice(0, 2).map((event) => (
                     <li key={event.id}>
                       <button
                         type="button"
@@ -139,6 +139,11 @@ export default function AgendaPage() {
                     </li>
                   ))}
                 </ul>
+                {(byDay.get(day.iso)?.length ?? 0) > 2 && (
+                  <p className="px-1 text-[10px] text-slate-500">
+                    +{byDay.get(day.iso).length - 2} autre(s)
+                  </p>
+                )}
               </div>
             ))}
           </div>
