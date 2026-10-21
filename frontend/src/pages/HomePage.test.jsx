@@ -51,4 +51,13 @@ describe('HomePage', () => {
     expect(screen.getByRole('heading', { name: "De l'idée à la création" })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Incubateur' })).toBeInTheDocument()
   })
+
+  it('affiche un numéro de contact cliquable', async () => {
+    api.get.mockRejectedValue(new Error('réseau'))
+    renderHome()
+    const links = screen.getAllByRole('link', {
+      name: /Pour plus de renseignements, appelez le 00 00 00 00 00/,
+    })
+    expect(links[0]).toHaveAttribute('href', 'tel:0000000000')
+  })
 })
