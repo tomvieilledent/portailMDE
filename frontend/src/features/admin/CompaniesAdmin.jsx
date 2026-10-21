@@ -18,6 +18,7 @@ import {
 import { api } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { COMPANY_KINDS } from '../directory/labels'
+import UserPicker from '../messaging/UserPicker'
 
 const PAGE = 25
 
@@ -32,6 +33,7 @@ function CompanyFormModal({ company, onClose }) {
     website_url: company?.website_url ?? '',
     kind: company?.kind ?? 'company',
   })
+  const [owner, setOwner] = useState([]) // propriétaire (création uniquement)
   const save = useMutation({
     mutationFn: () => {
       const body = {
@@ -41,7 +43,9 @@ function CompanyFormModal({ company, onClose }) {
         website_url: values.website_url.trim() || null,
         kind: values.kind,
       }
-      return company ? api.patch(`/companies/${company.id}`, body) : api.post('/companies', body)
+      return company
+        ? api.patch(`/companies/${company.id}`, body)
+        : api.post('/companies', { ...body, owner_id: owner[0] })
     },
     onSuccess: () => {
       toast.success(company ? 'Entreprise modifiée.' : 'Entreprise créée.')
@@ -77,11 +81,20 @@ function CompanyFormModal({ company, onClose }) {
           <Input label="Localisation" {...bind('location')} />
           <Input label="Site web" type="url" placeholder="https://" {...bind('website_url')} />
         </div>
+        {!company && (
+          <fieldset className="space-y-2">
+            <legend className="text-sm font-medium">Propriétaire de l'entreprise</legend>
+            <p className="text-xs text-slate-500">
+              Choisissez un compte existant : il devient administrateur de cette entreprise.
+            </p>
+            <UserPicker selected={owner} onChange={setOwner} single />
+          </fieldset>
+        )}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Annuler
           </Button>
-          <Button type="submit" loading={save.isPending}>
+          <Button type="submit" loading={save.isPending} disabled={!company && owner.length === 0}>
             Enregistrer
           </Button>
         </div>

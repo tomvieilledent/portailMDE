@@ -125,6 +125,27 @@ describe('authentification', () => {
     expect(tokens.access).toBeNull()
   })
 
+  it('force le changement du mot de passe temporaire', async () => {
+    tokens.set({ access_token: 'A', refresh_token: 'R' })
+    mockMe({ ...member, must_change_password: true })
+    api.post.mockResolvedValue(null)
+    renderApp('/annuaire')
+    expect(
+      await screen.findByRole('heading', { name: 'Choisissez votre mot de passe' }),
+    ).toBeInTheDocument()
+    await userEvent.type(screen.getByLabelText(/^Mot de passe temporaire/), 'Temp-pass-1')
+    await userEvent.type(screen.getByLabelText(/^Nouveau mot de passe/), 'brandnewpass1')
+    await userEvent.type(screen.getByLabelText(/^Confirmation/), 'brandnewpass1')
+    await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith('/users/me/password', {
+        current_password: 'Temp-pass-1',
+        new_password: 'brandnewpass1',
+      }),
+    )
+    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
+  })
+
   it('vide la session si /users/me échoue', async () => {
     tokens.set({ access_token: 'A', refresh_token: 'R' })
     api.get.mockRejectedValue(new ApiError(401, 'UNAUTHORIZED', 'x'))
