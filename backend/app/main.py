@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from starlette.responses import Response
 
 from app.api import health
 from app.api.v1 import api_router
@@ -13,6 +14,20 @@ from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
 from app.services.scheduler import start_scheduler
 from app.services.storage import PUBLIC_UPLOAD_CATEGORIES, upload_root
+
+_INLINE_EXTENSIONS = (".png", ".jpg", ".jpeg", ".gif", ".webp")
+
+
+class UploadFiles(StaticFiles):
+    """Fichiers publics : images affichées en ligne, tout autre document forcé en téléchargement."""
+
+    async def get_response(self, path: str, scope) -> Response:
+        """Ajoute ``nosniff`` et ``Content-Disposition: attachment`` hors images."""
+        response = await super().get_response(path, scope)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        if not path.lower().endswith(_INLINE_EXTENSIONS):
+            response.headers["Content-Disposition"] = "attachment"
+        return response
 
 
 @asynccontextmanager
@@ -45,7 +60,7 @@ def create_app() -> FastAPI:
     for category in PUBLIC_UPLOAD_CATEGORIES:
         directory = upload_root() / category
         directory.mkdir(parents=True, exist_ok=True)
-        app.mount(f"/uploads/{category}", StaticFiles(directory=directory), name=category)
+        app.mount(f"/uploads/{category}", UploadFiles(directory=directory), name=category)
     return app
 
 

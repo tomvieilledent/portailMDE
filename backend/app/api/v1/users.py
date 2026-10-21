@@ -13,6 +13,7 @@ from app.api.deps import (
     require_super_admin,
 )
 from app.core.permissions import Permission
+from app.schemas.auth import TokenPair
 from app.schemas.common import Page
 from app.schemas.user import (
     CompanyAdminUpdate,
@@ -22,6 +23,7 @@ from app.schemas.user import (
     UserRead,
     UserUpdate,
 )
+from app.services import auth as auth_service
 from app.services import users as service
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -61,17 +63,30 @@ def update_me(body: UserUpdate, session: SessionDep, current: CurrentUser):
     return service.update_profile(session, current, body)
 
 
-@router.post("/me/password", status_code=204)
-def change_my_password(body: PasswordChange, session: SessionDep, current: PendingUser):
-    """Change le mot de passe de l'utilisateur courant."""
-    service.change_password(session, current, body.current_password, body.new_password)
+@router.get("/me/export")
+def export_me(session: SessionDep, current: CurrentUser):
+    """Exporte les données personnelles de l'utilisateur courant (JSON)."""
+    return service.export_personal_data(session, current)
+
+
+@router.delete("/me", status_code=204)
+def delete_me(session: SessionDep, current: CurrentUser):
+    """Efface le compte de l'utilisateur courant (anonymisation)."""
+    service.delete_own_account(session, current)
     return Response(status_code=204)
 
 
+@router.post("/me/password", response_model=TokenPair)
+def change_my_password(body: PasswordChange, session: SessionDep, current: PendingUser):
+    """Change le mot de passe ; les autres sessions sont révoquées, une nouvelle paire est émise."""
+    service.change_password(session, current, body.current_password, body.new_password)
+    return auth_service.issue_pair(current)
+
+
 @router.get("/{user_id}", response_model=UserRead)
-def read_user(user_id: uuid.UUID, session: SessionDep, _: CurrentUser):
-    """Retourne le profil d'un utilisateur."""
-    return service.get_user(session, user_id)
+def read_user(user_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Retourne le profil d'un utilisateur (soi-même, gestionnaire ou admin de son entreprise)."""
+    return service.get_user_for(session, current, user_id)
 
 
 @router.patch("/{user_id}", response_model=UserRead)

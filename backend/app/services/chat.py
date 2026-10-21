@@ -173,10 +173,13 @@ def _last_message(session: Session, conversation: Conversation) -> Message | Non
     )
 
 
-def to_read(session: Session, conversation: Conversation, actor: User) -> ConversationRead:
-    """Construit la représentation de lecture d'une conversation pour l'utilisateur."""
-    users = session.scalars(select(User).where(User.id.in_(participant_ids(conversation)))).all()
-    last = _last_message(session, conversation)
+def _build_read(
+    conversation: Conversation,
+    users: list[User],
+    last: Message | None,
+    unread: int,
+) -> ConversationRead:
+    """Assemble la représentation de lecture d'une conversation."""
     return ConversationRead(
         id=conversation.id,
         kind=conversation.kind,
@@ -184,23 +187,96 @@ def to_read(session: Session, conversation: Conversation, actor: User) -> Conver
         creator_id=conversation.creator_id,
         participants=[UserBrief.model_validate(u) for u in users],
         last_message=MessageRead.model_validate(last) if last else None,
-        unread_count=_unread_count(session, conversation, actor),
+        unread_count=unread,
         created_at=conversation.created_at,
     )
 
 
+def to_read(session: Session, conversation: Conversation, actor: User) -> ConversationRead:
+    """Construit la représentation de lecture d'une conversation pour l'utilisateur."""
+    users = session.scalars(select(User).where(User.id.in_(participant_ids(conversation)))).all()
+    last = _last_message(session, conversation)
+    return _build_read(conversation, list(users), last, _unread_count(session, conversation, actor))
+
+
+MAX_CONVERSATIONS = 200
+
+
 def list_conversations(session: Session, actor: User) -> list[ConversationRead]:
-    """Liste les conversations de l'utilisateur, la plus récente activité en premier."""
-    conversations = session.scalars(
-        select(Conversation)
-        .join(ConversationParticipant)
-        .where(ConversationParticipant.user_id == actor.id)
-        .options(selectinload(Conversation.participants))
-    ).all()
-    reads = [to_read(session, c, actor) for c in conversations]
-    reads.sort(
-        key=lambda r: r.last_message.created_at if r.last_message else r.created_at, reverse=True
+    """Liste les conversations de l'utilisateur (les plus récentes d'abord, 200 au maximum).
+
+    Utilisateurs, derniers messages et non-lus sont chargés en une requête chacun.
+    """
+    last_activity = (
+        select(Message.conversation_id, func.max(Message.created_at).label("last_at"))
+        .where(Message.deleted_at.is_(None))
+        .group_by(Message.conversation_id)
+        .subquery()
     )
+    conversations = list(
+        session.scalars(
+            select(Conversation)
+            .join(ConversationParticipant)
+            .outerjoin(last_activity, last_activity.c.conversation_id == Conversation.id)
+            .where(ConversationParticipant.user_id == actor.id)
+            .order_by(func.coalesce(last_activity.c.last_at, Conversation.created_at).desc())
+            .limit(MAX_CONVERSATIONS)
+            .options(selectinload(Conversation.participants))
+        ).all()
+    )
+    if not conversations:
+        return []
+    ids = [c.id for c in conversations]
+
+    user_ids = {uid for c in conversations for uid in participant_ids(c)}
+    users = {u.id: u for u in session.scalars(select(User).where(User.id.in_(user_ids))).all()}
+
+    ranked = (
+        select(
+            Message.id,
+            func.row_number()
+            .over(partition_by=Message.conversation_id, order_by=Message.created_at.desc())
+            .label("rn"),
+        )
+        .where(Message.conversation_id.in_(ids), Message.deleted_at.is_(None))
+        .subquery()
+    )
+    last_messages = {
+        m.conversation_id: m
+        for m in session.scalars(
+            select(Message).join(ranked, Message.id == ranked.c.id).where(ranked.c.rn == 1)
+        ).all()
+    }
+
+    unread_rows = session.execute(
+        select(Message.conversation_id, func.count())
+        .join(
+            ConversationParticipant,
+            (ConversationParticipant.conversation_id == Message.conversation_id)
+            & (ConversationParticipant.user_id == actor.id),
+        )
+        .where(
+            Message.conversation_id.in_(ids),
+            Message.deleted_at.is_(None),
+            Message.author_id != actor.id,
+            Message.created_at
+            > func.coalesce(
+                ConversationParticipant.last_read_at, ConversationParticipant.joined_at
+            ),
+        )
+        .group_by(Message.conversation_id)
+    ).all()
+    unread = {cid: count for cid, count in unread_rows}
+
+    reads = [
+        _build_read(
+            c,
+            [users[uid] for uid in participant_ids(c) if uid in users],
+            last_messages.get(c.id),
+            unread.get(c.id, 0),
+        )
+        for c in conversations
+    ]
     return reads
 
 

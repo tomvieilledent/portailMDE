@@ -6,6 +6,7 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthProvider'
 import { Button, Input, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
+import { tokens } from '../../lib/tokens'
 import AuthShell from './AuthShell'
 
 /** Formulaire demandant à l'utilisateur de remplacer son mot de passe temporaire. */
@@ -29,7 +30,12 @@ export default function ChangePasswordPage() {
     setError('')
     setLoading(true)
     try {
-      await api.post('/users/me/password', { current_password: current, new_password: next })
+      // Les anciens jetons sont révoqués : l'API renvoie une nouvelle paire.
+      const pair = await api.post('/users/me/password', {
+        current_password: current,
+        new_password: next,
+      })
+      if (pair?.access_token) tokens.set(pair)
       setUser({ ...user, must_change_password: false })
       toast.success('Mot de passe modifié.')
       navigate('/annuaire', { replace: true })

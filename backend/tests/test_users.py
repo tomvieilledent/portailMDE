@@ -35,7 +35,12 @@ def test_change_password(client, make_user, login):
         headers=headers,
         json={"current_password": "password123", "new_password": "newpassword1"},
     )
-    assert ok.status_code == 204
+    assert ok.status_code == 200
+    assert ok.json()["access_token"]
+    # L'ancienne session est révoquée ; la nouvelle paire fonctionne.
+    assert client.get(f"{API}/me", headers=headers).status_code == 401
+    new_headers = {"Authorization": f"Bearer {ok.json()['access_token']}"}
+    assert client.get(f"{API}/me", headers=new_headers).status_code == 200
     login(password="newpassword1")
 
 
@@ -80,9 +85,11 @@ def test_created_user_must_change_temporary_password(
         headers=headers,
         json={"current_password": "Temp-pass-1", "new_password": "Brand-new-pass-2"},
     )
-    assert changed.status_code == 204
-    assert client.get("/api/v1/directory/people", headers=headers).status_code == 200
-    assert client.get(f"{API}/me", headers=headers).json()["must_change_password"] is False
+    assert changed.status_code == 200
+    # Les anciens jetons sont révoqués ; la nouvelle paire donne accès au portail.
+    fresh = {"Authorization": f"Bearer {changed.json()['access_token']}"}
+    assert client.get("/api/v1/directory/people", headers=fresh).status_code == 200
+    assert client.get(f"{API}/me", headers=fresh).json()["must_change_password"] is False
 
 
 def test_super_admin_creates_user(client, make_user, login):
@@ -196,3 +203,53 @@ def test_deleted_user_cannot_login(client, make_user, login):
     client.delete(f"{API}/{target.id}", headers=login("root@x.fr"))
     bad = client.post("/api/v1/auth/login", json={"email": "t@x.fr", "password": "password123"})
     assert bad.status_code == 401
+
+
+def test_export_own_data(client, make_user, login):
+    """L'utilisateur exporte ses données personnelles."""
+    make_user(first_name="Ada", phone="0102030405")
+    response = client.get(f"{API}/me/export", headers=login())
+    assert response.status_code == 200
+    assert response.json()["profile"]["first_name"] == "Ada"
+
+
+def test_delete_own_account_anonymizes(client, make_user, login, session):
+    """L'auto-suppression anonymise les données personnelles."""
+    make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
+    target = make_user("t@x.fr", first_name="Ada", phone="0102030405", job_title="CTO")
+    headers = login("t@x.fr")
+    assert client.delete(f"{API}/me", headers=headers).status_code == 204
+    session.refresh(target)
+    assert target.deleted_at is not None
+    assert target.email != "t@x.fr"
+    assert target.phone is None and target.job_title is None and target.last_name is None
+    assert target.first_name != "Ada"
+
+
+def test_delete_own_account_erases_messages(client, make_user, login, session):
+    """L'auto-suppression efface le contenu des messages et détache l'auteur."""
+    from app.models import Conversation, Message
+
+    make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
+    target = make_user("t@x.fr")
+    conversation = Conversation(kind="group")
+    session.add(conversation)
+    session.flush()
+    message = Message(
+        conversation_id=conversation.id, author_id=target.id, content="secret", file_name="a.pdf"
+    )
+    session.add(message)
+    session.commit()
+    assert client.delete(f"{API}/me", headers=login("t@x.fr")).status_code == 204
+    session.refresh(message)
+    assert message.content == "" and message.file_name is None
+    assert message.author_id is None and message.deleted_at is not None
+
+
+def test_read_other_user_requires_rights(client, make_user, login):
+    """Un membre ne peut pas lire le profil complet d'un autre utilisateur, mais lit le sien."""
+    me = make_user(email="me@example.fr")
+    other = make_user(email="other@example.fr")
+    headers = login(email="me@example.fr")
+    assert client.get(f"{API}/{other.id}", headers=headers).status_code == 403
+    assert client.get(f"{API}/{me.id}", headers=headers).status_code == 200

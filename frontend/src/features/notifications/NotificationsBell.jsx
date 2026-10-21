@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useToast } from '../../components/ui'
@@ -18,6 +18,9 @@ export default function NotificationsBell() {
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
   const root = useRef(null)
+  const trigger = useRef(null)
+  const panel = useRef(null)
+  const panelId = useId()
 
   const count = useQuery({
     queryKey: ['notifications', 'count'],
@@ -47,6 +50,9 @@ export default function NotificationsBell() {
 
   useEffect(() => {
     if (!open) return undefined
+    const button = trigger.current
+    const container = root.current
+    panel.current?.focus()
     const close = (event) => {
       if (
         event.key === 'Escape' ||
@@ -60,6 +66,8 @@ export default function NotificationsBell() {
     return () => {
       document.removeEventListener('mousedown', close)
       document.removeEventListener('keydown', close)
+      if (document.activeElement === document.body || container?.contains(document.activeElement))
+        button?.focus()
     }
   }, [open])
 
@@ -75,24 +83,30 @@ export default function NotificationsBell() {
   return (
     <div ref={root} className="relative">
       <button
+        ref={trigger}
         type="button"
         onClick={() => setOpen((v) => !v)}
+        aria-haspopup="dialog"
+        aria-controls={open ? panelId : undefined}
         aria-label={unread ? `Notifications (${unread} non lues)` : 'Notifications'}
         aria-expanded={open}
         className="relative rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+          <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-xs font-bold text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
       </button>
       {open && (
         <div
+          ref={panel}
+          id={panelId}
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900"
+          tabIndex={-1}
+          className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-xl border border-slate-200 bg-white shadow-xl focus:outline-none dark:border-slate-700 dark:bg-slate-900"
         >
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             <h2 className="text-sm font-semibold">Notifications</h2>
@@ -121,7 +135,7 @@ export default function NotificationsBell() {
                   )}
                 >
                   {notification.content}
-                  <time className="mt-1 block text-xs font-normal text-slate-400">
+                  <time className="mt-1 block text-xs font-normal text-slate-500">
                     {new Date(notification.created_at).toLocaleString('fr-FR', {
                       day: 'numeric',
                       month: 'short',

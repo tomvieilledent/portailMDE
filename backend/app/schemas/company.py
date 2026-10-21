@@ -6,6 +6,7 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.enums import CompanyKind
+from app.schemas.common import HttpUrlStr
 
 
 class CompanyRead(BaseModel):
@@ -30,7 +31,7 @@ class CompanyCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     description: str | None = None
     location: str | None = Field(None, max_length=200)
-    website_url: str | None = Field(None, max_length=512)
+    website_url: HttpUrlStr | None = Field(None, max_length=512)
     kind: CompanyKind = CompanyKind.COMPANY
     # Compte qui devient propriétaire (administrateur) de l'entreprise créée.
     owner_id: uuid.UUID
@@ -42,7 +43,7 @@ class CompanyUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = None
     location: str | None = Field(None, max_length=200)
-    website_url: str | None = Field(None, max_length=512)
+    website_url: HttpUrlStr | None = Field(None, max_length=512)
 
 
 class CompanyAdminUpdate(CompanyUpdate):

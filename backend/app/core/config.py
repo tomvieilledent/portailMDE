@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     upload_dir: str = "uploads"
     max_image_bytes: int = 5 * 1024 * 1024
     max_document_bytes: int = 15 * 1024 * 1024
+    scheduler_enabled: bool = True
     news_sync_enabled: bool = True
     news_sync_interval_minutes: int = 60
     news_retention_days: int = 30
@@ -35,6 +36,9 @@ class Settings(BaseSettings):
     mail_from: str = "portailMDE <no-reply@portail-mde.local>"
     reset_token_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:5290"]
+    # Durées de conservation (jours) des données personnelles ; purge quotidienne.
+    notification_retention_days: int = 90
+    deleted_message_retention_days: int = 30
 
     @model_validator(mode="after")
     def _refuse_default_secret_in_production(self):
@@ -43,6 +47,8 @@ class Settings(BaseSettings):
             self.jwt_secret == "dev-secret-change-me" or len(self.jwt_secret) < 32
         ):
             raise ValueError("JWT_SECRET doit être défini (32 caractères minimum) en production")
+        if self.environment == "production" and self.mail_backend in ("console", "memory"):
+            raise ValueError("MAIL_BACKEND doit être « smtp » en production")
         return self
 
 

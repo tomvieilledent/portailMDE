@@ -10,6 +10,7 @@ import { PERMISSIONS, hasPermission } from '../../auth/permissions'
 import PageHeader from '../../components/layout/PageHeader'
 import { Badge, Button, Card, EmptyState, Spinner, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
+import { safeHref } from '../../lib/safeUrl'
 import { uploadUrl } from '../../lib/uploads'
 import InterestButton from './InterestButton'
 import SessionAdminModal from './SessionAdminModal'
@@ -56,9 +57,9 @@ function SessionRow({ session, trainingId, canManage, onManage }) {
               <MapPin size={14} aria-hidden="true" /> {session.location}
             </span>
           )}
-          {session.link && (
+          {safeHref(session.link) && (
             <a
-              href={session.link}
+              href={safeHref(session.link)}
               target="_blank"
               rel="noopener noreferrer"
               className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 hover:underline"
@@ -174,6 +175,8 @@ export default function TrainingPage() {
         {t.picture_path && (
           <img
             src={uploadUrl(t.picture_path)}
+            loading="lazy"
+            decoding="async"
             alt=""
             className="max-h-64 w-full rounded-lg object-cover"
           />

@@ -32,7 +32,7 @@ export default function InterestButton({ trainingId, active }) {
     >
       <Star
         size={18}
-        className={cn(active ? 'fill-amber-400 text-amber-400' : 'text-slate-400')}
+        className={cn(active ? 'fill-amber-400 text-amber-400' : 'text-slate-500')}
         aria-hidden="true"
       />
     </button>

@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import PageHeader from '../../components/layout/PageHeader'
 import { Badge, Card, EmptyState, Spinner } from '../../components/ui'
+import { safeHref } from '../../lib/safeUrl'
 import { CompanyLogo } from './CompaniesPage'
 import PersonCard from './PersonCard'
 import PersonModal from './PersonModal'
@@ -46,9 +47,9 @@ export default function CompanyPage() {
                 <MapPin size={14} aria-hidden="true" /> {c.location}
               </span>
             )}
-            {c.website_url && (
+            {safeHref(c.website_url) && (
               <a
-                href={c.website_url}
+                href={safeHref(c.website_url)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 hover:underline"

@@ -12,6 +12,7 @@ from app.core.security import (
     decode_token,
     hash_password,
     needs_rehash,
+    password_fingerprint,
     verify_password,
 )
 from app.models import RevokedToken, User
@@ -22,9 +23,20 @@ _DUMMY_HASH = hash_password("dummy-password")
 
 def _issue_pair(user: User) -> dict[str, str]:
     """Émet une paire de jetons (accès et rafraîchissement) pour l'utilisateur."""
-    access, _, _ = create_token(str(user.id), "access")
-    refresh, _, _ = create_token(str(user.id), "refresh")
+    claims = {"pwd": password_fingerprint(user.password_hash)}
+    access, _, _ = create_token(str(user.id), "access", claims)
+    refresh, _, _ = create_token(str(user.id), "refresh", claims)
     return {"access_token": access, "refresh_token": refresh}
+
+
+def issue_pair(user: User) -> dict[str, str]:
+    """Émet une nouvelle paire de jetons (ex. après un changement de mot de passe)."""
+    return _issue_pair(user)
+
+
+def session_is_current(user: User, payload: dict) -> bool:
+    """Faux si le mot de passe a changé depuis l'émission du jeton (sessions révoquées)."""
+    return payload.get("pwd") == password_fingerprint(user.password_hash)
 
 
 def authenticate(session: Session, email: str, password: str) -> User:
@@ -71,6 +83,8 @@ def refresh(session: Session, refresh_token: str) -> dict[str, str]:
     user = session.get(User, payload["sub"])
     if not user or not user.is_active or user.deleted_at is not None:
         raise UnauthorizedError("Utilisateur inactif")
+    if not session_is_current(user, payload):
+        raise UnauthorizedError("Jeton révoqué")
     revoke(session, payload)
     return _issue_pair(user)
 
@@ -100,7 +114,6 @@ def purge_expired(session: Session) -> int:
 def request_password_reset(session: Session, email: str) -> None:
     """Envoie un lien de réinitialisation si le compte existe (réponse identique sinon)."""
     from app.core.config import get_settings
-    from app.core.security import password_fingerprint
     from app.emails import templates
     from app.services.mailer import send_later
 
@@ -124,8 +137,6 @@ def request_password_reset(session: Session, email: str) -> None:
 
 def reset_password(session: Session, token: str, new_password: str) -> None:
     """Définit un nouveau mot de passe si le jeton de réinitialisation est valide et non utilisé."""
-    from app.core.security import password_fingerprint
-
     try:
         payload = decode_token(token, "reset")
     except InvalidTokenError as exc:

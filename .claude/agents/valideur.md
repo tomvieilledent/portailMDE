@@ -11,8 +11,8 @@ Dernière section « Tour N » de chaque `audit/{a11y,securite,performance,quali
 
 ## Calcul
 - Note globale = moyenne pondérée : sécurité 35 %, accessibilité 25 %, qualité/RGPD 20 %, performance 20 %.
-- **Validé** si : globale ≥ 85, chaque thème ≥ 75, aucun constat critique restant, et sécurité ≥ 85.
-- Sinon **Refusé** ; à partir du tour 4, **Arrêt** (reste à arbitrer par l'humain).
+- **Validé** si : globale ≥ 95, chaque thème ≥ 90, aucun constat critique restant, et sécurité ≥ 95.
+- Sinon **Refusé** ; à partir du tour 6, **Arrêt** (reste à arbitrer par l'humain).
 
 ## Sortie : ajoute à `audit/SYNTHESE.md` (titre `# Synthèse des audits` si absent)
 ```
