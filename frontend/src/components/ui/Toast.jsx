@@ -15,7 +15,7 @@ const styles = {
 }
 
 /** Notifications éphémères (« toasts ») annoncées aux lecteurs d'écran. */
-export function ToastProvider({ children, duration = 4000 }) {
+export function ToastProvider({ children, duration = 8000 }) {
   const [toasts, setToasts] = useState([])
 
   const dismiss = useCallback((id) => setToasts((all) => all.filter((t) => t.id !== id)), [])
@@ -51,6 +51,7 @@ export function ToastProvider({ children, duration = 4000 }) {
           return (
             <div
               key={id}
+              role={type === 'error' ? 'alert' : undefined}
               className={cn(
                 'pointer-events-auto flex max-w-md items-center gap-2 rounded-lg border-l-4 bg-white px-4 py-3 text-sm shadow-lg dark:bg-slate-800',
                 className,

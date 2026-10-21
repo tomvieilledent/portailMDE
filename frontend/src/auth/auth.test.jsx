@@ -93,8 +93,11 @@ describe('authentification', () => {
     api.post.mockResolvedValue({ access_token: 'A', refresh_token: 'R' })
     mockMe(member)
     renderApp('/connexion')
-    await userEvent.type(screen.getByLabelText('Email'), 'ada@x.fr')
-    await userEvent.type(screen.getByLabelText('Mot de passe'), 'password123')
+    await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'ada@x.fr')
+    await userEvent.type(
+      screen.getByLabelText(/^Mot de passe( \*)?( \(obligatoire\))?$/),
+      'password123',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }))
     expect(await screen.findByRole('heading', { name: 'Annuaire' })).toBeInTheDocument()
     expect(api.post).toHaveBeenCalledWith(
@@ -108,8 +111,8 @@ describe('authentification', () => {
   it('affiche une erreur si les identifiants sont faux', async () => {
     api.post.mockRejectedValue(new ApiError(401, 'UNAUTHORIZED', 'x'))
     renderApp('/connexion')
-    await userEvent.type(screen.getByLabelText('Email'), 'a@x.fr')
-    await userEvent.type(screen.getByLabelText('Mot de passe'), 'bad')
+    await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'a@x.fr')
+    await userEvent.type(screen.getByLabelText(/^Mot de passe( \*)?( \(obligatoire\))?$/), 'bad')
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Email ou mot de passe incorrect.')
   })
@@ -155,7 +158,7 @@ describe('mot de passe oublié', () => {
   it('affiche toujours le même message', async () => {
     api.post.mockRejectedValue(new ApiError(500, 'X', 'x'))
     renderApp('/mot-de-passe-oublie')
-    await userEvent.type(screen.getByLabelText('Email'), 'a@x.fr')
+    await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'a@x.fr')
     await userEvent.click(screen.getByRole('button', { name: 'Envoyer le lien' }))
     expect(await screen.findByText(/Si un compte correspond/)).toBeInTheDocument()
   })
@@ -163,8 +166,14 @@ describe('mot de passe oublié', () => {
   it('réinitialise avec le jeton du lien', async () => {
     api.post.mockResolvedValue(null)
     renderApp('/reset-password?token=abc')
-    await userEvent.type(screen.getByLabelText('Nouveau mot de passe'), 'brandnewpass1')
-    await userEvent.type(screen.getByLabelText('Confirmation'), 'brandnewpass1')
+    await userEvent.type(
+      screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
+    await userEvent.type(
+      screen.getByLabelText(/^Confirmation( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
@@ -178,8 +187,14 @@ describe('mot de passe oublié', () => {
 
   it('refuse des mots de passe différents', async () => {
     renderApp('/reset-password?token=abc')
-    await userEvent.type(screen.getByLabelText('Nouveau mot de passe'), 'brandnewpass1')
-    await userEvent.type(screen.getByLabelText('Confirmation'), 'different123')
+    await userEvent.type(
+      screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
+    await userEvent.type(
+      screen.getByLabelText(/^Confirmation( \*)?( \(obligatoire\))?$/),
+      'different123',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('ne correspondent pas')
     expect(api.post).not.toHaveBeenCalled()

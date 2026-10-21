@@ -160,3 +160,17 @@ def test_websocket_receives_new_message(client, trio, login):
         event = ws.receive_json()
     assert event["type"] == "message.new"
     assert event["message"]["content"] == "yo"
+
+
+def test_websocket_rejects_foreign_origin(client, trio, login):
+    """Le WebSocket refuse une origine étrangère au site."""
+    from starlette.websockets import WebSocketDisconnect
+
+    token = login("a@x.fr")["Authorization"].split()[1]
+    with (
+        pytest.raises(WebSocketDisconnect),
+        client.websocket_connect(
+            f"{API}/ws?token={token}", headers={"origin": "https://evil.example"}
+        ),
+    ):
+        pass

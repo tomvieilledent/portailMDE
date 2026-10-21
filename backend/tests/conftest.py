@@ -8,6 +8,7 @@ from sqlalchemy.engine import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 from alembic import command
+from app.core import ratelimit
 from app.core.config import get_settings
 from app.core.security import hash_password
 from app.db.base import Base
@@ -47,6 +48,14 @@ def session(engine):
     with engine.begin() as conn:
         tables = ", ".join(f'"{t.name}"' for t in Base.metadata.sorted_tables)
         conn.execute(text(f"TRUNCATE {tables} CASCADE"))
+
+
+@pytest.fixture(autouse=True)
+def _reset_rate_limits():
+    """Remet à zéro les limiteurs de débit entre les tests."""
+    ratelimit.reset_all()
+    yield
+    ratelimit.reset_all()
 
 
 @pytest.fixture
@@ -114,6 +123,7 @@ def upload_dir(tmp_path, monkeypatch):
 def _no_scheduler(monkeypatch):
     """Pas de tâches planifiées pendant les tests."""
     monkeypatch.setenv("NEWS_SYNC_ENABLED", "false")
+    monkeypatch.setenv("SCHEDULER_ENABLED", "false")
 
 
 @pytest.fixture(autouse=True)

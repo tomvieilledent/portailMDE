@@ -67,6 +67,13 @@ export default function LoginPage() {
       >
         Mot de passe oublié ?
       </Link>
+      <p className="text-center text-xs text-slate-500">
+        En vous connectant, vous acceptez le traitement de vos données décrit dans notre{' '}
+        <Link to="/confidentialite" className="underline">
+          politique de confidentialité
+        </Link>
+        .
+      </p>
     </AuthShell>
   )
 }

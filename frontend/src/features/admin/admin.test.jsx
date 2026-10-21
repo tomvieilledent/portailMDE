@@ -156,8 +156,14 @@ describe('utilisateurs', () => {
     renderAt('/administration/utilisateurs', userAdmin)
     await userEvent.click(await screen.findByRole('button', { name: /Nouveau compte/ }))
     const dialog = await screen.findByRole('dialog')
-    await userEvent.type(within(dialog).getByLabelText('Email'), 'new@x.fr')
-    await userEvent.type(within(dialog).getByLabelText('Mot de passe temporaire'), 'temporaire1')
+    await userEvent.type(
+      within(dialog).getByLabelText(/^Email( \*)?( \(obligatoire\))?$/),
+      'new@x.fr',
+    )
+    await userEvent.type(
+      within(dialog).getByLabelText(/^Mot de passe temporaire( \*)?( \(obligatoire\))?$/),
+      'temporaire1',
+    )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Créer le compte' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
@@ -183,7 +189,7 @@ describe('entreprises', () => {
       permissions: ['manage_companies'],
     })
     await userEvent.click(await screen.findByRole('button', { name: /Nouvelle entreprise/ }))
-    await userEvent.type(await screen.findByLabelText('Nom'), 'Globex')
+    await userEvent.type(await screen.findByLabelText(/^Nom( \*)?( \(obligatoire\))?$/), 'Globex')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
@@ -228,7 +234,10 @@ describe('contenu', () => {
   it('envoie une annonce', async () => {
     api.post.mockResolvedValue(null)
     renderAt('/administration/contenu', newsEditor)
-    await userEvent.type(await screen.findByLabelText('Message'), 'Fermeture lundi')
+    await userEvent.type(
+      await screen.findByLabelText(/^Message( \*)?( \(obligatoire\))?$/),
+      'Fermeture lundi',
+    )
     await userEvent.click(screen.getByRole('button', { name: "Envoyer l'annonce" }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/notifications/broadcast', {

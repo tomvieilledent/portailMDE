@@ -6,6 +6,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.schemas.common import HttpUrlStr
+
 
 class ArticleRead(BaseModel):
     """Article d'actualité en lecture."""
@@ -27,7 +29,7 @@ class ArticleCreate(BaseModel):
     title: str = Field(min_length=1, max_length=500)
     source: str | None = Field(None, max_length=200)
     summary: str | None = None
-    url: str | None = Field(None, max_length=512)
+    url: HttpUrlStr | None = Field(None, max_length=512)
     category: str | None = Field(None, max_length=100)
     published_at: datetime | None = None
 

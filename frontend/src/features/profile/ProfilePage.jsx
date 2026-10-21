@@ -7,6 +7,7 @@ import { useAuth } from '../../auth/AuthProvider'
 import PageHeader from '../../components/layout/PageHeader'
 import { Avatar, Button, Card, ImageUpload, Input, uploadUrl, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
+import { tokens } from '../../lib/tokens'
 
 /** Encapsule un fichier dans un `FormData`. */
 const toFormData = (file) => {
@@ -132,7 +133,9 @@ function PasswordForm() {
   const change = useMutation({
     mutationFn: () =>
       api.post('/users/me/password', { current_password: current, new_password: next }),
-    onSuccess: () => {
+    onSuccess: (pair) => {
+      // Les autres sessions sont révoquées : on adopte la nouvelle paire de jetons.
+      if (pair?.access_token) tokens.set(pair)
       toast.success('Mot de passe modifié.')
       setCurrent('')
       setNext('')
@@ -190,6 +193,57 @@ function PasswordForm() {
   )
 }
 
+/** Données personnelles : export (accès, portabilité) et suppression du compte (effacement). */
+function PrivacyCard() {
+  const { logout } = useAuth()
+  const toast = useToast()
+  const exportData = useMutation({
+    mutationFn: async () => {
+      const data = await api.get('/users/me/export')
+      const url = URL.createObjectURL(
+        new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+      )
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'mes-donnees.json'
+      link.click()
+      URL.revokeObjectURL(url)
+    },
+    onError: () => toast.error('Export impossible.'),
+  })
+  const remove = useMutation({
+    mutationFn: () => api.delete('/users/me'),
+    onSuccess: () => logout(),
+    onError: () => toast.error('Suppression impossible.'),
+  })
+  return (
+    <Card>
+      <h2 className="mb-2 text-lg font-semibold">Mes données personnelles</h2>
+      <p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+        Vous pouvez télécharger vos données ou supprimer définitivement votre compte.
+      </p>
+      <div className="flex flex-wrap gap-3">
+        <Button
+          variant="secondary"
+          loading={exportData.isPending}
+          onClick={() => exportData.mutate()}
+        >
+          Exporter mes données
+        </Button>
+        <Button
+          variant="danger"
+          loading={remove.isPending}
+          onClick={() => {
+            if (window.confirm('Supprimer définitivement votre compte ?')) remove.mutate()
+          }}
+        >
+          Supprimer mon compte
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
 /** Page de profil : informations, images et mot de passe. */
 export default function ProfilePage() {
   return (
@@ -202,6 +256,7 @@ export default function ProfilePage() {
         <InfoForm />
         <ImagesCard />
         <PasswordForm />
+        <PrivacyCard />
       </div>
     </>
   )

@@ -16,6 +16,17 @@ _IMAGE_SIGNATURES = {
     ".gif": (b"GIF87a", b"GIF89a"),
     ".webp": (b"RIFF",),
 }
+_OLE = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
+# Signatures des documents binaires ; txt et csv sont contrôlés comme du texte.
+_DOCUMENT_SIGNATURES = {
+    ".pdf": (b"%PDF",),
+    ".doc": (_OLE,),
+    ".xls": (_OLE,),
+    ".ppt": (_OLE,),
+    ".docx": (b"PK\x03\x04",),
+    ".xlsx": (b"PK\x03\x04",),
+    ".pptx": (b"PK\x03\x04",),
+}
 PUBLIC_UPLOAD_CATEGORIES = ("avatars", "business-cards", "logos", "trainings")
 DOCUMENT_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv"}
 
@@ -69,7 +80,23 @@ def save_document(file: UploadFile, category: str) -> tuple[str, str]:
     if ext not in DOCUMENT_EXTENSIONS:
         raise AppError("Type de fichier non autorisé")
     data = _read_limited(file, get_settings().max_document_bytes)
+    signatures = _DOCUMENT_SIGNATURES.get(ext)
+    if signatures is not None:
+        valid = data.startswith(signatures)
+    else:  # .txt, .csv : texte UTF-8 sans octet nul
+        valid = b"\x00" not in data and _is_utf8(data)
+    if not valid:
+        raise AppError("Le contenu du fichier ne correspond pas à son extension")
     return _write(data, category, ext), file.filename or ""
+
+
+def _is_utf8(data: bytes) -> bool:
+    """Indique si les octets forment un texte UTF-8 valide."""
+    try:
+        data.decode("utf-8")
+    except UnicodeDecodeError:
+        return False
+    return True
 
 
 def _write(data: bytes, category: str, ext: str) -> str:

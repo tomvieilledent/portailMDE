@@ -37,6 +37,9 @@ def get_event(session: Session, event_id: uuid.UUID, user: User) -> Event:
     return event
 
 
+MAX_EVENTS = 1000
+
+
 def list_events(
     session: Session, user: User, *, start: date | None = None, end: date | None = None
 ) -> list[Event]:
@@ -48,7 +51,8 @@ def list_events(
         query = query.where(Event.event_date >= start)
     if end:
         query = query.where(Event.event_date <= end)
-    return list(session.scalars(query.order_by(Event.event_date, Event.event_time)).all())
+    query = query.order_by(Event.event_date, Event.event_time).limit(MAX_EVENTS)
+    return list(session.scalars(query).all())
 
 
 def create_event(session: Session, user: User, data) -> Event:

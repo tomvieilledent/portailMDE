@@ -80,7 +80,7 @@ export default function AgendaPage() {
       {isError && <p role="alert">Impossible de charger l'agenda.</p>}
 
       <div
-        role="grid"
+        role="table"
         aria-label="Calendrier"
         className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
       >
@@ -103,15 +103,20 @@ export default function AgendaPage() {
             {week.map((day) => (
               <div
                 key={day.iso}
-                role="gridcell"
+                role="cell"
                 className={cn(
                   'min-h-20 border-r border-b border-slate-100 p-1 sm:min-h-28 dark:border-slate-800',
-                  !day.inMonth && 'bg-slate-50 text-slate-400 dark:bg-slate-950/40',
+                  !day.inMonth && 'bg-slate-50 text-slate-500 dark:bg-slate-950/40',
                 )}
               >
                 <button
                   type="button"
-                  aria-label={`Ajouter un événement le ${day.iso}`}
+                  aria-label={`Ajouter un événement le ${day.date.toLocaleDateString('fr-FR', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })}`}
                   onClick={() => setForm({ defaultDate: day.iso })}
                   className={cn(
                     'mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs hover:bg-slate-100 dark:hover:bg-slate-800',

@@ -128,10 +128,15 @@ describe('agenda', () => {
     api.post.mockResolvedValue({})
     renderPage()
     await userEvent.click(
-      await screen.findByRole('button', { name: 'Ajouter un événement le 2026-10-25' }),
+      await screen.findByRole('button', {
+        name: /Ajouter un événement le dimanche 25 octobre 2026/,
+      }),
     )
-    await userEvent.type(await screen.findByLabelText('Titre'), 'Atelier')
-    expect(screen.getByLabelText('Date')).toHaveValue('2026-10-25')
+    await userEvent.type(
+      await screen.findByLabelText(/^Titre( \*)?( \(obligatoire\))?$/),
+      'Atelier',
+    )
+    expect(screen.getByLabelText(/^Date( \*)?( \(obligatoire\))?$/)).toHaveValue('2026-10-25')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/events', {

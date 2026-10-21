@@ -173,14 +173,18 @@ def _import_feed(session: Session, source: dict, fetch: Fetcher) -> int:
     """Importe les nouveaux articles d'un flux ; retourne le nombre d'articles créés."""
     feed = feedparser.parse(fetch(source["url"]))
     created = 0
-    for entry in feed.entries[:MAX_ENTRIES_PER_FEED]:
+    entries = feed.entries[:MAX_ENTRIES_PER_FEED]
+    links = [str(e.get("link") or "").strip()[:512] for e in entries]
+    known = set(session.scalars(select(NewsArticle.url).where(NewsArticle.url.in_(links))).all())
+    for entry in entries:
         url = str(entry.get("link") or "").strip()[:512]
         title = str(entry.get("title") or "").strip()
         summary = _strip_html(str(entry.get("summary") or entry.get("description") or ""))
         if not url or not title or not summary:
             continue
-        if session.scalar(select(NewsArticle.id).where(NewsArticle.url == url)):
+        if url in known:
             continue
+        known.add(url)
         session.add(
             NewsArticle(
                 title=title[:500],

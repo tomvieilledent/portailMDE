@@ -112,3 +112,15 @@ def test_delete_is_soft(client, make_user, make_company, login, session):
     assert client.get(f"{API}/{company.id}", headers=headers).status_code == 404
     session.refresh(company)
     assert company.deleted_at is not None
+
+
+def test_website_url_must_be_http(client, make_user, login):
+    """Les URLs non http(s) (ex. javascript:) sont refusées."""
+    staff(make_user)
+    headers = login("staff@x.fr")
+    bad = client.post(
+        API, headers=headers, json={"name": "Acme", "website_url": "javascript:alert(1)"}
+    )
+    assert bad.status_code == 422
+    ok = client.post(API, headers=headers, json={"name": "Acme", "website_url": "https://acme.fr"})
+    assert ok.status_code == 201

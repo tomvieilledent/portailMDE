@@ -367,6 +367,7 @@ def test_cli_seed_and_refuses_in_production(monkeypatch, capsys):
     """La commande de seed est refusée en production."""
     monkeypatch.setenv("ENVIRONMENT", "production")
     monkeypatch.setenv("JWT_SECRET", "s" * 40)
+    monkeypatch.setenv("MAIL_BACKEND", "smtp")
     from app.core.config import get_settings
 
     get_settings.cache_clear()
