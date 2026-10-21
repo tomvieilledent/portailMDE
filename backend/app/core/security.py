@@ -2,6 +2,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Literal
 
+import bcrypt
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
@@ -21,7 +22,17 @@ def hash_password(password: str) -> str:
     return _hasher.hash(password)
 
 
+def _is_legacy_bcrypt(password_hash: str) -> bool:
+    return password_hash.startswith(("$2a$", "$2b$", "$2y$"))
+
+
 def verify_password(password: str, password_hash: str) -> bool:
+    """Vérifie un mot de passe (Argon2, ou bcrypt hérité de l'ancienne application)."""
+    if _is_legacy_bcrypt(password_hash):
+        try:
+            return bcrypt.checkpw(password.encode()[:72], password_hash.encode())
+        except ValueError:
+            return False
     try:
         return _hasher.verify(password_hash, password)
     except (VerifyMismatchError, InvalidHashError):
@@ -29,7 +40,8 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def needs_rehash(password_hash: str) -> bool:
-    return _hasher.check_needs_rehash(password_hash)
+    """Vrai pour un hash bcrypt hérité ou des paramètres Argon2 obsolètes (re-hash à la connexion)."""
+    return _is_legacy_bcrypt(password_hash) or _hasher.check_needs_rehash(password_hash)
 
 
 def create_token(
