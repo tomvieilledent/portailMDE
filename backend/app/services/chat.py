@@ -11,7 +11,7 @@ from app.core.errors import AppError, ForbiddenError, NotFoundError
 from app.models import Conversation, ConversationParticipant, Message, User
 from app.models.enums import ConversationKind, UserRole
 from app.schemas.chat import ConversationRead, MessageRead, UserBrief
-from app.services import storage
+from app.services import notifications, storage
 
 
 def _active_users(session: Session, ids: list[uuid.UUID]) -> list[User]:
@@ -74,6 +74,7 @@ def create_group(
     conversation.participants = [ConversationParticipant(user_id=uid) for uid in members]
     session.add(conversation)
     session.commit()
+    _notify_added(session, conversation, actor, list(members - {actor.id}))
     return conversation
 
 
@@ -82,6 +83,16 @@ def _ensure_group_owner(conversation: Conversation, actor: User) -> None:
         raise AppError("Cette opération ne concerne que les groupes")
     if conversation.creator_id != actor.id and actor.role != UserRole.SUPER_ADMIN:
         raise ForbiddenError("Seul le créateur du groupe peut faire cela")
+
+
+def _notify_added(session: Session, conversation: Conversation, actor: User, user_ids) -> None:
+    notifications.notify(
+        session,
+        user_ids,
+        f"{notifications.display_name(actor)} vous a ajouté au groupe « {conversation.title} »",
+        kind="conversation",
+        data={"conversation_id": str(conversation.id)},
+    )
 
 
 def rename_group(session: Session, conversation: Conversation, actor: User, title: str):
@@ -101,6 +112,7 @@ def add_participants(
     for uid in new_ids:
         conversation.participants.append(ConversationParticipant(user_id=uid))
     session.commit()
+    _notify_added(session, conversation, actor, new_ids)
     return conversation
 
 
