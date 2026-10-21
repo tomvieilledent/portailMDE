@@ -16,3 +16,7 @@ Corrections appliquées : pages légales + liens + mention à la connexion ; ano
 - [mineur] backend/app/services/users.py:180 — l'anonymisation conserve les messages du compte supprimé (contenu et pièces jointes, Message.author_id) sans purge ni mention dans la politique → supprimer/anonymiser ces messages ou documenter leur conservation
 Corrigé depuis le tour précédent : pages légales + liens + mention à la connexion ; anonymisation à la suppression avec effacement des fichiers avatar/carte ; export (/users/me/export) et auto-suppression (/users/me) avec UI profil ; mailer sans corps ni email en clair, console/memory refusés en production ; purge quotidienne planifiée (jetons, notifications 90 j, messages supprimés 30 j). Pas de régression constatée (tests non exécutés : python absent du shell).
 Corrections appliquées : anonymisation vide et détache les messages du compte supprimé (contenu, pièces jointes effacées, soft-delete puis purge).
+
+## Tour 3 — note : 100/100
+À corriger : aucun
+Corrigé depuis le tour précédent : anonymisation des messages du compte supprimé (users.py:_anonymize : contenu vidé, pièces jointes effacées, auteur détaché via author_id nullable, soft-delete puis purge à 30 j), couvert par test_delete_own_account_erases_messages. Pas de régression constatée (tests non exécutés : pytest absent du shell).

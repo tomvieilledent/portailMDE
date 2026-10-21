@@ -19,3 +19,8 @@ Non corrigé : pagination applicative de list_conversations et obligation start/
 - [mineur] backend/app/services/chat.py:195 — le plafond de 200 est appliqué après chargement et tri de toutes les conversations en Python → trier/limiter en SQL (ou pagination) si le volume grandit
 Corrigé depuis le tour précédent : gzip nginx, cache /uploads et /assets, lazy loading des routes (React.lazy + Suspense), list_conversations en requêtes agrégées (N+1 supprimé), list_events plafonné à 1000, lazy sur Avatar, dédoublonnage RSS en une requête IN.
 Corrections appliquées : lazy/async sur les 5 images, tri et plafond des conversations en SQL.
+
+## Tour 3 — note : 97/100
+À corriger :
+- [mineur] backend/app/services/chat.py:223 — conversations plafonnées à 200 sans pagination réelle (acceptable au volume actuel) → ajouter offset/curseur si le volume grandit
+Corrigé depuis le tour précédent : lazy/async sur les 5 images restantes (TrainingsPage, TrainingPage, CompaniesPage, PersonModal, ProfilePage), tri et plafond des conversations en SQL (order_by coalesce + limit). Aucune régression constatée (nginx gzip/cache, lazy routes, listes paginées inchangés).
