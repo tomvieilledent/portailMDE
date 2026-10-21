@@ -7,10 +7,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM base AS dev
 RUN pip install --no-cache-dir -r requirements-dev.txt
 COPY . .
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
 FROM base AS prod
 COPY . .
 RUN useradd --system app && chown -R app /app
 USER app
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
