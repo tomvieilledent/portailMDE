@@ -10,10 +10,13 @@ import MyCompanyPage from './features/company/MyCompanyPage'
 import ProfilePage from './features/profile/ProfilePage'
 import CompaniesPage from './features/directory/CompaniesPage'
 import CompanyPage from './features/directory/CompanyPage'
+import MessagingPage from './features/messaging/MessagingPage'
 import PeoplePage from './features/directory/PeoplePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
+import RealtimeEffects from './realtime/RealtimeEffects'
+import { RealtimeProvider } from './realtime/RealtimeProvider'
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 import LoginPage from './pages/auth/LoginPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
@@ -23,7 +26,12 @@ function Shell() {
   const items = navItems.filter(
     (item) => (!item.staffOnly || isStaff(user)) && (!item.needsCompany || user.company_id),
   )
-  return <AppLayout items={items} actions={<UserMenu />} />
+  return (
+    <RealtimeProvider>
+      <RealtimeEffects />
+      <AppLayout items={items} actions={<UserMenu />} />
+    </RealtimeProvider>
+  )
 }
 
 export default function App() {
@@ -37,6 +45,8 @@ export default function App() {
       <Route element={<RequireAuth />}>
         <Route element={<Shell />}>
           <Route path="/annuaire" element={<PeoplePage />} />
+          <Route path="/messagerie" element={<MessagingPage />} />
+          <Route path="/messagerie/:conversationId" element={<MessagingPage />} />
           <Route path="/profil" element={<ProfilePage />} />
           <Route path="/mon-entreprise" element={<MyCompanyPage />} />
           <Route path="/entreprises" element={<CompaniesPage />} />
@@ -45,7 +55,7 @@ export default function App() {
             .filter(
               (item) =>
                 !item.staffOnly &&
-                !['/annuaire', '/entreprises', '/mon-entreprise'].includes(item.to),
+                !['/annuaire', '/entreprises', '/mon-entreprise', '/messagerie'].includes(item.to),
             )
             .map(({ to, label }) => (
               <Route key={to} path={to} element={<ComingSoonPage title={label} />} />
