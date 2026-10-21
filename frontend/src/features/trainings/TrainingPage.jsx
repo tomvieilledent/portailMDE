@@ -175,6 +175,8 @@ export default function TrainingPage() {
         {t.picture_path && (
           <img
             src={uploadUrl(t.picture_path)}
+            loading="lazy"
+            decoding="async"
             alt=""
             className="max-h-64 w-full rounded-lg object-cover"
           />

@@ -16,6 +16,8 @@ export function CompanyLogo({ company, className = 'h-14 w-14' }) {
   return company.logo_path ? (
     <img
       src={uploadUrl(company.logo_path)}
+      loading="lazy"
+      decoding="async"
       alt=""
       className={`${className} shrink-0 rounded-lg object-contain`}
     />

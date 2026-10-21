@@ -47,19 +47,35 @@ export default function AppLayout({ items = navItems, actions = null }) {
   const firstRender = useRef(true)
   const menuButton = useRef(null)
   const closeButton = useRef(null)
+  const drawerRef = useRef(null)
 
   // Titre de l'onglet et focus du <h1> à chaque changement de route (WCAG 2.4.2).
   useEffect(() => {
-    const heading = mainRef.current?.querySelector('h1')
-    document.title = heading?.textContent ? `${heading.textContent} – portailMDE` : 'portailMDE'
-    if (firstRender.current) {
-      firstRender.current = false
-      return
+    const main = mainRef.current
+    const isFirst = firstRender.current
+    firstRender.current = false
+    let observer = null
+    const apply = () => {
+      const heading = main?.querySelector('h1')
+      if (!heading?.textContent) return false
+      document.title = `${heading.textContent} – portailMDE`
+      if (!isFirst) {
+        heading.tabIndex = -1
+        heading.focus({ preventScroll: false })
+      }
+      return true
     }
-    if (heading) {
-      heading.tabIndex = -1
-      heading.focus({ preventScroll: false })
+    if (!apply()) {
+      document.title = 'portailMDE'
+      // Titre dépendant de données chargées : on attend l'apparition du <h1>.
+      if (main) {
+        observer = new MutationObserver(() => {
+          if (apply()) observer.disconnect()
+        })
+        observer.observe(main, { childList: true, subtree: true, characterData: true })
+      }
     }
+    return () => observer?.disconnect()
   }, [pathname])
 
   // Tiroir mobile : focus à l'ouverture, Échap pour fermer, focus restauré à la fermeture.
@@ -67,7 +83,28 @@ export default function AppLayout({ items = navItems, actions = null }) {
     if (!open) return undefined
     const trigger = menuButton.current
     closeButton.current?.focus()
-    const onKey = (event) => event.key === 'Escape' && setOpen(false)
+    const onKey = (event) => {
+      if (event.key === 'Escape') {
+        setOpen(false)
+        return
+      }
+      if (event.key !== 'Tab') return
+      const focusable = drawerRef.current?.querySelectorAll('a[href], button:not([disabled])')
+      if (!focusable?.length) return
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      const active = document.activeElement
+      if (!drawerRef.current.contains(active)) {
+        event.preventDefault()
+        first.focus()
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
@@ -96,6 +133,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
             aria-hidden="true"
           />
           <aside
+            ref={drawerRef}
             role="dialog"
             aria-modal="true"
             aria-label="Menu"

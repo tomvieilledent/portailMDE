@@ -2,8 +2,11 @@
 
 import { Link } from 'react-router-dom'
 
+import { useDocumentTitle } from '../lib/useDocumentTitle'
+
 /** Cadre commun des pages légales. */
 function LegalShell({ title, children }) {
+  useDocumentTitle(title)
   return (
     <main id="contenu" className="mx-auto max-w-3xl space-y-4 p-6">
       <Link to="/" className="text-brand-700 dark:text-brand-300 text-sm hover:underline">

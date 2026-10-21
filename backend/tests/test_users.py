@@ -196,6 +196,26 @@ def test_delete_own_account_anonymizes(client, make_user, login, session):
     assert target.first_name != "Ada"
 
 
+def test_delete_own_account_erases_messages(client, make_user, login, session):
+    """L'auto-suppression efface le contenu des messages et détache l'auteur."""
+    from app.models import Conversation, Message
+
+    make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
+    target = make_user("t@x.fr")
+    conversation = Conversation(kind="group")
+    session.add(conversation)
+    session.flush()
+    message = Message(
+        conversation_id=conversation.id, author_id=target.id, content="secret", file_name="a.pdf"
+    )
+    session.add(message)
+    session.commit()
+    assert client.delete(f"{API}/me", headers=login("t@x.fr")).status_code == 204
+    session.refresh(message)
+    assert message.content == "" and message.file_name is None
+    assert message.author_id is None and message.deleted_at is not None
+
+
 def test_read_other_user_requires_rights(client, make_user, login):
     """Un membre ne peut pas lire le profil complet d'un autre utilisateur, mais lit le sien."""
     me = make_user(email="me@example.fr")

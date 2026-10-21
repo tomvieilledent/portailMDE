@@ -207,11 +207,20 @@ def list_conversations(session: Session, actor: User) -> list[ConversationRead]:
 
     Utilisateurs, derniers messages et non-lus sont chargés en une requête chacun.
     """
+    last_activity = (
+        select(Message.conversation_id, func.max(Message.created_at).label("last_at"))
+        .where(Message.deleted_at.is_(None))
+        .group_by(Message.conversation_id)
+        .subquery()
+    )
     conversations = list(
         session.scalars(
             select(Conversation)
             .join(ConversationParticipant)
+            .outerjoin(last_activity, last_activity.c.conversation_id == Conversation.id)
             .where(ConversationParticipant.user_id == actor.id)
+            .order_by(func.coalesce(last_activity.c.last_at, Conversation.created_at).desc())
+            .limit(MAX_CONVERSATIONS)
             .options(selectinload(Conversation.participants))
         ).all()
     )
@@ -268,10 +277,7 @@ def list_conversations(session: Session, actor: User) -> list[ConversationRead]:
         )
         for c in conversations
     ]
-    reads.sort(
-        key=lambda r: r.last_message.created_at if r.last_message else r.created_at, reverse=True
-    )
-    return reads[:MAX_CONVERSATIONS]
+    return reads
 
 
 def list_messages(
