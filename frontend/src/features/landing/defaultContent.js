@@ -8,21 +8,21 @@ export const defaultLanding = {
   sections: [
     {
       title: 'Incubateur',
-      duration: "Jusqu'à 24 mois",
+      duration: '24 mois',
       description:
         'Accueille et accompagne les porteurs de projets innovants du concept à la création.',
       highlight: "De l'idée à la création d'entreprise, étape par étape",
     },
     {
       title: "Hébergement d'entreprises",
-      duration: '48 mois',
+      duration: 'puis 48 mois de plus',
       description:
         'Héberge les jeunes entreprises : bureaux privatifs ou open-space, accompagnement quotidien, services mutualisés.',
       highlight: 'Un tremplin vers un territoire attractif et dynamique',
     },
     {
       title: "Hôtel d'entreprises",
-      duration: "Jusqu'à 12 mois",
+      duration: 'puis 12 mois de plus',
       description:
         "Réservé aux entreprises en fin de parcours d'hébergement ou à l'accueil temporaire d'entreprises exogènes.",
       highlight: '',

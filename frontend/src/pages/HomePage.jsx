@@ -1,4 +1,4 @@
-/** Page de garde : présentation des dispositifs et accès à la connexion. */
+/** Page de garde : tout l'essentiel tient sur un écran (ordinateur), sans défilement. */
 
 import { Link } from 'react-router-dom'
 
@@ -10,22 +10,24 @@ import { useDocumentTitle } from '../lib/useDocumentTitle'
 /** Numéro de contact affiché sur la page de garde (factice, à remplacer). */
 const CONTACT_PHONE = '00 00 00 00 00'
 
-/** Page de garde : photo plein cadre, titre en grand et dispositifs numérotés. */
+/**
+ * Page de garde. Sur ordinateur : deux colonnes (message et accès à gauche, dispositifs à droite)
+ * qui remplissent exactement la hauteur de la fenêtre ; sur petit écran, la page défile.
+ */
 export default function HomePage() {
   const { content } = useLanding()
   useDocumentTitle('Accueil')
 
   return (
     <div
-      className="relative flex min-h-screen flex-col overflow-hidden bg-[#1a3a2a] bg-cover bg-center text-white"
+      className="relative flex min-h-dvh flex-col bg-[#1a3a2a] bg-cover bg-center text-white lg:h-dvh lg:overflow-hidden"
       style={{ backgroundImage: 'url(/1920.webp)' }}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/50 to-black/75" />
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/60 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/50 to-black/75" />
 
-      <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6">
+      <header className="relative z-10 mx-auto flex w-full max-w-7xl shrink-0 items-center justify-between px-6 py-4">
         <div className="flex items-center gap-4">
-          <Logo className="h-12" onDark />
+          <Logo className="h-11" onDark />
           <span className="hidden h-8 w-px bg-white/25 sm:block" />
           <p className="hidden text-sm leading-snug font-medium text-white/80 sm:block">
             Maison de l'Économie
@@ -33,72 +35,74 @@ export default function HomePage() {
             Rodez Agglomération
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <Link
-            to="/connexion"
-            className="border border-white/50 px-5 py-2 text-sm font-semibold transition hover:bg-white hover:text-[#4a7a1a]"
-          >
-            Se connecter
-          </Link>
-        </div>
-      </header>
-
-      <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-6 py-16">
-        <p className="mb-6 text-sm font-semibold text-[#7ec843]">
-          Maison de l'Économie · Rodez Agglomération
-        </p>
-        <h1 className="font-display max-w-3xl text-5xl leading-[1.02] font-bold tracking-tight sm:text-7xl">
-          {content.slogan}
-        </h1>
-        <span className="mt-6 block h-1 w-20 bg-[#7ec843]" aria-hidden="true" />
-        {content.subtitle && (
-          <p className="mt-6 max-w-xl border border-white/20 bg-black/35 px-5 py-4 text-lg leading-relaxed font-semibold text-white backdrop-blur-md">
-            {content.subtitle}
-          </p>
-        )}
         <Link
           to="/connexion"
-          className="mt-10 inline-flex w-fit items-center gap-3 bg-[#7ec843] px-7 py-3.5 font-semibold text-white transition hover:bg-[#5da020]"
+          className="bg-[#7ec843] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#5da020]"
         >
-          Accéder au portail
-          <span aria-hidden="true">→</span>
+          Se connecter
         </Link>
-        <a
-          href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
-          aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
-          className="mt-8 flex w-fit flex-col gap-1 border-l-4 border-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 sm:flex-row sm:items-baseline sm:gap-3"
-        >
-          <span className="text-base text-white/85">Pour plus de renseignements, appelez le</span>
-          <strong className="text-2xl font-bold tracking-wide text-[#7ec843]">
-            {CONTACT_PHONE}
-          </strong>
-        </a>
+      </header>
+
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col justify-center px-6 py-4">
+        <div>
+          <p className="mb-4 text-sm font-semibold text-[#7ec843]">
+            Maison de l'Économie · Rodez Agglomération
+          </p>
+          <h1 className="font-display text-5xl leading-[1.02] font-bold tracking-tight xl:text-6xl">
+            {content.slogan}
+          </h1>
+          <span className="mt-5 block h-1 w-20 bg-[#7ec843]" aria-hidden="true" />
+          {/* Sous-titre et contact : deux blocs translucides côte à côte */}
+          <div className="mt-5 flex max-w-5xl flex-col gap-3 md:flex-row md:items-stretch">
+            {content.subtitle && (
+              <p className="flex flex-1 items-center border border-white/20 bg-black/35 px-5 py-4 text-lg leading-relaxed font-semibold text-white backdrop-blur-md">
+                {content.subtitle}
+              </p>
+            )}
+            <a
+              href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
+              aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
+              className="flex shrink-0 flex-col justify-center border border-white/20 bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 md:w-80"
+            >
+              <span className="text-sm whitespace-nowrap text-white/85">
+                Pour plus de renseignements, appelez le
+              </span>
+              <strong className="mt-1.5 text-xl font-semibold tracking-[0.06em] text-[#7ec843] tabular-nums">
+                {CONTACT_PHONE}
+              </strong>
+            </a>
+          </div>
+        </div>
       </main>
 
       <section
         aria-label="Nos dispositifs"
-        className="relative z-10 mx-auto grid w-full max-w-6xl gap-px px-6 pb-10 md:grid-cols-3"
+        className="relative z-10 mx-auto grid w-full max-w-7xl shrink-0 gap-3 px-6 pb-3 md:grid-cols-3"
       >
         {content.sections.map((section, index) => (
           <article
             key={section.title}
-            className="flex flex-col gap-3 border-t border-white/25 bg-white/5 p-6 backdrop-blur-md"
+            className="border border-white/20 bg-black/40 px-5 py-4 backdrop-blur-md"
           >
             <p className="text-sm font-semibold text-[#7ec843]">
               {String(index + 1).padStart(2, '0')}
-              {section.duration && <span className="text-white/50"> — {section.duration}</span>}
+              {section.duration && <span className="text-white/60"> — {section.duration}</span>}
             </p>
-            <h2 className="font-display text-2xl font-semibold">{section.title}</h2>
-            <p className="text-sm leading-relaxed text-white/70">{section.description}</p>
+            <h2 className="font-display text-xl font-semibold">{section.title}</h2>
+            <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-white/80 [@media(min-height:820px)]:line-clamp-6">
+              {section.description}
+            </p>
             {section.highlight && (
-              <p className="mt-auto pt-2 text-sm font-medium text-white">{section.highlight}</p>
+              <p className="mt-2 line-clamp-1 text-sm font-medium text-white [@media(max-height:780px)]:hidden">
+                {section.highlight}
+              </p>
             )}
           </article>
         ))}
       </section>
 
-      <footer className="relative z-10 pb-6 text-center text-xs text-white/50">
-        <LegalLinks className="mb-2" />© {new Date().getFullYear()} Maison de l'Entreprise
+      <footer className="relative z-10 shrink-0 py-3 text-center text-xs text-white/60">
+        <LegalLinks className="mb-1" />© {new Date().getFullYear()} Maison de l'Entreprise
       </footer>
     </div>
   )
