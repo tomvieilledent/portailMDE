@@ -17,7 +17,7 @@ OWASP Top 10 sur l'API et le front : authentification JWT (durée, révocation, 
 ## Notation (/100)
 Pars de 100 ; retire 20 par constat critique, 10 majeur, 3 mineur (plancher 0).
 
-## Format : ajoute à la fin de `audit/securite.md` (crée-le avec le titre `# Audit sécurité` si absent)
+## Format : ajoute à la fin de `audit/securite.md` (remplace la ligne « Aucun tour réalisé » au premier tour)
 ```
 ## Tour N — note : XX/100
 À corriger :

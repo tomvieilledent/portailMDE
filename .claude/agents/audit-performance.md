@@ -17,7 +17,7 @@ Requêtes N+1 et index manquants, pagination, taille des réponses API, uploads,
 ## Notation (/100)
 Pars de 100 ; retire 20 par constat critique, 10 majeur, 3 mineur (plancher 0).
 
-## Format : ajoute à la fin de `audit/performance.md` (crée-le avec le titre `# Audit performance` si absent)
+## Format : ajoute à la fin de `audit/performance.md` (remplace la ligne « Aucun tour réalisé » au premier tour)
 ```
 ## Tour N — note : XX/100
 À corriger :

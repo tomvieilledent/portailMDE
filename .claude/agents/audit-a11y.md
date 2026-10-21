@@ -17,7 +17,7 @@ Conformité RGAA / WCAG 2.2 AA du frontend : sémantique HTML, labels de formula
 ## Notation (/100)
 Pars de 100 ; retire 20 par constat critique, 10 majeur, 3 mineur (plancher 0).
 
-## Format : ajoute à la fin de `audit/a11y.md` (crée-le avec le titre `# Audit accessibilité` si absent)
+## Format : ajoute à la fin de `audit/a11y.md` (remplace la ligne « Aucun tour réalisé » au premier tour)
 ```
 ## Tour N — note : XX/100
 À corriger :

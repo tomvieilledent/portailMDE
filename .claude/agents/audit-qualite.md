@@ -17,7 +17,7 @@ Qualité du code et des tests : couverture des cas critiques, lint/format, dupli
 ## Notation (/100)
 Pars de 100 ; retire 20 par constat critique, 10 majeur, 3 mineur (plancher 0).
 
-## Format : ajoute à la fin de `audit/qualite.md` (crée-le avec le titre `# Audit qualité et RGPD` si absent)
+## Format : ajoute à la fin de `audit/qualite.md` (remplace la ligne « Aucun tour réalisé » au premier tour)
 ```
 ## Tour N — note : XX/100
 À corriger :
