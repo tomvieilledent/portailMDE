@@ -18,7 +18,7 @@ test('deux utilisateurs discutent en temps réel', async ({ browser }) => {
 
   // Léa ouvre une conversation directe depuis la fiche de Hugo
   await lea.getByLabel('Rechercher').fill('Hugo')
-  await lea.getByText('Hugo Bernard').click()
+  await lea.getByRole('button', { name: 'Voir la fiche de Hugo Bernard' }).click()
   await lea.getByRole('button', { name: /Envoyer un message/ }).click()
   await expect(lea).toHaveURL(/\/messagerie\/.+/)
 
