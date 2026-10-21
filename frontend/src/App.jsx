@@ -12,6 +12,8 @@ import CompaniesPage from './features/directory/CompaniesPage'
 import CompanyPage from './features/directory/CompanyPage'
 import AgendaPage from './features/agenda/AgendaPage'
 import MessagingPage from './features/messaging/MessagingPage'
+import TrainingPage from './features/trainings/TrainingPage'
+import TrainingsPage from './features/trainings/TrainingsPage'
 import PeoplePage from './features/directory/PeoplePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import HomePage from './pages/HomePage'
@@ -49,6 +51,8 @@ export default function App() {
           <Route path="/messagerie" element={<MessagingPage />} />
           <Route path="/messagerie/:conversationId" element={<MessagingPage />} />
           <Route path="/agenda" element={<AgendaPage />} />
+          <Route path="/formations" element={<TrainingsPage />} />
+          <Route path="/formations/:trainingId" element={<TrainingPage />} />
           <Route path="/profil" element={<ProfilePage />} />
           <Route path="/mon-entreprise" element={<MyCompanyPage />} />
           <Route path="/entreprises" element={<CompaniesPage />} />
