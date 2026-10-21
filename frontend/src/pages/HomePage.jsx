@@ -15,7 +15,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       <header className="mx-auto flex max-w-6xl items-center justify-between p-4">
-        <span className="text-xl font-bold text-brand-700 dark:text-brand-300">portailMDE</span>
+        <span className="text-brand-700 dark:text-brand-300 text-xl font-bold">portailMDE</span>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -27,7 +27,7 @@ export default function HomePage() {
           </button>
           <Link
             to="/connexion"
-            className="rounded-lg bg-brand-700 px-4 py-2 text-sm font-medium text-white hover:bg-brand-800"
+            className="bg-brand-700 hover:bg-brand-800 rounded-lg px-4 py-2 text-sm font-medium text-white"
           >
             Se connecter
           </Link>
@@ -35,15 +35,15 @@ export default function HomePage() {
       </header>
 
       <main>
-        <section className="bg-gradient-to-b from-brand-50 to-transparent px-4 py-16 text-center dark:from-brand-900/30 sm:py-24">
+        <section className="from-brand-50 dark:from-brand-900/30 bg-gradient-to-b to-transparent px-4 py-16 text-center sm:py-24">
           <div className="mx-auto max-w-3xl space-y-6">
-            <h1 className="text-4xl font-bold tracking-tight text-brand-800 dark:text-brand-200 sm:text-5xl">
+            <h1 className="text-brand-800 dark:text-brand-200 text-4xl font-bold tracking-tight sm:text-5xl">
               {content.slogan}
             </h1>
             <p className="text-lg text-slate-600 dark:text-slate-400">{content.subtitle}</p>
             <Link
               to="/connexion"
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-700 px-6 py-3 font-medium text-white hover:bg-brand-800"
+              className="bg-brand-700 hover:bg-brand-800 inline-flex items-center gap-2 rounded-lg px-6 py-3 font-medium text-white"
             >
               Accéder au portail <ArrowRight size={18} aria-hidden="true" />
             </Link>
@@ -62,7 +62,7 @@ export default function HomePage() {
                     aria-hidden="true"
                   />
                   <h2 className="text-xl font-semibold">{section.title}</h2>
-                  <p className="text-sm font-medium text-brand-700 dark:text-brand-300">
+                  <p className="text-brand-700 dark:text-brand-300 text-sm font-medium">
                     {section.duration}
                   </p>
                   <p className="text-sm text-slate-600 dark:text-slate-400">

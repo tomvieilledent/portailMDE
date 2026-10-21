@@ -65,7 +65,7 @@ function ArticleCard({ article, saved, onToggleSave, onDelete }) {
           href={article.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-sm text-brand-700 hover:underline dark:text-brand-300"
+          className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 text-sm hover:underline"
         >
           Lire l'article <ExternalLink size={14} aria-hidden="true" />
         </a>
@@ -173,7 +173,7 @@ export default function NewsPage() {
           <div className="relative mb-6 max-w-md">
             <Search
               size={16}
-              className="pointer-events-none absolute left-3 top-9 text-slate-400"
+              className="pointer-events-none absolute top-9 left-3 text-slate-400"
               aria-hidden="true"
             />
             <Input

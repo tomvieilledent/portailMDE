@@ -33,11 +33,11 @@ function Bubble({ message, mine, onDelete }) {
         )}
       >
         {!mine && message.author && (
-          <p className="mb-0.5 text-xs font-semibold text-brand-700 dark:text-brand-300">
+          <p className="text-brand-700 dark:text-brand-300 mb-0.5 text-xs font-semibold">
             {message.author.first_name} {message.author.last_name}
           </p>
         )}
-        {message.content && <p className="whitespace-pre-wrap break-words">{message.content}</p>}
+        {message.content && <p className="break-words whitespace-pre-wrap">{message.content}</p>}
         {message.file_url && (
           <a
             href={message.file_url}
@@ -60,7 +60,7 @@ function Bubble({ message, mine, onDelete }) {
               type="button"
               onClick={() => onDelete(message)}
               aria-label="Supprimer le message"
-              className="opacity-0 transition focus:opacity-100 group-hover:opacity-100"
+              className="opacity-0 transition group-hover:opacity-100 focus:opacity-100"
             >
               <Trash2 size={12} />
             </button>
@@ -242,7 +242,7 @@ export default function MessageThread({ conversation, meId }) {
                 onSubmit(e)
               }
             }}
-            className="block max-h-32 w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:border-slate-700 dark:bg-slate-900"
+            className="focus:ring-brand-500 block max-h-32 w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
           />
         </div>
         <Button type="submit" aria-label="Envoyer" loading={send.isPending}>

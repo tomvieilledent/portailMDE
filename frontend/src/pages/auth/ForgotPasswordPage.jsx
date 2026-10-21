@@ -47,7 +47,7 @@ export default function ForgotPasswordPage() {
       )}
       <Link
         to="/connexion"
-        className="block text-center text-sm text-brand-700 hover:underline dark:text-brand-300"
+        className="text-brand-700 dark:text-brand-300 block text-center text-sm hover:underline"
       >
         Retour à la connexion
       </Link>

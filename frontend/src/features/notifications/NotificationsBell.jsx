@@ -81,7 +81,7 @@ export default function NotificationsBell() {
       >
         <Bell size={18} />
         {unread > 0 && (
-          <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+          <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
             {unread > 9 ? '9+' : unread}
           </span>
         )}
@@ -98,7 +98,7 @@ export default function NotificationsBell() {
               <button
                 type="button"
                 onClick={() => readAll.mutate()}
-                className="text-xs text-brand-700 hover:underline dark:text-brand-300"
+                className="text-brand-700 dark:text-brand-300 text-xs hover:underline"
               >
                 Tout marquer comme lu
               </button>
@@ -115,7 +115,7 @@ export default function NotificationsBell() {
                   onClick={() => onSelect(notification)}
                   className={cn(
                     'block w-full border-b border-slate-100 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800',
-                    !notification.is_read && 'bg-brand-50/60 font-medium dark:bg-brand-900/20',
+                    !notification.is_read && 'bg-brand-50/60 dark:bg-brand-900/20 font-medium',
                   )}
                 >
                   {notification.content}

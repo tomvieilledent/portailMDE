@@ -1,3 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+
+/* Mode sombre piloté par la classe `dark` sur <html> (ThemeProvider). */
+@custom-variant dark (&:where(.dark, .dark *));

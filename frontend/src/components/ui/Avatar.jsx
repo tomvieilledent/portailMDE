@@ -20,7 +20,7 @@ export default function Avatar({ src, firstName, lastName, size = 'md', classNam
     <span
       aria-hidden="true"
       className={cn(
-        'inline-flex shrink-0 items-center justify-center rounded-full bg-brand-100 font-semibold text-brand-700 dark:bg-brand-900 dark:text-brand-200',
+        'bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200 inline-flex shrink-0 items-center justify-center rounded-full font-semibold',
         sizes[size],
         className,
       )}

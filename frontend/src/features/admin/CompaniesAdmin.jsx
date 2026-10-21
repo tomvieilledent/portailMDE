@@ -115,7 +115,7 @@ export default function CompaniesAdmin() {
         <div className="relative w-full max-w-sm">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3 top-9 text-slate-400"
+            className="pointer-events-none absolute top-9 left-3 text-slate-400"
             aria-hidden="true"
           />
           <Input

@@ -85,7 +85,7 @@ export default function TrainingsPage() {
         <div className="relative w-full max-w-md">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3 top-9 text-slate-400"
+            className="pointer-events-none absolute top-9 left-3 text-slate-400"
             aria-hidden="true"
           />
           <Input
@@ -120,7 +120,7 @@ export default function TrainingsPage() {
           return (
             <li key={training.id}>
               <Link to={`/formations/${training.id}`} className="block h-full">
-                <Card className="flex h-full flex-col gap-3 overflow-hidden p-0 transition hover:border-brand-400 hover:shadow-md">
+                <Card className="hover:border-brand-400 flex h-full flex-col gap-3 overflow-hidden p-0 transition hover:shadow-md">
                   {training.picture_path ? (
                     <img
                       src={uploadUrl(training.picture_path)}
@@ -128,7 +128,7 @@ export default function TrainingsPage() {
                       className="h-36 w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-36 items-center justify-center bg-brand-50 text-brand-400 dark:bg-brand-900/30">
+                    <div className="bg-brand-50 text-brand-400 dark:bg-brand-900/30 flex h-36 items-center justify-center">
                       <GraduationCap size={40} aria-hidden="true" />
                     </div>
                   )}

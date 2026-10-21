@@ -54,7 +54,7 @@ export default function UsersAdmin() {
         <div className="relative w-full max-w-sm">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3 top-9 text-slate-400"
+            className="pointer-events-none absolute top-9 left-3 text-slate-400"
             aria-hidden="true"
           />
           <Input
@@ -78,7 +78,7 @@ export default function UsersAdmin() {
       {users.data && (
         <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-800">
+            <thead className="border-b border-slate-200 text-xs text-slate-500 uppercase dark:border-slate-800">
               <tr>
                 <th className="p-3">Compte</th>
                 <th className="p-3">Rôle</th>

@@ -19,7 +19,7 @@ export function CompanyLogo({ company, className = 'h-14 w-14' }) {
   ) : (
     <span
       aria-hidden="true"
-      className={`${className} inline-flex shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200`}
+      className={`${className} bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200 inline-flex shrink-0 items-center justify-center rounded-lg`}
     >
       <Building2 />
     </span>
@@ -44,7 +44,7 @@ export default function CompaniesPage() {
         <div className="relative w-full max-w-md">
           <Search
             size={16}
-            className="pointer-events-none absolute left-3 top-9 text-slate-400"
+            className="pointer-events-none absolute top-9 left-3 text-slate-400"
             aria-hidden="true"
           />
           <Input
@@ -86,7 +86,7 @@ export default function CompaniesPage() {
           {data.items.map((company) => (
             <li key={company.id}>
               <Link to={`/entreprises/${company.id}`} className="block h-full">
-                <Card className="flex h-full flex-col gap-3 transition hover:border-brand-400 hover:shadow-md">
+                <Card className="hover:border-brand-400 flex h-full flex-col gap-3 transition hover:shadow-md">
                   <div className="flex items-center gap-3">
                     <CompanyLogo company={company} />
                     <div className="min-w-0">
