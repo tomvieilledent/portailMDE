@@ -11,7 +11,7 @@ from alembic.migration import MigrationContext
 from app.core.config import get_settings
 from app.db.base import Base
 
-TEST_DB = "portail_test"
+TEST_DB = "portail_migrations_test"
 
 
 @pytest.fixture(scope="module")
