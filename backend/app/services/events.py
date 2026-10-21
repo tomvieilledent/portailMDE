@@ -93,7 +93,7 @@ def export_ics(events: list[Event], domain: str = "portailmde") -> str:
 
     def esc(text: str) -> str:
         return (
-            text.replace("\\", "\\\\").replace(";", "\;").replace(",", "\\,").replace("\n", "\\n")
+            text.replace("\\", "\\\\").replace(";", "\\;").replace(",", "\\,").replace("\n", "\\n")
         )
 
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
