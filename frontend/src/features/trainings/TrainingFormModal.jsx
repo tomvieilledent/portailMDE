@@ -1,3 +1,5 @@
+/** Modale de création ou de modification d'une formation. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 

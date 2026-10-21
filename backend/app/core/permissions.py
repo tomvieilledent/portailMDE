@@ -14,6 +14,8 @@ from app.models.user import User
 
 
 class Permission(enum.StrEnum):
+    """Permissions globales attribuables au personnel (staff)."""
+
     MANAGE_COMPANIES = "manage_companies"
     MANAGE_USERS = "manage_users"
     MANAGE_TRAININGS = "manage_trainings"
@@ -36,12 +38,14 @@ def validate_permissions(values: list[str] | None) -> list[str]:
 
 
 def has_permission(user: User, permission: Permission) -> bool:
+    """Indique si l'utilisateur détient la permission (le super administrateur les a toutes)."""
     if user.role == UserRole.SUPER_ADMIN:
         return True
     return user.role == UserRole.STAFF and permission.value in (user.permissions or [])
 
 
 def is_staff_or_above(user: User) -> bool:
+    """Indique si l'utilisateur est membre du personnel ou super administrateur."""
     return user.role in (UserRole.SUPER_ADMIN, UserRole.STAFF)
 
 

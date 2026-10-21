@@ -1,3 +1,6 @@
+/** Utilitaires partagés des tests E2E : mot de passe de démo et connexion via l'interface. */
+
+/** Mot de passe commun des comptes de démonstration. */
 export const PASSWORD = 'demo-password-1'
 
 /** Se connecte via l'interface et attend l'arrivée sur l'annuaire. */

@@ -1,3 +1,5 @@
+"""Annuaire : recherche de personnes et d'entreprises actives."""
+
 import uuid
 
 from sqlalchemy import func, or_, select
@@ -56,6 +58,7 @@ def search_companies(
     search: str | None = None,
     kind: CompanyKind | None = None,
 ) -> tuple[list[CompanyCard], int]:
+    """Entreprises actives avec leur nombre de membres actifs, filtrables par nom, description et type."""
     members = (
         select(User.company_id, func.count().label("n"))
         .where(User.deleted_at.is_(None), User.is_active.is_(True))

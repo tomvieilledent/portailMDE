@@ -1,3 +1,5 @@
+/** Définition du menu principal. */
+
 import {
   Briefcase,
   Building2,

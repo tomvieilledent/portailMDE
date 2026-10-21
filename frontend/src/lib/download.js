@@ -1,3 +1,5 @@
+/** Téléchargement de fichiers protégés. */
+
 import { tokens } from './tokens'
 
 /** Télécharge un fichier protégé (en-tête Authorization) puis le propose à l'utilisateur. */

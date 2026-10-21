@@ -1,14 +1,18 @@
+/** Tests du client HTTP de l'API. */
+
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApiError, api } from './api'
 import { tokens } from './tokens'
 
+/** Fabrique une réponse JSON. */
 const json = (body, status = 200) => Promise.resolve(new Response(JSON.stringify(body), { status }))
 
 beforeEach(() => {
   vi.restoreAllMocks()
 })
 
+/** Jetons, renouvellement et erreurs. */
 describe('api client', () => {
   it('ajoute le jeton et les paramètres de requête', async () => {
     tokens.set({ access_token: 'A', refresh_token: 'R' })

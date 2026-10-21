@@ -1,12 +1,16 @@
+"""Tests des événements : visibilité, droits, filtre par dates, invitations et export iCalendar."""
+
 API = "/api/v1"
 
 
 def make_event(client, headers, **overrides):
+    """Crée un événement via l'API avec des valeurs par défaut."""
     body = {"title": "Afterwork", "event_date": "2026-11-05", **overrides}
     return client.post(f"{API}/events", headers=headers, json=body)
 
 
 def test_create_and_read(client, make_user, login):
+    """Création et lecture d'un événement."""
     make_user()
     headers = login()
     created = make_event(client, headers, event_time="18:30:00", is_public=True)
@@ -16,6 +20,7 @@ def test_create_and_read(client, make_user, login):
 
 
 def test_private_event_visibility(client, make_user, login):
+    """Un événement privé n'est visible que de l'organisateur et des invités."""
     owner, guest, stranger = make_user("o@x.fr"), make_user("g@x.fr"), make_user("s@x.fr")
     event = make_event(client, login("o@x.fr"), invitee_ids=[str(guest.id)]).json()
     url = f"{API}/events/{event['id']}"
@@ -27,6 +32,7 @@ def test_private_event_visibility(client, make_user, login):
 
 
 def test_public_event_visible_to_all(client, make_user, login):
+    """Un événement public est visible de tous."""
     make_user("o@x.fr")
     make_user("s@x.fr")
     make_event(client, login("o@x.fr"), is_public=True)
@@ -34,6 +40,7 @@ def test_public_event_visible_to_all(client, make_user, login):
 
 
 def test_staff_sees_everything_and_edits(client, make_user, login):
+    """Le staff voit et modifie tous les événements."""
     from app.models.enums import UserRole
 
     make_user("o@x.fr")
@@ -50,6 +57,7 @@ def test_staff_sees_everything_and_edits(client, make_user, login):
 
 
 def test_only_owner_can_edit_or_delete(client, make_user, login):
+    """Seul le propriétaire peut modifier ou supprimer un événement."""
     make_user("o@x.fr")
     make_user("g@x.fr")
     event = make_event(client, login("o@x.fr"), is_public=True).json()
@@ -62,6 +70,7 @@ def test_only_owner_can_edit_or_delete(client, make_user, login):
 
 
 def test_date_range_filter(client, make_user, login):
+    """Filtrage des événements par plage de dates."""
     make_user()
     headers = login()
     make_event(client, headers, event_date="2026-11-05")
@@ -71,6 +80,7 @@ def test_date_range_filter(client, make_user, login):
 
 
 def test_invitation_flow(client, make_user, login):
+    """Parcours d'invitation : envoi, doublon ignoré, réponse."""
     make_user("o@x.fr")
     guest = make_user("g@x.fr")
     ho, hg = login("o@x.fr"), login("g@x.fr")
@@ -97,6 +107,7 @@ def test_invitation_flow(client, make_user, login):
 
 
 def test_cannot_answer_someone_elses_invitation(client, make_user, login):
+    """Impossible de répondre à l'invitation d'autrui ou avec un statut invalide."""
     make_user("o@x.fr")
     guest = make_user("g@x.fr")
     make_user("s@x.fr")
@@ -119,6 +130,7 @@ def test_cannot_answer_someone_elses_invitation(client, make_user, login):
 
 
 def test_ics_export(client, make_user, login):
+    """L'export iCalendar produit des dates et un titre correctement formatés."""
     make_user()
     headers = login()
     make_event(client, headers, title="Réunion; importante", event_time="09:00:00")

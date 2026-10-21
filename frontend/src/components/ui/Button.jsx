@@ -1,3 +1,5 @@
+/** Bouton de l'interface avec variantes et état de chargement. */
+
 import { forwardRef } from 'react'
 
 import { cn } from '../../lib/cn'

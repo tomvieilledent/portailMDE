@@ -1,3 +1,5 @@
+/** Structure des pages connectées : menu latéral, tiroir mobile et en-tête. */
+
 import { Menu, Moon, Sun, X } from 'lucide-react'
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
@@ -6,6 +8,7 @@ import { cn } from '../../lib/cn'
 import { navItems } from '../../navigation'
 import { useTheme } from '../ThemeProvider'
 
+/** Liste des liens du menu principal. */
 function NavList({ items, onNavigate }) {
   return (
     <nav aria-label="Navigation principale" className="flex flex-col gap-1">

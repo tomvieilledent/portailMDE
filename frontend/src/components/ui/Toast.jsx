@@ -1,8 +1,11 @@
+/** Notifications éphémères (toasts). */
+
 import { CheckCircle2, Info, XCircle } from 'lucide-react'
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
 
 import { cn } from '../../lib/cn'
 
+/** Contexte permettant d'afficher des notifications. */
 const ToastContext = createContext(null)
 
 const styles = {
@@ -63,6 +66,7 @@ export function ToastProvider({ children, duration = 4000 }) {
   )
 }
 
+/** Accès à la fonction d'affichage des notifications. */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = useContext(ToastContext)

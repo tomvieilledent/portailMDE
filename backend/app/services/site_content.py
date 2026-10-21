@@ -49,6 +49,7 @@ DEFAULTS = {"landing": DEFAULT_LANDING}
 
 
 def get_content(session: Session, key: str) -> dict:
+    """Retourne le contenu enregistré pour la clé, ou son contenu par défaut."""
     if key not in DEFAULTS:
         raise NotFoundError("Bloc de contenu inconnu")
     stored = session.get(SiteContent, key)
@@ -56,6 +57,7 @@ def get_content(session: Session, key: str) -> dict:
 
 
 def set_content(session: Session, key: str, value: dict) -> dict:
+    """Enregistre le contenu associé à la clé."""
     if key not in DEFAULTS:
         raise NotFoundError("Bloc de contenu inconnu")
     stored = session.get(SiteContent, key)

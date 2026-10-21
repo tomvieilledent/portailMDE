@@ -1,13 +1,17 @@
+"""Tests de l'API des utilisateurs : profil, mot de passe, création, droits, désactivation et rôles."""
+
 from app.models.enums import UserRole
 
 API = "/api/v1/users"
 
 
 def new_user(**overrides):
+    """Construit le corps d'une requête de création d'utilisateur."""
     return {"email": "new@example.fr", "password": "password123", **overrides}
 
 
 def test_me_read_and_update(client, make_user, login):
+    """Lecture et mise à jour de son propre profil."""
     make_user(first_name="Ada")
     headers = login()
     assert client.get(f"{API}/me", headers=headers).json()["first_name"] == "Ada"
@@ -17,6 +21,7 @@ def test_me_read_and_update(client, make_user, login):
 
 
 def test_change_password(client, make_user, login):
+    """Changement de mot de passe."""
     make_user()
     headers = login()
     bad = client.post(
@@ -35,11 +40,13 @@ def test_change_password(client, make_user, login):
 
 
 def test_list_requires_manage_users(client, make_user, login):
+    """La liste des utilisateurs exige la permission dédiée."""
     make_user()
     assert client.get(API, headers=login()).status_code == 403
 
 
 def test_list_with_search_and_pagination(client, make_user, login):
+    """Liste des utilisateurs avec recherche et pagination."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN, last_name="Zed")
     make_user("a@x.fr", last_name="Alpha")
     make_user("b@x.fr", last_name="Beta")
@@ -51,6 +58,7 @@ def test_list_with_search_and_pagination(client, make_user, login):
 
 
 def test_super_admin_creates_user(client, make_user, login):
+    """Le super admin crée un utilisateur."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     response = client.post(API, headers=login("root@x.fr"), json=new_user(email="New@Example.fr"))
     assert response.status_code == 201
@@ -61,6 +69,7 @@ def test_super_admin_creates_user(client, make_user, login):
 
 
 def test_company_admin_creates_member_in_own_company_only(client, make_user, make_company, login):
+    """Un admin d'entreprise ne crée des membres que dans la sienne."""
     mine, other = make_company("Mine"), make_company("Other")
     make_user("boss@x.fr", company_id=mine.id, is_company_admin=True)
     headers = login("boss@x.fr")
@@ -75,11 +84,13 @@ def test_company_admin_creates_member_in_own_company_only(client, make_user, mak
 
 
 def test_member_cannot_create(client, make_user, login):
+    """Un simple membre ne peut pas créer d'utilisateur."""
     make_user()
     assert client.post(API, headers=login(), json=new_user()).status_code == 403
 
 
 def test_staff_cannot_touch_super_admin(client, make_user, login):
+    """Le staff ne peut pas agir sur un super admin."""
     root = make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     make_user("staff@x.fr", role=UserRole.STAFF, permissions=["manage_users"])
     headers = login("staff@x.fr")
@@ -88,6 +99,7 @@ def test_staff_cannot_touch_super_admin(client, make_user, login):
 
 
 def test_deactivate_reactivate_and_login(client, make_user, login):
+    """Désactivation, réactivation et effet sur la connexion."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     target = make_user("t@x.fr")
     headers = login("root@x.fr")
@@ -100,6 +112,7 @@ def test_deactivate_reactivate_and_login(client, make_user, login):
 
 
 def test_company_admin_manages_only_own_company(client, make_user, make_company, login):
+    """Un admin d'entreprise ne gère que les utilisateurs de son entreprise."""
     mine, other = make_company("Mine"), make_company("Other")
     make_user("boss@x.fr", company_id=mine.id, is_company_admin=True)
     colleague = make_user("c@x.fr", company_id=mine.id)
@@ -110,6 +123,7 @@ def test_company_admin_manages_only_own_company(client, make_user, make_company,
 
 
 def test_cannot_remove_last_super_admin(client, make_user, login):
+    """Impossible de retirer le dernier super admin."""
     root = make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     headers = login("root@x.fr")
     assert client.post(f"{API}/{root.id}/deactivate", headers=headers).status_code == 403
@@ -118,6 +132,7 @@ def test_cannot_remove_last_super_admin(client, make_user, login):
 
 
 def test_delete_is_soft(client, make_user, login, session):
+    """La suppression d'un utilisateur est logique."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     target = make_user("t@x.fr")
     headers = login("root@x.fr")
@@ -128,6 +143,7 @@ def test_delete_is_soft(client, make_user, login, session):
 
 
 def test_set_role_super_admin_only(client, make_user, login):
+    """Seul le super admin peut changer les rôles."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     target = make_user("t@x.fr")
     body = {"role": "staff", "permissions": ["manage_news"]}
@@ -146,6 +162,7 @@ def test_set_role_super_admin_only(client, make_user, login):
 
 
 def test_deleted_user_cannot_login(client, make_user, login):
+    """Un utilisateur supprimé ne peut plus se connecter."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
     target = make_user("t@x.fr")
     client.delete(f"{API}/{target.id}", headers=login("root@x.fr"))

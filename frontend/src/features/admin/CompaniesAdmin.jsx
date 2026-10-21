@@ -1,3 +1,5 @@
+/** Administration des entreprises. */
+
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
 import { useState } from 'react'
@@ -19,6 +21,7 @@ import { COMPANY_KINDS } from '../directory/labels'
 
 const PAGE = 25
 
+/** Création ou modification d'une entreprise. */
 function CompanyFormModal({ company, onClose }) {
   const toast = useToast()
   const queryClient = useQueryClient()

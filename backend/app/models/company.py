@@ -1,3 +1,5 @@
+"""Modèle des entreprises (entreprises adhérentes, formateurs et partenaires)."""
+
 from sqlalchemy import Boolean, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -6,6 +8,8 @@ from app.models.enums import CompanyKind
 
 
 class Company(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
+    """Entreprise, formateur ou partenaire, avec ses membres."""
+
     __tablename__ = "companies"
 
     name: Mapped[str] = mapped_column(String(200), nullable=False, index=True)

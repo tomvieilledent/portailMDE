@@ -1,3 +1,5 @@
+"""Point d'entrée FastAPI : création de l'application, middlewares, routes et fichiers statiques."""
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -15,6 +17,7 @@ from app.services.storage import PUBLIC_UPLOAD_CATEGORIES, upload_root
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    """Cycle de vie de l'application : démarre puis arrête le planificateur de tâches."""
     scheduler = start_scheduler()
     yield
     if scheduler:
@@ -22,6 +25,7 @@ async def lifespan(_: FastAPI):
 
 
 def create_app() -> FastAPI:
+    """Construit l'application FastAPI (CORS, gestion des erreurs, routeurs, dossiers d'uploads publics)."""
     settings = get_settings()
     configure_logging(settings.log_level)
 

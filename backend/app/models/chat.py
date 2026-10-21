@@ -1,3 +1,5 @@
+"""Modèles de la messagerie : conversations, participants et messages."""
+
 import uuid
 from datetime import datetime
 
@@ -10,6 +12,8 @@ from app.models.enums import ConversationKind
 
 
 class Conversation(UUIDPrimaryKeyMixin, Base):
+    """Conversation directe (deux personnes) ou de groupe."""
+
     __tablename__ = "conversations"
 
     kind: Mapped[ConversationKind] = mapped_column(String(10), nullable=False)
@@ -27,6 +31,8 @@ class Conversation(UUIDPrimaryKeyMixin, Base):
 
 
 class ConversationParticipant(Base):
+    """Participation d'un utilisateur à une conversation, avec sa date de dernière lecture."""
+
     __tablename__ = "conversation_participants"
 
     conversation_id: Mapped[uuid.UUID] = mapped_column(

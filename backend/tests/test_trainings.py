@@ -1,3 +1,5 @@
+"""Tests des formations : catalogue, sessions, inscriptions, intérêts et fichiers."""
+
 import pytest
 
 from app.models.enums import UserRole
@@ -9,20 +11,24 @@ END = "2026-11-10T17:00:00+00:00"
 
 @pytest.fixture
 def manager(make_user, login):
+    """Gestionnaire de formations ; retourne ses en-têtes."""
     make_user("mgr@x.fr", role=UserRole.STAFF, permissions=["manage_trainings"])
     return login("mgr@x.fr")
 
 
 def new_training(client, headers, **kw):
+    """Crée une formation via l'API."""
     return client.post(f"{API}/trainings", headers=headers, json={"title": "Excel", **kw}).json()
 
 
 def new_session(client, headers, training, **kw):
+    """Crée une session pour une formation via l'API."""
     body = {"start_at": START, "end_at": END, "max_participants": 2, "is_public": True, **kw}
     return client.post(f"{API}/trainings/{training['id']}/sessions", headers=headers, json=body)
 
 
 def test_catalog_permissions(client, make_user, login, manager):
+    """Les droits sur le catalogue de formations."""
     make_user()
     assert client.post(f"{API}/trainings", headers=login(), json={"title": "X"}).status_code == 403
     created = client.post(
@@ -40,6 +46,7 @@ def test_catalog_permissions(client, make_user, login, manager):
 
 
 def test_inactive_training_hidden(client, make_user, login, manager):
+    """Une formation inactive est masquée aux membres."""
     make_user()
     training = new_training(client, manager)
     client.post(f"{API}/trainings/{training['id']}/deactivate", headers=manager)
@@ -49,6 +56,7 @@ def test_inactive_training_hidden(client, make_user, login, manager):
 
 
 def test_update_and_delete(client, manager):
+    """Modification et suppression d'une formation."""
     training = new_training(client, manager)
     url = f"{API}/trainings/{training['id']}"
     assert client.patch(url, headers=manager, json={"title": "Word"}).json()["title"] == "Word"
@@ -57,6 +65,7 @@ def test_update_and_delete(client, manager):
 
 
 def test_session_validation(client, manager):
+    """Validation des données d'une session."""
     training = new_training(client, manager)
     bad = new_session(client, manager, training, start_at=END, end_at=START)
     assert bad.status_code == 422
@@ -64,6 +73,7 @@ def test_session_validation(client, manager):
 
 
 def test_interest_toggle(client, make_user, login, manager):
+    """Marquer ou retirer son intérêt pour une formation."""
     make_user()
     training = new_training(client, manager)
     url = f"{API}/trainings/{training['id']}/interest"
@@ -75,6 +85,7 @@ def test_interest_toggle(client, make_user, login, manager):
 
 
 def test_enroll_capacity_and_unenroll(client, make_user, login, manager):
+    """Inscription, capacité maximale et désinscription."""
     for email in ("a@x.fr", "b@x.fr", "c@x.fr"):
         make_user(email)
     training = new_training(client, manager)
@@ -93,6 +104,7 @@ def test_enroll_capacity_and_unenroll(client, make_user, login, manager):
 
 
 def test_cannot_shrink_capacity_below_enrolled(client, make_user, login, manager):
+    """Impossible de réduire la capacité sous le nombre d'inscrits."""
     make_user("a@x.fr")
     make_user("b@x.fr")
     training = new_training(client, manager)
@@ -105,6 +117,7 @@ def test_cannot_shrink_capacity_below_enrolled(client, make_user, login, manager
 
 
 def test_closed_session_rejects_enrollment(client, make_user, login, manager):
+    """Une session close refuse les inscriptions."""
     make_user()
     training = new_training(client, manager)
     ts = new_session(client, manager, training).json()
@@ -118,6 +131,7 @@ def test_closed_session_rejects_enrollment(client, make_user, login, manager):
 
 
 def test_private_session_needs_invitation(client, make_user, login, manager):
+    """Une session privée exige une invitation."""
     guest = make_user("g@x.fr")
     make_user("s@x.fr")
     training = new_training(client, manager)
@@ -134,6 +148,7 @@ def test_private_session_needs_invitation(client, make_user, login, manager):
 
 
 def test_completion_and_my_trainings(client, make_user, login, manager):
+    """Validation d'une formation et liste « mes formations »."""
     user = make_user()
     training = new_training(client, manager)
     ts = new_session(client, manager, training).json()
@@ -150,6 +165,7 @@ def test_completion_and_my_trainings(client, make_user, login, manager):
 
 
 def test_session_listing_range(client, make_user, login, manager):
+    """Liste des sessions filtrée par plage de dates."""
     make_user()
     training = new_training(client, manager)
     new_session(client, manager, training)
@@ -170,6 +186,7 @@ def test_session_listing_range(client, make_user, login, manager):
 
 
 def test_picture_and_document_upload(client, manager):
+    """Téléversement d'image et de documents d'une formation."""
     import io
 
     training = new_training(client, manager)

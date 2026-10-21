@@ -1,7 +1,10 @@
+/** Tests E2E de l'agenda : création, visibilité et suppression d'un événement public. */
+
 import { expect, test } from '@playwright/test'
 
 import { login } from './helpers'
 
+/** Un événement public créé par un membre est visible d'un autre, et supprimable par son créateur. */
 test('crée un événement public visible par un autre membre', async ({ browser }) => {
   const title = `Petit-déjeuner ${Date.now()}`
   const leaCtx = await browser.newContext()

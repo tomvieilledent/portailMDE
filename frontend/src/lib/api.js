@@ -1,3 +1,5 @@
+/** Client HTTP de l'API : jetons, renouvellement de session et gestion des erreurs. */
+
 import { tokens } from './tokens'
 
 const BASE = '/api/v1'
@@ -34,6 +36,7 @@ async function refreshTokens() {
   return refreshing
 }
 
+/** Convertit une réponse d'erreur en `ApiError`. */
 async function parseError(response) {
   const body = await response.json().catch(() => null)
   const error = body?.error ?? {}
@@ -81,6 +84,7 @@ export async function request(
   return response.status === 204 ? null : response.json()
 }
 
+/** Raccourcis par méthode HTTP. */
 export const api = {
   get: (path, params) => request(path, { params }),
   post: (path, body, options) => request(path, { method: 'POST', body, ...options }),

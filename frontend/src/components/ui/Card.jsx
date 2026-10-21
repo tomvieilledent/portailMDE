@@ -1,5 +1,8 @@
+/** Conteneur de type carte. */
+
 import { cn } from '../../lib/cn'
 
+/** Carte : conteneur avec bordure et ombre. */
 export default function Card({ className, children, ...props }) {
   return (
     <div

@@ -46,6 +46,7 @@ Fetcher = Callable[[str], str]
 
 
 def http_fetch(url: str) -> str:
+    """Télécharge le contenu d'un flux par HTTP."""
     return httpx.get(url, headers=_HEADERS, timeout=10, follow_redirects=True).text
 
 
@@ -60,6 +61,7 @@ def list_articles(
     search: str | None = None,
     category: str | None = None,
 ) -> tuple[list[NewsArticle], int]:
+    """Liste les articles, du plus récent au plus ancien, avec recherche et filtre par catégorie."""
     query = select(NewsArticle)
     if search:
         pattern = f"%{search.strip()}%"
@@ -78,6 +80,7 @@ def list_articles(
 
 
 def get_article(session: Session, article_id: uuid.UUID) -> NewsArticle:
+    """Retourne un article ou lève une erreur s'il est introuvable."""
     article = session.get(NewsArticle, article_id)
     if not article:
         raise NotFoundError("Article introuvable")
@@ -85,6 +88,7 @@ def get_article(session: Session, article_id: uuid.UUID) -> NewsArticle:
 
 
 def create_article(session: Session, data) -> NewsArticle:
+    """Crée un article ; l'URL doit être unique."""
     if data.url and session.scalar(select(NewsArticle.id).where(NewsArticle.url == data.url)):
         raise ConflictError("Un article avec cette URL existe déjà")
     article = NewsArticle(**data.model_dump())
@@ -94,6 +98,7 @@ def create_article(session: Session, data) -> NewsArticle:
 
 
 def delete_article(session: Session, article_id: uuid.UUID) -> None:
+    """Supprime un article."""
     session.delete(get_article(session, article_id))
     session.commit()
 
@@ -102,6 +107,7 @@ def delete_article(session: Session, article_id: uuid.UUID) -> None:
 
 
 def save_article(session: Session, user_id: uuid.UUID, article_id: uuid.UUID) -> SavedArticle:
+    """Enregistre une copie de l'article parmi les favoris de l'utilisateur."""
     article = get_article(session, article_id)
     existing = session.scalar(
         select(SavedArticle).where(
@@ -126,6 +132,7 @@ def save_article(session: Session, user_id: uuid.UUID, article_id: uuid.UUID) ->
 
 
 def list_saved(session: Session, user_id: uuid.UUID) -> list[SavedArticle]:
+    """Liste les articles enregistrés par l'utilisateur, du plus récent au plus ancien."""
     return list(
         session.scalars(
             select(SavedArticle)
@@ -136,6 +143,7 @@ def list_saved(session: Session, user_id: uuid.UUID) -> list[SavedArticle]:
 
 
 def unsave(session: Session, user_id: uuid.UUID, saved_id: uuid.UUID) -> None:
+    """Retire un article des favoris de l'utilisateur."""
     saved = session.get(SavedArticle, saved_id)
     if not saved or saved.user_id != user_id:
         raise NotFoundError("Favori introuvable")
@@ -147,10 +155,12 @@ def unsave(session: Session, user_id: uuid.UUID, saved_id: uuid.UUID) -> None:
 
 
 def _strip_html(text: str) -> str:
+    """Retire les balises HTML et normalise les espaces."""
     return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", text)).strip()
 
 
 def _parse_date(parsed) -> datetime | None:
+    """Convertit une date de flux en datetime UTC (``None`` si invalide)."""
     if not parsed:
         return None
     try:
@@ -160,6 +170,7 @@ def _parse_date(parsed) -> datetime | None:
 
 
 def _import_feed(session: Session, source: dict, fetch: Fetcher) -> int:
+    """Importe les nouveaux articles d'un flux ; retourne le nombre d'articles créés."""
     feed = feedparser.parse(fetch(source["url"]))
     created = 0
     for entry in feed.entries[:MAX_ENTRIES_PER_FEED]:
@@ -186,6 +197,7 @@ def _import_feed(session: Session, source: dict, fetch: Fetcher) -> int:
 
 
 def purge_old(session: Session) -> int:
+    """Supprime les articles plus anciens que la durée de conservation ; retourne leur nombre."""
     cutoff = datetime.now(UTC) - timedelta(days=get_settings().news_retention_days)
     result = session.execute(delete(NewsArticle).where(NewsArticle.created_at < cutoff))
     session.commit()

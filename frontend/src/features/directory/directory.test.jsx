@@ -1,3 +1,5 @@
+/** Tests de l'annuaire des personnes et des entreprises. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -47,6 +49,7 @@ const acme = {
   member_count: 2,
 }
 
+/** Affiche l'annuaire à l'adresse donnée. */
 function renderAt(path) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   return render(
@@ -81,6 +84,7 @@ beforeEach(() => {
   })
 })
 
+/** Recherche et fiche des personnes. */
 describe('annuaire des personnes', () => {
   it('liste les personnes et ouvre la fiche', async () => {
     renderAt('/annuaire')
@@ -120,6 +124,7 @@ describe('annuaire des personnes', () => {
   })
 })
 
+/** Liste et fiche des entreprises. */
 describe('annuaire des entreprises', () => {
   it('liste les entreprises avec leur type et filtre par type', async () => {
     renderAt('/entreprises')

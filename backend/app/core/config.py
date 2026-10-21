@@ -1,3 +1,5 @@
+"""Configuration de l'application, lue depuis les variables d'environnement et le fichier ``.env``."""
+
 from functools import lru_cache
 
 from pydantic import model_validator
@@ -5,6 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Paramètres de l'application (base de données, JWT, uploads, emails, actualités, CORS)."""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     app_name: str = "portailMDE"
@@ -34,6 +38,7 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _refuse_default_secret_in_production(self):
+        """Refuse le secret JWT par défaut ou trop court en production."""
         if self.environment == "production" and (
             self.jwt_secret == "dev-secret-change-me" or len(self.jwt_secret) < 32
         ):
@@ -43,4 +48,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Retourne les paramètres (instance unique mise en cache)."""
     return Settings()

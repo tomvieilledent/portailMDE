@@ -1,3 +1,5 @@
+/** Fil de discussion d'une conversation et saisie des messages. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Paperclip, Send, Settings, Trash2 } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -12,6 +14,7 @@ import GroupSettingsModal from './GroupSettingsModal'
 import { conversationTitle, formatTime } from './helpers'
 import { useMessages } from './queries'
 
+/** Bulle d'un message, avec pièce jointe et suppression. */
 function Bubble({ message, mine, onDelete }) {
   const toast = useToast()
   return (
@@ -71,6 +74,7 @@ function Bubble({ message, mine, onDelete }) {
   )
 }
 
+/** Fil de discussion : historique paginé, envoi de messages et de fichiers. */
 export default function MessageThread({ conversation, meId }) {
   const queryClient = useQueryClient()
   const toast = useToast()

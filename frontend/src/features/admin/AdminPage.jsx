@@ -1,3 +1,5 @@
+/** Espace d'administration regroupant les sections selon les droits. */
+
 import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
 
 import { useAuth } from '../../auth/AuthProvider'

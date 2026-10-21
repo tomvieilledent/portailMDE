@@ -1,3 +1,5 @@
+"""Gestion des entreprises : fiche, activation, membres et logo."""
+
 import uuid
 from datetime import UTC, datetime
 
@@ -12,6 +14,7 @@ from app.services import storage
 
 
 def get_company(session: Session, company_id: uuid.UUID, actor: User) -> Company:
+    """Retourne une entreprise ; une entreprise désactivée n'est visible que de ses gestionnaires."""
     company = session.get(Company, company_id)
     if not company or company.deleted_at is not None:
         raise NotFoundError("Entreprise introuvable")
@@ -29,6 +32,7 @@ def list_companies(
     search: str | None = None,
     kind: CompanyKind | None = None,
 ) -> tuple[list[Company], int]:
+    """Liste les entreprises (actives uniquement pour les non-gestionnaires) avec recherche et filtre."""
     query = select(Company).where(Company.deleted_at.is_(None))
     if not has_permission(actor, Permission.MANAGE_COMPANIES):
         query = query.where(Company.is_active.is_(True))
@@ -42,6 +46,7 @@ def list_companies(
 
 
 def create_company(session: Session, data) -> Company:
+    """Crée une entreprise."""
     company = Company(**data.model_dump())
     session.add(company)
     session.commit()
@@ -49,6 +54,7 @@ def create_company(session: Session, data) -> Company:
 
 
 def update_company(session: Session, actor: User, company_id: uuid.UUID, data) -> Company:
+    """Met à jour une entreprise ; seul un gestionnaire peut en changer le type."""
     company = get_company(session, company_id, actor)
     if not can_manage_company(actor, company.id):
         raise ForbiddenError("Droits insuffisants")
@@ -62,6 +68,7 @@ def update_company(session: Session, actor: User, company_id: uuid.UUID, data) -
 
 
 def set_active(session: Session, company_id: uuid.UUID, actor: User, active: bool) -> Company:
+    """Active ou désactive une entreprise."""
     company = get_company(session, company_id, actor)
     company.is_active = active
     session.commit()
@@ -69,6 +76,7 @@ def set_active(session: Session, company_id: uuid.UUID, actor: User, active: boo
 
 
 def delete_company(session: Session, company_id: uuid.UUID, actor: User) -> None:
+    """Supprime logiquement une entreprise."""
     company = get_company(session, company_id, actor)
     company.deleted_at = datetime.now(UTC)
     company.is_active = False
@@ -76,6 +84,7 @@ def delete_company(session: Session, company_id: uuid.UUID, actor: User) -> None
 
 
 def list_members(session: Session, company_id: uuid.UUID, actor: User) -> list[User]:
+    """Liste les membres d'une entreprise."""
     get_company(session, company_id, actor)
     return list(
         session.scalars(
@@ -87,6 +96,7 @@ def list_members(session: Session, company_id: uuid.UUID, actor: User) -> list[U
 
 
 def _get_user(session: Session, user_id: uuid.UUID) -> User:
+    """Retourne un utilisateur non supprimé, ou lève une erreur s'il est introuvable."""
     user = session.get(User, user_id)
     if not user or user.deleted_at is not None:
         raise NotFoundError("Utilisateur introuvable")
@@ -94,6 +104,7 @@ def _get_user(session: Session, user_id: uuid.UUID) -> User:
 
 
 def add_member(session: Session, actor: User, company_id: uuid.UUID, user_id: uuid.UUID) -> User:
+    """Rattache un utilisateur à l'entreprise (réservé aux gestionnaires d'entreprises)."""
     company = get_company(session, company_id, actor)
     if not has_permission(actor, Permission.MANAGE_COMPANIES):
         raise ForbiddenError("Droits insuffisants")
@@ -105,6 +116,7 @@ def add_member(session: Session, actor: User, company_id: uuid.UUID, user_id: uu
 
 
 def remove_member(session: Session, actor: User, company_id: uuid.UUID, user_id: uuid.UUID) -> None:
+    """Détache un utilisateur de l'entreprise."""
     company = get_company(session, company_id, actor)
     if not can_manage_company(actor, company.id):
         raise ForbiddenError("Droits insuffisants")
@@ -117,6 +129,7 @@ def remove_member(session: Session, actor: User, company_id: uuid.UUID, user_id:
 
 
 def set_logo(session: Session, actor: User, company_id: uuid.UUID, file) -> Company:
+    """Remplace le logo de l'entreprise et supprime l'ancien fichier."""
     company = get_company(session, company_id, actor)
     if not can_manage_company(actor, company.id):
         raise ForbiddenError("Droits insuffisants")

@@ -1,3 +1,5 @@
+/** Administration du contenu éditorial (page d'accueil, annonces). */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
@@ -5,6 +7,7 @@ import { Button, Card, Input, Textarea, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
 import { useLanding } from '../landing/useLanding'
 
+/** Éditeur du contenu de la page d'accueil. */
 function LandingEditor() {
   const { content } = useLanding()
   const toast = useToast()
@@ -84,6 +87,7 @@ function LandingEditor() {
   )
 }
 
+/** Édition de l'annonce affichée aux membres. */
 function Announcement() {
   const toast = useToast()
   const [content, setContent] = useState('')

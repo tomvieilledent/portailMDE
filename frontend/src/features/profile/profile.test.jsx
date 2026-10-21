@@ -1,3 +1,5 @@
+/** Tests du profil et de la page « Mon entreprise ». */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -52,6 +54,7 @@ const colleague = {
   is_company_admin: false,
 }
 
+/** Affiche la page à l'adresse donnée pour l'utilisateur donné. */
 function renderAt(path, user = me) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   api.get.mockImplementation(async (url) => {
@@ -82,6 +85,7 @@ function renderAt(path, user = me) {
 
 beforeEach(() => vi.resetAllMocks())
 
+/** Informations, images et mot de passe. */
 describe('profil', () => {
   it('enregistre les informations modifiées', async () => {
     renderAt('/profil')
@@ -136,6 +140,7 @@ describe('profil', () => {
   })
 })
 
+/** Fiche et équipe de l'entreprise. */
 describe('mon entreprise', () => {
   it('invite à contacter la MDE sans entreprise', async () => {
     renderAt('/mon-entreprise')

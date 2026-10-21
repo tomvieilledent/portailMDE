@@ -1,3 +1,5 @@
+/** Pastille colorée d'information. */
+
 import { cn } from '../../lib/cn'
 
 const tones = {
@@ -8,6 +10,7 @@ const tones = {
   danger: 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
 }
 
+/** Pastille de statut ; `tone` choisit la couleur. */
 export default function Badge({ tone = 'neutral', className, children }) {
   return (
     <span

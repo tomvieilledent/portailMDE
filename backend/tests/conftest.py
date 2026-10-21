@@ -1,3 +1,5 @@
+"""Fixtures partagées : base de test PostgreSQL, session, client HTTP, fabriques et isolation."""
+
 import pytest
 from alembic.config import Config
 from fastapi.testclient import TestClient
@@ -49,6 +51,7 @@ def session(engine):
 
 @pytest.fixture
 def client(session: Session) -> TestClient:
+    """Client HTTP de test branché sur la session de test."""
     app = create_app()
     app.dependency_overrides[get_session] = lambda: session
     return TestClient(app, raise_server_exceptions=False)
@@ -59,6 +62,7 @@ def make_user(session: Session):
     """Fabrique d'utilisateurs ; mot de passe par défaut : ``password123``."""
 
     def _make(email="user@example.fr", password="password123", **kwargs) -> User:
+        """Crée et enregistre un utilisateur."""
         user = User(email=email, password_hash=hash_password(password), **kwargs)
         session.add(user)
         session.commit()
@@ -69,7 +73,10 @@ def make_user(session: Session):
 
 @pytest.fixture
 def make_company(session: Session):
+    """Fabrique d'entreprises persistées en base."""
+
     def _make(name="Acme", **kwargs) -> Company:
+        """Crée et enregistre une entreprise."""
         company = Company(name=name, **kwargs)
         session.add(company)
         session.commit()
@@ -83,6 +90,7 @@ def login(client: TestClient):
     """Connecte un utilisateur et retourne les en-têtes d'autorisation."""
 
     def _login(email="user@example.fr", password="password123") -> dict[str, str]:
+        """Authentifie l'utilisateur via l'API et retourne l'en-tête Bearer."""
         response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
         assert response.status_code == 200, response.text
         return {"Authorization": f"Bearer {response.json()['access_token']}"}

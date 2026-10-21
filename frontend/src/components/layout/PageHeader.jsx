@@ -1,3 +1,5 @@
+/** En-tête de page réutilisable (titre, description, actions). */
+
 /** Titre de page avec description et zone d'actions. */
 export default function PageHeader({ title, description, actions }) {
   return (

@@ -1,3 +1,5 @@
+/** Tests des actualités et de la cloche de notifications. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -34,6 +36,7 @@ const article = {
 }
 
 let saved
+/** Affiche le composant avec les fournisseurs nécessaires. */
 function setup(ui, user = member, extra = {}) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   api.get.mockImplementation(async (url) => {
@@ -70,6 +73,7 @@ beforeEach(() => {
   saved = []
 })
 
+/** Liste, favoris et publication. */
 describe('actualités', () => {
   it('affiche les articles avec lien externe sécurisé', async () => {
     setup(<NewsPage />)
@@ -139,6 +143,7 @@ describe('actualités', () => {
   })
 })
 
+/** Compteur et liste des notifications. */
 describe('cloche de notifications', () => {
   const notifications = [
     {

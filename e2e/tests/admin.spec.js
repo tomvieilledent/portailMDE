@@ -1,7 +1,10 @@
+/** Tests E2E de l'administration : création et désactivation d'un compte par le super admin. */
+
 import { expect, test } from '@playwright/test'
 
 import { login } from './helpers'
 
+/** Le super admin crée un compte, s'en sert pour se connecter, puis le désactive. */
 test("le super admin crée un compte puis l'utilise", async ({ browser, page }) => {
   const email = `nouveau.${Date.now()}@demo.fr`
   await login(page, 'admin@demo.fr')

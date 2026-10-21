@@ -1,3 +1,5 @@
+/** Fiche d'une entreprise de l'annuaire. */
+
 import { ArrowLeft, Globe, MapPin } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'

@@ -1,3 +1,5 @@
+/** Modale de fiche d'une personne de l'annuaire. */
+
 import { useMutation } from '@tanstack/react-query'
 import { Building2, Mail, MessageSquare, Phone } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'

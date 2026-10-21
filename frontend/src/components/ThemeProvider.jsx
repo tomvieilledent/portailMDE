@@ -1,7 +1,11 @@
+/** Fournisseur du thème clair ou sombre. */
+
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 
+/** Contexte portant le thème courant. */
 const ThemeContext = createContext(null)
 
+/** Thème initial : préférence mémorisée, sinon préférence du système. */
 function initialTheme() {
   try {
     const saved = localStorage.getItem('theme')
@@ -32,6 +36,7 @@ export function ThemeProvider({ children }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
 }
 
+/** Accès au thème courant et à sa bascule. */
 // eslint-disable-next-line react-refresh/only-export-components
 export function useTheme() {
   const context = useContext(ThemeContext)

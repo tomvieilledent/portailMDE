@@ -1,3 +1,5 @@
+"""Tests des notifications : création, lecture, suppression, diffusion et envoi temps réel."""
+
 from app.models import Notification
 from app.models.enums import UserRole
 
@@ -5,6 +7,7 @@ API = "/api/v1"
 
 
 def test_invitation_creates_notification_and_response_notifies_back(client, make_user, login):
+    """Une invitation notifie l'invité et sa réponse notifie l'organisateur."""
     make_user("o@x.fr", first_name="Olga", last_name="Org")
     guest = make_user("g@x.fr", first_name="Gus")
     ho, hg = login("o@x.fr"), login("g@x.fr")
@@ -26,6 +29,7 @@ def test_invitation_creates_notification_and_response_notifies_back(client, make
 
 
 def test_group_add_notifies_members(client, make_user, login):
+    """L'ajout à un groupe notifie les membres ajoutés."""
     make_user("a@x.fr", first_name="Ana")
     b = make_user("b@x.fr")
     body = {"kind": "group", "title": "Équipe", "user_ids": [str(b.id)]}
@@ -36,6 +40,7 @@ def test_group_add_notifies_members(client, make_user, login):
 
 
 def test_read_and_delete(client, make_user, login, session):
+    """Marquage comme lu et suppression des notifications."""
     user = make_user()
     session.add_all([Notification(recipient_id=user.id, content=f"n{i}") for i in range(3)])
     session.commit()
@@ -58,6 +63,7 @@ def test_read_and_delete(client, make_user, login, session):
 
 
 def test_cannot_touch_others_notifications(client, make_user, login, session):
+    """Impossible de modifier les notifications d'autrui."""
     a, _ = make_user("a@x.fr"), make_user("b@x.fr")
     note = Notification(recipient_id=a.id, content="secret")
     session.add(note)
@@ -68,6 +74,7 @@ def test_cannot_touch_others_notifications(client, make_user, login, session):
 
 
 def test_broadcast(client, make_user, login):
+    """La diffusion d'une annonce est réservée aux éditeurs et atteint les actifs."""
     make_user("a@x.fr")
     make_user("b@x.fr")
     make_user("off@x.fr", is_active=False)
@@ -91,6 +98,7 @@ def test_broadcast(client, make_user, login):
 
 
 def test_realtime_push(client, make_user, login):
+    """Une notification est poussée en temps réel par WebSocket."""
     make_user("a@x.fr")
     b = make_user("b@x.fr")
     ha = login("a@x.fr")

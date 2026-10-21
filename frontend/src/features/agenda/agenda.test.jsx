@@ -1,3 +1,5 @@
+/** Tests de l'agenda et des invitations. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -44,6 +46,7 @@ const others = {
   created_by: 'other',
 }
 
+/** Affiche la page de l'agenda. */
 function renderPage() {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   return render(
@@ -85,6 +88,7 @@ beforeEach(() => {
 
 afterEach(() => vi.useRealTimers())
 
+/** Affichage des événements, création et invitations. */
 describe('agenda', () => {
   it('affiche le mois courant avec ses événements', async () => {
     renderPage()

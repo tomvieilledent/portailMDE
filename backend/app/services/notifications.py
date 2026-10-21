@@ -35,6 +35,7 @@ def notify(
 
 
 def display_name(user: User) -> str:
+    """Nom affiché d'un utilisateur : prénom et nom, ou à défaut son email."""
     name = " ".join(filter(None, [user.first_name, user.last_name]))
     return name or user.email
 
@@ -42,6 +43,7 @@ def display_name(user: User) -> str:
 def list_notifications(
     session: Session, user: User, *, limit: int, offset: int, unread_only: bool = False
 ) -> list[Notification]:
+    """Liste les notifications de l'utilisateur, les plus récentes d'abord."""
     query = select(Notification).where(Notification.recipient_id == user.id)
     if unread_only:
         query = query.where(Notification.is_read.is_(False))
@@ -53,6 +55,7 @@ def list_notifications(
 
 
 def unread_count(session: Session, user: User) -> int:
+    """Compte les notifications non lues de l'utilisateur."""
     return (
         session.scalar(
             select(func.count()).where(
@@ -64,6 +67,7 @@ def unread_count(session: Session, user: User) -> int:
 
 
 def _get_own(session: Session, user: User, notification_id: uuid.UUID) -> Notification:
+    """Retourne une notification appartenant à l'utilisateur, ou lève une erreur."""
     notification = session.get(Notification, notification_id)
     if not notification or notification.recipient_id != user.id:
         raise NotFoundError("Notification introuvable")
@@ -71,6 +75,7 @@ def _get_own(session: Session, user: User, notification_id: uuid.UUID) -> Notifi
 
 
 def mark_read(session: Session, user: User, notification_id: uuid.UUID) -> Notification:
+    """Marque une notification comme lue."""
     notification = _get_own(session, user, notification_id)
     notification.is_read = True
     session.commit()
@@ -78,6 +83,7 @@ def mark_read(session: Session, user: User, notification_id: uuid.UUID) -> Notif
 
 
 def mark_all_read(session: Session, user: User) -> None:
+    """Marque toutes les notifications de l'utilisateur comme lues."""
     session.execute(
         update(Notification)
         .where(Notification.recipient_id == user.id, Notification.is_read.is_(False))
@@ -87,6 +93,7 @@ def mark_all_read(session: Session, user: User) -> None:
 
 
 def delete(session: Session, user: User, notification_id: uuid.UUID) -> None:
+    """Supprime une notification de l'utilisateur."""
     session.delete(_get_own(session, user, notification_id))
     session.commit()
 

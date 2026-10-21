@@ -1,3 +1,5 @@
+"""Routes de l'annuaire : recherche de personnes et d'entreprises."""
+
 import uuid
 from typing import Annotated
 
@@ -21,6 +23,7 @@ def people(
     search: str | None = None,
     company_id: uuid.UUID | None = None,
 ):
+    """Recherche des personnes dans l'annuaire."""
     items, total = service.search_people(
         session, limit=limit, offset=offset, search=search, company_id=company_id
     )
@@ -36,6 +39,7 @@ def companies(
     search: str | None = None,
     kind: CompanyKind | None = None,
 ):
+    """Recherche des entreprises dans l'annuaire."""
     items, total = service.search_companies(
         session, limit=limit, offset=offset, search=search, kind=kind
     )

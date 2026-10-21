@@ -1,3 +1,5 @@
+/** Hook de temporisation d'une valeur. */
+
 import { useEffect, useState } from 'react'
 
 /** Valeur retardée : utile pour ne lancer la recherche qu'une fois la saisie terminée. */

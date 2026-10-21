@@ -1,3 +1,6 @@
+/** Affichage d'un état vide. */
+
+/** État vide : icône, titre, description et action optionnelle. */
 export default function EmptyState({ icon: Icon, title, description, action }) {
   return (
     <div className="flex flex-col items-center gap-2 rounded-xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700">

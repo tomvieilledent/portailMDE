@@ -1,3 +1,5 @@
+"""Gestion des utilisateurs : comptes, profil, rôles, mots de passe et images."""
+
 import uuid
 from datetime import UTC, datetime
 
@@ -14,6 +16,7 @@ from app.services.mailer import send_later
 
 
 def get_user(session: Session, user_id: uuid.UUID) -> User:
+    """Retourne un utilisateur non supprimé, ou lève une erreur s'il est introuvable."""
     user = session.get(User, user_id)
     if not user or user.deleted_at is not None:
         raise NotFoundError("Utilisateur introuvable")
@@ -23,6 +26,7 @@ def get_user(session: Session, user_id: uuid.UUID) -> User:
 def list_users(
     session: Session, *, limit: int, offset: int, search: str | None = None
 ) -> tuple[list[User], int]:
+    """Liste les utilisateurs avec recherche par email ou nom."""
     query = select(User).where(User.deleted_at.is_(None))
     if search:
         pattern = f"%{search.strip()}%"
@@ -52,6 +56,7 @@ def _ensure_manageable(actor: User, target: User) -> None:
 
 
 def create_user(session: Session, actor: User, data) -> User:
+    """Crée un compte, vérifie les droits de l'acteur et envoie l'email de bienvenue."""
     privileged_role = data.role != UserRole.MEMBER
     if privileged_role and actor.role != UserRole.SUPER_ADMIN:
         raise ForbiddenError("Seul un super administrateur peut créer ce type de compte")
@@ -89,6 +94,7 @@ def create_user(session: Session, actor: User, data) -> User:
 
 
 def update_profile(session: Session, user: User, data) -> User:
+    """Met à jour le profil d'un utilisateur."""
     for field, value in data.model_dump(exclude_unset=True).items():
         setattr(user, field, value)
     session.commit()
@@ -96,6 +102,7 @@ def update_profile(session: Session, user: User, data) -> User:
 
 
 def update_user(session: Session, actor: User, target_id: uuid.UUID, data) -> User:
+    """Met à jour le profil d'un utilisateur (lui-même ou un gestionnaire)."""
     target = get_user(session, target_id)
     if actor.id != target.id:
         _ensure_manageable(actor, target)
@@ -103,6 +110,7 @@ def update_user(session: Session, actor: User, target_id: uuid.UUID, data) -> Us
 
 
 def change_password(session: Session, user: User, current: str, new: str) -> None:
+    """Change le mot de passe après vérification du mot de passe actuel."""
     if not verify_password(current, user.password_hash):
         raise AppError("Mot de passe actuel incorrect")
     user.password_hash = hash_password(new)
@@ -110,6 +118,7 @@ def change_password(session: Session, user: User, current: str, new: str) -> Non
 
 
 def _active_super_admins(session: Session) -> int:
+    """Compte les super administrateurs actifs."""
     return (
         session.scalar(
             select(func.count()).where(
@@ -123,6 +132,7 @@ def _active_super_admins(session: Session) -> int:
 
 
 def _ensure_not_last_super_admin(session: Session, target: User) -> None:
+    """Refuse de retirer le dernier super administrateur actif."""
     if (
         target.role == UserRole.SUPER_ADMIN
         and target.is_active
@@ -132,6 +142,7 @@ def _ensure_not_last_super_admin(session: Session, target: User) -> None:
 
 
 def set_active(session: Session, actor: User, target_id: uuid.UUID, active: bool) -> User:
+    """Active ou désactive un compte (jamais le dernier super administrateur actif)."""
     target = get_user(session, target_id)
     _ensure_manageable(actor, target)
     if not active:
@@ -142,6 +153,7 @@ def set_active(session: Session, actor: User, target_id: uuid.UUID, active: bool
 
 
 def delete_user(session: Session, actor: User, target_id: uuid.UUID) -> None:
+    """Supprime logiquement un compte (jamais le sien ni le dernier super administrateur)."""
     target = get_user(session, target_id)
     if target.id == actor.id:
         raise ForbiddenError("Vous ne pouvez pas supprimer votre propre compte")
@@ -164,6 +176,7 @@ def set_role(session: Session, target_id: uuid.UUID, data) -> User:
 
 
 def set_company_admin(session: Session, actor: User, target_id: uuid.UUID, value: bool) -> User:
+    """Accorde ou retire le statut d'administrateur d'entreprise."""
     target = get_user(session, target_id)
     _ensure_manageable(actor, target)
     if value and not target.company_id:

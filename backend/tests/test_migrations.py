@@ -1,3 +1,5 @@
+"""Tests des migrations Alembic : cohérence avec les modèles, contraintes et retour arrière."""
+
 import pytest
 from alembic.autogenerate import compare_metadata
 from alembic.config import Config
@@ -16,6 +18,7 @@ TEST_DB = "portail_migrations_test"
 
 @pytest.fixture(scope="module")
 def test_url():
+    """Base PostgreSQL dédiée aux migrations ; retourne son URL."""
     url = make_url(get_settings().database_url)
     admin = create_engine(url, isolation_level="AUTOCOMMIT")
     with admin.connect() as conn:
@@ -29,12 +32,14 @@ def test_url():
 
 @pytest.fixture(scope="module")
 def alembic_cfg(test_url):
+    """Configuration Alembic pointant vers la base de test."""
     cfg = Config("alembic.ini")
     cfg.set_main_option("sqlalchemy.url", test_url.replace("%", "%%"))
     return cfg
 
 
 def test_upgrade_matches_models(alembic_cfg, test_url):
+    """Après migration, le schéma correspond aux modèles."""
     command.upgrade(alembic_cfg, "head")
     engine = create_engine(test_url)
     with engine.connect() as conn:
@@ -44,6 +49,7 @@ def test_upgrade_matches_models(alembic_cfg, test_url):
 
 
 def test_constraints(alembic_cfg, test_url):
+    """Les contraintes d'unicité et d'intégrité sont appliquées."""
     engine = create_engine(test_url)
     with engine.begin() as conn:
         conn.execute(
@@ -76,5 +82,6 @@ def test_constraints(alembic_cfg, test_url):
 
 
 def test_downgrade(alembic_cfg, test_url):
+    """Le retour à la version de base supprime les tables."""
     command.downgrade(alembic_cfg, "base")
     assert "users" not in inspect(create_engine(test_url)).get_table_names()

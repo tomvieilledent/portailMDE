@@ -1,3 +1,5 @@
+"""Routes des actualités : articles, articles enregistrés et contenus éditoriaux du site."""
+
 import uuid
 from typing import Annotated
 
@@ -31,6 +33,7 @@ def list_news(
     search: str | None = None,
     category: str | None = None,
 ):
+    """Liste les actualités avec pagination, recherche et filtre par catégorie."""
     items, total = service.list_articles(
         session, limit=limit, offset=offset, search=search, category=category
     )
@@ -39,38 +42,45 @@ def list_news(
 
 @router.post("/news", response_model=ArticleRead, status_code=201)
 def create_article(body: ArticleCreate, session: SessionDep, _: NewsManager):
+    """Crée un article d'actualité."""
     return service.create_article(session, body)
 
 
 @router.post("/news/sync", response_model=SyncResult)
 def sync_news(session: SessionDep, _: NewsManager):
+    """Lance la synchronisation des flux d'actualités externes."""
     return SyncResult(created=service.sync_all(session))
 
 
 @router.get("/news/saved", response_model=list[SavedArticleRead])
 def saved_articles(session: SessionDep, current: CurrentUser):
+    """Liste les articles enregistrés par l'utilisateur courant."""
     return service.list_saved(session, current.id)
 
 
 @router.delete("/news/saved/{saved_id}", status_code=204)
 def unsave_article(saved_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Retire un article des articles enregistrés."""
     service.unsave(session, current.id, saved_id)
     return Response(status_code=204)
 
 
 @router.get("/news/{article_id}", response_model=ArticleRead)
 def read_article(article_id: uuid.UUID, session: SessionDep, _: CurrentUser):
+    """Retourne un article d'actualité."""
     return service.get_article(session, article_id)
 
 
 @router.delete("/news/{article_id}", status_code=204)
 def delete_article(article_id: uuid.UUID, session: SessionDep, _: NewsManager):
+    """Supprime un article d'actualité."""
     service.delete_article(session, article_id)
     return Response(status_code=204)
 
 
 @router.put("/news/{article_id}/save", response_model=SavedArticleRead)
 def save_article(article_id: uuid.UUID, session: SessionDep, current: CurrentUser):
+    """Enregistre un article pour l'utilisateur courant."""
     return service.save_article(session, current.id, article_id)
 
 
@@ -82,4 +92,5 @@ def read_content(key: str, session: SessionDep):
 
 @router.put("/content/{key}", response_model=ContentRead)
 def update_content(key: str, body: ContentUpdate, session: SessionDep, _: NewsManager):
+    """Met à jour un contenu éditorial du site."""
     return ContentRead(key=key, value=site_content.set_content(session, key, body.value))

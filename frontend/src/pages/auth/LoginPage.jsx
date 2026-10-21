@@ -1,3 +1,5 @@
+/** Page de connexion. */
+
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 
@@ -5,6 +7,7 @@ import { useAuth } from '../../auth/AuthProvider'
 import { Button, Input } from '../../components/ui'
 import AuthShell from './AuthShell'
 
+/** Formulaire de connexion. */
 export default function LoginPage() {
   const { login, user } = useAuth()
   const navigate = useNavigate()

@@ -1,3 +1,5 @@
+/** Panneau des invitations reçues. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Check, X } from 'lucide-react'
 

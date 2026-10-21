@@ -1,3 +1,5 @@
+"""Authentification : connexion, jetons, révocation et réinitialisation du mot de passe."""
+
 from datetime import UTC, datetime
 
 from sqlalchemy import func, select
@@ -19,12 +21,14 @@ _DUMMY_HASH = hash_password("dummy-password")
 
 
 def _issue_pair(user: User) -> dict[str, str]:
+    """Émet une paire de jetons (accès et rafraîchissement) pour l'utilisateur."""
     access, _, _ = create_token(str(user.id), "access")
     refresh, _, _ = create_token(str(user.id), "refresh")
     return {"access_token": access, "refresh_token": refresh}
 
 
 def authenticate(session: Session, email: str, password: str) -> User:
+    """Vérifie les identifiants et retourne l'utilisateur ; re-hache le mot de passe si nécessaire."""
     user = session.scalar(
         select(User).where(func.lower(User.email) == email.lower(), User.deleted_at.is_(None))
     )
@@ -38,14 +42,17 @@ def authenticate(session: Session, email: str, password: str) -> User:
 
 
 def login(session: Session, email: str, password: str) -> dict[str, str]:
+    """Authentifie l'utilisateur et retourne une paire de jetons."""
     return _issue_pair(authenticate(session, email, password))
 
 
 def is_revoked(session: Session, jti: str) -> bool:
+    """Indique si le jeton (identifié par son ``jti``) a été révoqué."""
     return session.get(RevokedToken, jti) is not None
 
 
 def revoke(session: Session, payload: dict) -> None:
+    """Révoque un jeton jusqu'à son expiration."""
     if not is_revoked(session, payload["jti"]):
         session.add(
             RevokedToken(jti=payload["jti"], expires_at=datetime.fromtimestamp(payload["exp"], UTC))
@@ -69,6 +76,7 @@ def refresh(session: Session, refresh_token: str) -> dict[str, str]:
 
 
 def logout(session: Session, access_payload: dict, refresh_token: str | None) -> None:
+    """Révoque le jeton d'accès et, s'il est fourni, le jeton de rafraîchissement."""
     revoke(session, access_payload)
     if refresh_token:
         try:
@@ -78,6 +86,7 @@ def logout(session: Session, access_payload: dict, refresh_token: str | None) ->
 
 
 def purge_expired(session: Session) -> int:
+    """Supprime les révocations dont le jeton est expiré ; retourne le nombre de lignes supprimées."""
     result = session.execute(
         RevokedToken.__table__.delete().where(RevokedToken.expires_at < datetime.now(UTC))
     )
@@ -114,6 +123,7 @@ def request_password_reset(session: Session, email: str) -> None:
 
 
 def reset_password(session: Session, token: str, new_password: str) -> None:
+    """Définit un nouveau mot de passe si le jeton de réinitialisation est valide et non utilisé."""
     from app.core.security import password_fingerprint
 
     try:

@@ -1,3 +1,5 @@
+"""Modèles des contenus : notifications, actualités, articles enregistrés et contenus du site."""
+
 import uuid
 from datetime import datetime
 
@@ -9,6 +11,8 @@ from app.db.base import Base, UUIDPrimaryKeyMixin
 
 
 class Notification(UUIDPrimaryKeyMixin, Base):
+    """Notification adressée à un utilisateur."""
+
     __tablename__ = "notifications"
 
     recipient_id: Mapped[uuid.UUID] = mapped_column(
@@ -27,6 +31,8 @@ class Notification(UUIDPrimaryKeyMixin, Base):
 
 
 class NewsArticle(UUIDPrimaryKeyMixin, Base):
+    """Article d'actualité (saisi ou issu d'une synchronisation de flux)."""
+
     __tablename__ = "news_articles"
 
     title: Mapped[str] = mapped_column(String(500), nullable=False)
@@ -41,7 +47,7 @@ class NewsArticle(UUIDPrimaryKeyMixin, Base):
 
 
 class SavedArticle(UUIDPrimaryKeyMixin, Base):
-    """Favori d'un utilisateur : copie de l'article, conservée même si l'original est purgé."""
+    """Article enregistré par un utilisateur : copie de l'article, conservée même si l'original est purgé."""
 
     __tablename__ = "saved_articles"
     __table_args__ = (UniqueConstraint("user_id", "article_id", name="user_article"),)
@@ -64,7 +70,7 @@ class SavedArticle(UUIDPrimaryKeyMixin, Base):
 
 
 class SiteContent(Base):
-    """Contenu éditable du site (page d'accueil, etc.), clé -> JSON."""
+    """Contenu éditable du site (page d'accueil, etc.), associant une clé à un JSON."""
 
     __tablename__ = "site_contents"
 

@@ -1,3 +1,5 @@
+"""Tests des actualités : synchronisation RSS, filtres, droits, favoris et contenu de la page d'accueil."""
+
 from datetime import UTC, datetime, timedelta
 
 from app.models import NewsArticle
@@ -15,11 +17,13 @@ RSS = """<?xml version="1.0"?><rss version="2.0"><channel><title>t</title>
 
 
 def editor(make_user, login):
+    """Crée un éditeur d'actualités et retourne ses en-têtes."""
     make_user("ed@x.fr", role=UserRole.STAFF, permissions=["manage_news"])
     return login("ed@x.fr")
 
 
 def test_sync_imports_cleans_and_dedupes(session):
+    """La synchronisation importe, nettoie le HTML et dédoublonne."""
     sources = [{"name": "Test", "category": "réglementation", "url": "u"}]
     assert service.sync_all(session, fetch=lambda _: RSS, sources=sources) == 1
     assert service.sync_all(session, fetch=lambda _: RSS, sources=sources) == 0
@@ -29,7 +33,10 @@ def test_sync_imports_cleans_and_dedupes(session):
 
 
 def test_sync_survives_failing_source(session):
+    """Une source en échec n'empêche pas la synchronisation des autres."""
+
     def fetch(url):
+        """Simule la récupération d'un flux, en échec pour la source « bad »."""
         if url == "bad":
             raise RuntimeError("réseau")
         return RSS
@@ -42,6 +49,7 @@ def test_sync_survives_failing_source(session):
 
 
 def test_sync_purges_old_articles(session):
+    """La synchronisation purge les articles anciens."""
     old = NewsArticle(title="Vieux", created_at=datetime.now(UTC) - timedelta(days=40))
     session.add_all([old, NewsArticle(title="Récent")])
     session.commit()
@@ -50,6 +58,7 @@ def test_sync_purges_old_articles(session):
 
 
 def test_list_filters(client, make_user, login, session):
+    """Liste des actualités avec filtres par catégorie et recherche."""
     make_user()
     session.add_all(
         [
@@ -69,6 +78,7 @@ def test_list_filters(client, make_user, login, session):
 
 
 def test_manage_news_permissions(client, make_user, login):
+    """La gestion des actualités exige la permission dédiée."""
     make_user()
     body = {"title": "Info", "url": "https://ex.fr/x"}
     assert client.post(f"{API}/news", headers=login(), json=body).status_code == 403
@@ -82,12 +92,14 @@ def test_manage_news_permissions(client, make_user, login):
 
 
 def test_sync_endpoint(client, make_user, login, monkeypatch):
+    """L'endpoint de synchronisation renvoie le nombre d'articles créés."""
     monkeypatch.setattr(service, "RSS_SOURCES", [])
     headers = editor(make_user, login)
     assert client.post(f"{API}/news/sync", headers=headers).json() == {"created": 0}
 
 
 def test_saved_articles_survive_purge(client, make_user, login, session):
+    """Les articles enregistrés survivent à la purge."""
     make_user()
     article = NewsArticle(title="À garder", url="https://ex.fr/k")
     session.add(article)
@@ -105,6 +117,7 @@ def test_saved_articles_survive_purge(client, make_user, login, session):
 
 
 def test_cannot_unsave_others_favorite(client, make_user, login, session):
+    """Impossible de retirer le favori d'un autre utilisateur."""
     make_user("a@x.fr")
     make_user("b@x.fr")
     article = NewsArticle(title="X")
@@ -117,6 +130,7 @@ def test_cannot_unsave_others_favorite(client, make_user, login, session):
 
 
 def test_landing_content_public_with_default_and_edit(client, make_user, login):
+    """Le contenu de la page d'accueil est public, avec valeur par défaut et édition réservée."""
     default = client.get(f"{API}/content/landing")
     assert default.status_code == 200 and default.json()["value"]["sections"]
     assert client.get(f"{API}/content/unknown").status_code == 404

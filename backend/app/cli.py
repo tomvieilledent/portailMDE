@@ -13,6 +13,7 @@ from app.migration.seed import create_admin, seed_demo
 
 
 def cmd_migrate_legacy(args) -> int:
+    """Importe les données de l'ancienne application et affiche le nombre d'éléments par type."""
     with SessionLocal() as session:
         importer = LegacyImporter(
             args.source, session, Path(args.uploads_dir) if args.uploads_dir else None
@@ -24,6 +25,7 @@ def cmd_migrate_legacy(args) -> int:
 
 
 def cmd_create_admin(args) -> int:
+    """Crée un super administrateur (mot de passe demandé interactivement si absent)."""
     password = args.password or getpass.getpass("Mot de passe : ")
     with SessionLocal() as session:
         try:
@@ -36,6 +38,7 @@ def cmd_create_admin(args) -> int:
 
 
 def cmd_seed_demo(args) -> int:
+    """Charge les données de démonstration (refusé en production sans ``--force``)."""
     if get_settings().environment == "production" and not args.force:
         print("Refusé en production (utilisez --force).", file=sys.stderr)
         return 1
@@ -50,6 +53,7 @@ def cmd_seed_demo(args) -> int:
 
 
 def main(argv=None) -> int:
+    """Analyse les arguments de la ligne de commande et exécute la commande choisie."""
     parser = argparse.ArgumentParser(prog="app.cli", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
 

@@ -1,3 +1,5 @@
+/** Tests de la page d'accueil. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -9,6 +11,7 @@ import HomePage from './HomePage'
 
 vi.mock('../lib/api', () => ({ api: { get: vi.fn() } }))
 
+/** Affiche la page d'accueil. */
 function renderHome() {
   return render(
     <QueryClientProvider client={new QueryClient()}>
@@ -23,6 +26,7 @@ function renderHome() {
 
 beforeEach(() => vi.resetAllMocks())
 
+/** Contenu de la page d'accueil. */
 describe('HomePage', () => {
   it('affiche le contenu éditable renvoyé par le backend', async () => {
     api.get.mockResolvedValue({

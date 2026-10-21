@@ -1,3 +1,5 @@
+/** Liste des conversations de la messagerie. */
+
 import { Plus, Users } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 
@@ -5,6 +7,7 @@ import { Avatar, Badge, Button, Spinner, uploadUrl } from '../../components/ui'
 import { cn } from '../../lib/cn'
 import { conversationTitle, formatTime, previewText } from './helpers'
 
+/** Liste des conversations avec messages non lus ; `onNew` ouvre une nouvelle conversation. */
 export default function ConversationList({ conversations, loading, meId, onNew }) {
   return (
     <div className="flex h-full flex-col">

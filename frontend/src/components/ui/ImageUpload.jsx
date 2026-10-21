@@ -1,3 +1,5 @@
+/** Sélecteur d'image avec aperçu. */
+
 import { useId } from 'react'
 
 import Spinner from './Spinner'

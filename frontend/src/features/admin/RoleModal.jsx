@@ -1,3 +1,5 @@
+/** Modale de changement de rôle et de droits d'un compte. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 

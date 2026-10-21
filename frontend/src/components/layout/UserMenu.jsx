@@ -1,3 +1,5 @@
+/** Menu de l'utilisateur connecté dans l'en-tête. */
+
 import { LogOut } from 'lucide-react'
 import { Link } from 'react-router-dom'
 

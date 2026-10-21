@@ -1,3 +1,5 @@
+/** Pagination des listes. */
+
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 import Button from './Button'

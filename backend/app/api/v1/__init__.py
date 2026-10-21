@@ -1,3 +1,5 @@
+"""Routeur principal de l'API v1 : assemble les routeurs de chaque domaine."""
+
 from fastapi import APIRouter
 
 from app.api.v1 import (

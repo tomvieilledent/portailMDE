@@ -1,3 +1,5 @@
+/** Page de détail d'une formation. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, CalendarClock, FileText, Link2, MapPin, Plus, Users } from 'lucide-react'
 import { useState } from 'react'
@@ -21,6 +23,7 @@ import {
   useTrainingSessions,
 } from './queries'
 
+/** Ligne d'une session : inscription, désinscription et gestion. */
 function SessionRow({ session, trainingId, canManage, onManage }) {
   const toast = useToast()
   const queryClient = useQueryClient()

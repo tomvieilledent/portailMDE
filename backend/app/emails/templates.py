@@ -4,6 +4,7 @@ from html import escape
 
 
 def _layout(title: str, body_html: str) -> str:
+    """Enveloppe un corps HTML dans la mise en page commune des emails."""
     return (
         '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1f2937">'
         f'<h2 style="color:#0f4c81">{escape(title)}</h2>{body_html}'
@@ -33,6 +34,7 @@ def reset_password(name: str, link: str, minutes: int) -> tuple[str, str, str]:
 
 
 def welcome(name: str, link: str) -> tuple[str, str, str]:
+    """Email de bienvenue après création du compte : ``(sujet, texte, html)``."""
     subject = "Bienvenue sur le portail de la Maison de l'Entreprise"
     text = (
         f"Bonjour {name},\n\nVotre compte a été créé. Connectez-vous ici : {link}\n"
@@ -48,6 +50,7 @@ def welcome(name: str, link: str) -> tuple[str, str, str]:
 
 
 def invitation(name: str, inviter: str, label: str, link: str) -> tuple[str, str, str]:
+    """Email d'invitation à un événement ou à une session : ``(sujet, texte, html)``."""
     subject = f"Invitation : {label}"
     text = f"Bonjour {name},\n\n{inviter} vous invite : {label}.\nRépondre : {link}"
     html = _layout(

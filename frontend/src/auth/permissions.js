@@ -1,3 +1,5 @@
+/** Rôles et droits des utilisateurs (super admin, staff, membre) et fonctions de vérification. */
+
 /** Droits du staff, miroir de `Permission` côté backend. */
 export const PERMISSIONS = {
   MANAGE_COMPANIES: 'manage_companies',
@@ -6,8 +8,10 @@ export const PERMISSIONS = {
   MANAGE_NEWS: 'manage_news',
 }
 
+/** Vrai si l'utilisateur est super administrateur. */
 export const isSuperAdmin = (user) => user?.role === 'super_admin'
 
+/** Vrai si l'utilisateur fait partie du staff (super admin inclus). */
 export const isStaff = (user) => user?.role === 'staff' || isSuperAdmin(user)
 
 /** Le super admin a tous les droits ; le staff uniquement ceux qui lui sont attribués. */

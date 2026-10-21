@@ -1,3 +1,5 @@
+/** Modale de détail d'un événement. */
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Clock, Globe, Lock } from 'lucide-react'
 import { useState } from 'react'

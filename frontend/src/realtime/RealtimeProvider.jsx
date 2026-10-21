@@ -1,3 +1,5 @@
+/** Fournisseur de la connexion temps réel (WebSocket). */
+
 import { useEffect, useMemo, useRef } from 'react'
 
 import { useAuth } from '../auth/AuthProvider'

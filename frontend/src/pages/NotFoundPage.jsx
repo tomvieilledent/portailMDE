@@ -1,5 +1,8 @@
+/** Page affichée pour une adresse inconnue. */
+
 import { Link } from 'react-router-dom'
 
+/** Page d'erreur 404. */
 export default function NotFoundPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6">

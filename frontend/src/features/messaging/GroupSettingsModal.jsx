@@ -1,3 +1,5 @@
+/** Modale de réglages d'un groupe de la messagerie. */
+
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { UserMinus } from 'lucide-react'
 import { useState } from 'react'

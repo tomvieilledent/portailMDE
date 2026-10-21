@@ -1,7 +1,10 @@
+/** Tests des utilitaires de calendrier. */
+
 import { describe, expect, it } from 'vitest'
 
 import { buildMonthGrid, shortTime, toISODate } from './calendar'
 
+/** Grille mensuelle et formats de date. */
 describe('calendrier', () => {
   it('commence la grille un lundi et couvre tout le mois', () => {
     const weeks = buildMonthGrid(2026, 9) // octobre 2026 : le 1er est un jeudi

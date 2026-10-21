@@ -1,3 +1,5 @@
+"""Modèles de l'agenda : événements et invitations."""
+
 import uuid
 from datetime import date, datetime, time
 
@@ -20,6 +22,8 @@ from app.models.enums import InvitationStatus
 
 
 class Event(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
+    """Événement de l'agenda, public ou réservé aux invités."""
+
     __tablename__ = "events"
 
     title: Mapped[str] = mapped_column(String(200), nullable=False)

@@ -1,3 +1,5 @@
+/** Tests de l'espace d'administration. */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -50,6 +52,7 @@ const acme = {
   website_url: null,
 }
 
+/** Affiche l'administration à l'adresse donnée, pour l'utilisateur donné. */
 function renderAt(path, me) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
   api.get.mockImplementation(async (url) => {
@@ -80,6 +83,7 @@ function renderAt(path, me) {
 
 beforeEach(() => vi.resetAllMocks())
 
+/** Accès à l'espace d'administration selon les droits. */
 describe('administration', () => {
   it('redirige vers la première section autorisée', async () => {
     renderAt('/administration', userAdmin)
@@ -105,6 +109,7 @@ describe('administration', () => {
   })
 })
 
+/** Gestion des comptes. */
 describe('utilisateurs', () => {
   it('désactive un compte', async () => {
     api.post.mockResolvedValue({})
@@ -168,6 +173,7 @@ describe('utilisateurs', () => {
   })
 })
 
+/** Gestion des entreprises. */
 describe('entreprises', () => {
   it('crée une entreprise', async () => {
     api.post.mockResolvedValue({})
@@ -202,6 +208,7 @@ describe('entreprises', () => {
   })
 })
 
+/** Gestion du contenu éditorial. */
 describe('contenu', () => {
   it("enregistre la page d'accueil", async () => {
     api.put.mockResolvedValue({})
