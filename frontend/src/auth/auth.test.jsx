@@ -94,7 +94,10 @@ describe('authentification', () => {
     mockMe(member)
     renderApp('/connexion')
     await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'ada@x.fr')
-    await userEvent.type(screen.getByLabelText('Mot de passe'), 'password123')
+    await userEvent.type(
+      screen.getByLabelText(/^Mot de passe( \*)?( \(obligatoire\))?$/),
+      'password123',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }))
     expect(await screen.findByRole('heading', { name: 'Annuaire' })).toBeInTheDocument()
     expect(api.post).toHaveBeenCalledWith(
@@ -109,7 +112,7 @@ describe('authentification', () => {
     api.post.mockRejectedValue(new ApiError(401, 'UNAUTHORIZED', 'x'))
     renderApp('/connexion')
     await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'a@x.fr')
-    await userEvent.type(screen.getByLabelText('Mot de passe'), 'bad')
+    await userEvent.type(screen.getByLabelText(/^Mot de passe( \*)?( \(obligatoire\))?$/), 'bad')
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Email ou mot de passe incorrect.')
   })
@@ -167,7 +170,10 @@ describe('mot de passe oublié', () => {
       screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
       'brandnewpass1',
     )
-    await userEvent.type(screen.getByLabelText('Confirmation'), 'brandnewpass1')
+    await userEvent.type(
+      screen.getByLabelText(/^Confirmation( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
@@ -185,7 +191,10 @@ describe('mot de passe oublié', () => {
       screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
       'brandnewpass1',
     )
-    await userEvent.type(screen.getByLabelText('Confirmation'), 'different123')
+    await userEvent.type(
+      screen.getByLabelText(/^Confirmation( \*)?( \(obligatoire\))?$/),
+      'different123',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('ne correspondent pas')
     expect(api.post).not.toHaveBeenCalled()

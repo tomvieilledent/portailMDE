@@ -160,7 +160,10 @@ describe('utilisateurs', () => {
       within(dialog).getByLabelText(/^Email( \*)?( \(obligatoire\))?$/),
       'new@x.fr',
     )
-    await userEvent.type(within(dialog).getByLabelText('Mot de passe temporaire'), 'temporaire1')
+    await userEvent.type(
+      within(dialog).getByLabelText(/^Mot de passe temporaire( \*)?( \(obligatoire\))?$/),
+      'temporaire1',
+    )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Créer le compte' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
@@ -231,7 +234,10 @@ describe('contenu', () => {
   it('envoie une annonce', async () => {
     api.post.mockResolvedValue(null)
     renderAt('/administration/contenu', newsEditor)
-    await userEvent.type(await screen.findByLabelText('Message'), 'Fermeture lundi')
+    await userEvent.type(
+      await screen.findByLabelText(/^Message( \*)?( \(obligatoire\))?$/),
+      'Fermeture lundi',
+    )
     await userEvent.click(screen.getByRole('button', { name: "Envoyer l'annonce" }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/notifications/broadcast', {

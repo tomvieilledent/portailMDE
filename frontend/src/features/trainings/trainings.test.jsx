@@ -101,10 +101,13 @@ describe('catalogue', () => {
     setup('/formations')
     expect(await screen.findByText('Excel avancé')).toBeInTheDocument()
     expect(screen.getByText('Atelier pitch')).toBeInTheDocument()
-    await userEvent.selectOptions(screen.getByLabelText('Type'), 'atelier')
+    await userEvent.selectOptions(
+      screen.getByLabelText(/^Type( \*)?( \(obligatoire\))?$/),
+      'atelier',
+    )
     expect(screen.queryByText('Excel avancé')).not.toBeInTheDocument()
-    await userEvent.selectOptions(screen.getByLabelText('Type'), '')
-    await userEvent.type(screen.getByLabelText('Rechercher'), 'croisés')
+    await userEvent.selectOptions(screen.getByLabelText(/^Type( \*)?( \(obligatoire\))?$/), '')
+    await userEvent.type(screen.getByLabelText(/^Rechercher( \*)?( \(obligatoire\))?$/), 'croisés')
     expect(screen.queryByText('Atelier pitch')).not.toBeInTheDocument()
     expect(screen.getByText('Excel avancé')).toBeInTheDocument()
   })
@@ -205,7 +208,10 @@ describe('fiche formation', () => {
       within(dialog).getByLabelText(/^Début( \*)?( \(obligatoire\))?$/),
       '2026-11-10T09:00',
     )
-    await userEvent.type(within(dialog).getByLabelText('Fin'), '2026-11-10T17:00')
+    await userEvent.type(
+      within(dialog).getByLabelText(/^Fin( \*)?( \(obligatoire\))?$/),
+      '2026-11-10T17:00',
+    )
     await userEvent.click(within(dialog).getByRole('button', { name: 'Créer' }))
     await waitFor(() => {
       const [path, body] = api.post.mock.calls.at(-1)

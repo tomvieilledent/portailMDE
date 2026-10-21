@@ -136,7 +136,7 @@ describe('agenda', () => {
       await screen.findByLabelText(/^Titre( \*)?( \(obligatoire\))?$/),
       'Atelier',
     )
-    expect(screen.getByLabelText('Date')).toHaveValue('2026-10-25')
+    expect(screen.getByLabelText(/^Date( \*)?( \(obligatoire\))?$/)).toHaveValue('2026-10-25')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/events', {

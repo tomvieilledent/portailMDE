@@ -90,7 +90,7 @@ describe('profil', () => {
   it('enregistre les informations modifiées', async () => {
     renderAt('/profil')
     api.patch.mockResolvedValue({ ...me, job_title: 'CTO' })
-    await userEvent.type(await screen.findByLabelText('Fonction'), 'CTO')
+    await userEvent.type(await screen.findByLabelText(/^Fonction( \*)?( \(obligatoire\))?$/), 'CTO')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.patch).toHaveBeenCalledWith('/users/me', {
@@ -107,7 +107,10 @@ describe('profil', () => {
     renderAt('/profil')
     api.put.mockResolvedValue({ ...me, avatar_path: 'avatars/a.png' })
     const file = new File(['x'], 'moi.png', { type: 'image/png' })
-    await userEvent.upload(await screen.findByLabelText('Photo de profil'), file)
+    await userEvent.upload(
+      await screen.findByLabelText(/^Photo de profil( \*)?( \(obligatoire\))?$/),
+      file,
+    )
     await waitFor(() => expect(api.put).toHaveBeenCalled())
     const [path, form] = api.put.mock.calls[0]
     expect(path).toBe('/users/me/avatar')
@@ -125,7 +128,10 @@ describe('profil', () => {
       screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
       'brandnewpass1',
     )
-    await userEvent.type(screen.getByLabelText('Confirmation'), 'brandnewpass1')
+    await userEvent.type(
+      screen.getByLabelText(/^Confirmation( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/users/me/password', {
@@ -146,7 +152,10 @@ describe('profil', () => {
       screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
       'brandnewpass1',
     )
-    await userEvent.type(screen.getByLabelText('Confirmation'), 'brandnewpass1')
+    await userEvent.type(
+      screen.getByLabelText(/^Confirmation( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
     expect(await screen.findByText('Mot de passe actuel incorrect.')).toBeInTheDocument()
   })
@@ -174,7 +183,7 @@ describe('mon entreprise', () => {
     api.post.mockResolvedValue(null)
     const name = await screen.findByLabelText(/^Nom( \*)?( \(obligatoire\))?$/)
     expect(name).toBeEnabled()
-    await userEvent.type(screen.getByLabelText('Localisation'), 'Rodez')
+    await userEvent.type(screen.getByLabelText(/^Localisation( \*)?( \(obligatoire\))?$/), 'Rodez')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.patch).toHaveBeenCalledWith(
@@ -197,7 +206,10 @@ describe('mon entreprise', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Ajouter un collaborateur' }))
     const dialog = await screen.findByRole('dialog')
     await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'new@x.fr')
-    await userEvent.type(screen.getByLabelText('Mot de passe temporaire'), 'temporaire1')
+    await userEvent.type(
+      screen.getByLabelText(/^Mot de passe temporaire( \*)?( \(obligatoire\))?$/),
+      'temporaire1',
+    )
     await userEvent.click(screen.getByRole('button', { name: 'Créer le compte' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
