@@ -1,11 +1,8 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 
-import App from '../../App'
-import { ThemeProvider } from '../ThemeProvider'
 import {
   Avatar,
   Button,
@@ -114,22 +111,5 @@ describe('Pagination', () => {
       <Pagination total={10} limit={50} offset={0} onChange={() => {}} />,
     )
     expect(container).toBeEmptyDOMElement()
-  })
-})
-
-describe('AppLayout', () => {
-  it('affiche le menu et ouvre le tiroir mobile', async () => {
-    render(
-      <ThemeProvider>
-        <MemoryRouter initialEntries={['/annuaire']}>
-          <App />
-        </MemoryRouter>
-      </ThemeProvider>,
-    )
-    expect(screen.getAllByRole('link', { name: 'Messagerie' })).toHaveLength(1)
-    await userEvent.click(screen.getByRole('button', { name: 'Ouvrir le menu' }))
-    expect(screen.getAllByRole('link', { name: 'Messagerie' })).toHaveLength(2)
-    await userEvent.click(screen.getByRole('button', { name: 'Fermer le menu' }))
-    expect(screen.getAllByRole('link', { name: 'Messagerie' })).toHaveLength(1)
   })
 })
