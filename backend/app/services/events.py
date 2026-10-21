@@ -51,7 +51,7 @@ def create_event(session: Session, user: User, data) -> Event:
     session.add(event)
     session.commit()
     if data.invitee_ids:
-        invitations.invite(session, user, data.invitee_ids, event_id=event.id)
+        invitations.invite(session, user, data.invitee_ids, event_id=event.id, label=event.title)
     return event
 
 
@@ -79,7 +79,7 @@ def delete_event(session: Session, user: User, event_id: uuid.UUID) -> None:
 def invite_to_event(session: Session, user: User, event_id: uuid.UUID, user_ids):
     event = get_event(session, event_id, user)
     _ensure_owner(event, user)
-    return invitations.invite(session, user, user_ids, event_id=event.id)
+    return invitations.invite(session, user, user_ids, event_id=event.id, label=event.title)
 
 
 def list_event_invitations(session: Session, user: User, event_id: uuid.UUID) -> list[Invitation]:
