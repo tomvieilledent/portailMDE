@@ -19,6 +19,7 @@ import TrainingFormModal from './TrainingFormModal'
 import {
   TRAINING_KINDS,
   formatDateTime,
+  useInterested,
   useMyEnrollments,
   useTraining,
   useTrainingSessions,
@@ -105,6 +106,7 @@ export default function TrainingPage() {
   const training = useTraining(trainingId)
   const sessions = useTrainingSessions(trainingId)
   const mine = useMyEnrollments()
+  const waiting = useInterested(trainingId, canManage)
   const [editing, setEditing] = useState(false)
   const [addingSession, setAddingSession] = useState(false)
   const [managed, setManaged] = useState(null)
@@ -135,6 +137,7 @@ export default function TrainingPage() {
   }
   const t = training.data
   const interested = (mine.data ?? []).some((e) => e.training_id === t.id && e.interested)
+  const unscheduled = t.is_active && t.upcoming_sessions === 0
 
   return (
     <>
@@ -148,7 +151,7 @@ export default function TrainingPage() {
         title={t.title}
         actions={
           <div className="flex items-center gap-2">
-            <InterestButton trainingId={t.id} active={interested} />
+            {unscheduled && !canManage && <InterestButton trainingId={t.id} active={interested} />}
             {canManage && (
               <>
                 <Button variant="secondary" onClick={() => setEditing(true)}>
@@ -186,6 +189,16 @@ export default function TrainingPage() {
         ) : (
           <p className="text-slate-500">Pas de description.</p>
         )}
+        {safeHref(t.link) && (
+          <a
+            href={safeHref(t.link)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-2 text-sm font-medium hover:underline"
+          >
+            <Link2 size={14} aria-hidden="true" /> Page de la formation
+          </a>
+        )}
         {t.documents.length > 0 && (
           <ul className="space-y-1">
             {t.documents.map((path) => (
@@ -203,6 +216,32 @@ export default function TrainingPage() {
           </ul>
         )}
       </Card>
+
+      {canManage && t.interested_count > 0 && (
+        <Card className="mb-8 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold">
+              {t.interested_count} personne{t.interested_count > 1 ? 's attendent' : ' attend'}{' '}
+              cette formation
+            </h2>
+            <Button onClick={() => setAddingSession(true)}>Planifier une session</Button>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {(waiting.data ?? []).map((e) => (
+              <li key={e.id}>
+                <Badge>
+                  {[e.user?.first_name, e.user?.last_name].filter(Boolean).join(' ') ||
+                    'Utilisateur'}
+                </Badge>
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-slate-500">
+            Dès qu'une session est programmée, ces personnes sont prévenues et leur demande est
+            retirée.
+          </p>
+        </Card>
+      )}
 
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-lg font-semibold">Sessions</h2>

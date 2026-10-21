@@ -19,12 +19,16 @@ class TrainingRead(BaseModel):
     title: str
     description: str | None
     picture_path: str | None
+    link: str | None
     category: str | None
     kind: TrainingKind
     documents: list[str]
     company_id: uuid.UUID | None
     is_active: bool
     created_at: datetime
+    # Sessions à venir ; demandes en attente (renseignées pour les gestionnaires uniquement).
+    upcoming_sessions: int = 0
+    interested_count: int = 0
 
 
 class TrainingCreate(BaseModel):
@@ -32,6 +36,7 @@ class TrainingCreate(BaseModel):
 
     title: str = Field(min_length=1, max_length=200)
     description: str | None = None
+    link: HttpUrlStr | None = Field(None, max_length=512)
     category: str | None = Field(None, max_length=100)
     kind: TrainingKind = TrainingKind.FORMATION
     company_id: uuid.UUID | None = None
@@ -42,6 +47,7 @@ class TrainingUpdate(BaseModel):
 
     title: str | None = Field(None, min_length=1, max_length=200)
     description: str | None = None
+    link: HttpUrlStr | None = Field(None, max_length=512)
     category: str | None = Field(None, max_length=100)
     kind: TrainingKind | None = None
     company_id: uuid.UUID | None = None

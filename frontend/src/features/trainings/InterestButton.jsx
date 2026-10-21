@@ -1,14 +1,12 @@
-/** Bouton d'intérêt pour une formation. */
+/** Demande d'une formation non programmée : « Cette formation m'intéresse ». */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { Star } from 'lucide-react'
 
-import { cn } from '../../lib/cn'
+import { Button, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
-import { useToast } from '../../components/ui'
 
-/** Étoile « Cette formation m'intéresse » (favori). */
-export default function InterestButton({ trainingId, active }) {
+/** Bascule « Cette formation m'intéresse » ; l'équipe voit les demandes et planifie la session. */
+export default function InterestButton({ trainingId, active, size = 'md' }) {
   const queryClient = useQueryClient()
   const toast = useToast()
   const toggle = useMutation({
@@ -16,25 +14,28 @@ export default function InterestButton({ trainingId, active }) {
       active
         ? api.delete(`/trainings/${trainingId}/interest`)
         : api.put(`/trainings/${trainingId}/interest`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['trainings', 'mine'] }),
+    onSuccess: () => {
+      toast.success(
+        active
+          ? 'Demande retirée.'
+          : 'Demande enregistrée : vous serez prévenu(e) dès que la formation sera programmée.',
+      )
+      queryClient.invalidateQueries({ queryKey: ['trainings'] })
+    },
     onError: () => toast.error('Action impossible.'),
   })
   return (
-    <button
-      type="button"
+    <Button
+      size={size}
+      variant={active ? 'secondary' : 'primary'}
       aria-pressed={active}
-      aria-label={active ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+      loading={toggle.isPending}
       onClick={(event) => {
         event.preventDefault()
         toggle.mutate()
       }}
-      className="rounded-full p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800"
     >
-      <Star
-        size={18}
-        className={cn(active ? 'fill-amber-400 text-amber-400' : 'text-slate-500')}
-        aria-hidden="true"
-      />
-    </button>
+      {active ? '✓ Demande enregistrée (retirer)' : "Cette formation m'intéresse"}
+    </Button>
   )
 }

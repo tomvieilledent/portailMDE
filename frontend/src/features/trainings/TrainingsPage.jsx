@@ -139,15 +139,20 @@ export default function TrainingsPage() {
                   <div className="flex flex-1 flex-col gap-2 p-4 pt-0">
                     <div className="flex items-start justify-between gap-2">
                       <h2 className="font-semibold">{training.title}</h2>
-                      <InterestButton
-                        trainingId={training.id}
-                        active={interested.has(training.id)}
-                      />
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <Badge tone="brand">{TRAINING_KINDS[training.kind]}</Badge>
                       {training.category && <Badge>{training.category}</Badge>}
                       {!training.is_active && <Badge tone="warning">Désactivée</Badge>}
+                      {training.is_active && training.upcoming_sessions === 0 && (
+                        <Badge tone="warning">À programmer</Badge>
+                      )}
+                      {canManage && training.interested_count > 0 && (
+                        <Badge tone="brand">
+                          {training.interested_count} demande
+                          {training.interested_count > 1 ? 's' : ''}
+                        </Badge>
+                      )}
                       {enrollment?.completed_at && <Badge tone="success">Terminée</Badge>}
                       {enrollment?.enrolled_at && !enrollment.completed_at && (
                         <Badge tone="success">Inscrit</Badge>
@@ -157,6 +162,15 @@ export default function TrainingsPage() {
                       <p className="line-clamp-3 text-sm text-slate-600 dark:text-slate-400">
                         {training.description}
                       </p>
+                    )}
+                    {training.is_active && training.upcoming_sessions === 0 && (
+                      <div className="mt-auto pt-2">
+                        <InterestButton
+                          trainingId={training.id}
+                          active={interested.has(training.id)}
+                          size="sm"
+                        />
+                      </div>
                     )}
                   </div>
                 </Card>

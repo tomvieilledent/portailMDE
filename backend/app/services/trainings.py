@@ -12,7 +12,7 @@ from app.core.permissions import Permission, has_permission
 from app.models import Invitation, Training, TrainingEnrollment, TrainingSession, User
 from app.models.enums import SessionStatus, TrainingKind
 from app.schemas.training import SessionRead
-from app.services import storage
+from app.services import notifications, storage
 from app.services.search import contains
 
 
@@ -58,7 +58,39 @@ def list_trainings(
         query = query.where(Training.kind == kind)
     total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
     items = session.scalars(query.order_by(Training.title).limit(limit).offset(offset)).all()
-    return list(items), total
+    return annotate(session, list(items), user), total
+
+
+def annotate(session: Session, trainings: list[Training], user: User) -> list[Training]:
+    """Renseigne le nombre de sessions à venir et, pour les gestionnaires, les demandes en attente."""
+    ids = [t.id for t in trainings]
+    upcoming = dict(
+        session.execute(
+            select(TrainingSession.training_id, func.count())
+            .where(
+                TrainingSession.training_id.in_(ids),
+                TrainingSession.start_at >= datetime.now(UTC),
+                TrainingSession.status != SessionStatus.CANCELLED,
+            )
+            .group_by(TrainingSession.training_id)
+        ).all()
+    )
+    waiting = {}
+    if _is_manager(user):
+        waiting = dict(
+            session.execute(
+                select(TrainingEnrollment.training_id, func.count())
+                .where(
+                    TrainingEnrollment.training_id.in_(ids),
+                    TrainingEnrollment.interested.is_(True),
+                )
+                .group_by(TrainingEnrollment.training_id)
+            ).all()
+        )
+    for training in trainings:
+        training.upcoming_sessions = upcoming.get(training.id, 0)
+        training.interested_count = waiting.get(training.id, 0)
+    return trainings
 
 
 def create_training(session: Session, data) -> Training:
@@ -246,7 +278,38 @@ def create_session(session: Session, user: User, training_id: uuid.UUID, data) -
     ts = TrainingSession(training_id=training.id, created_by=user.id, **data.model_dump())
     session.add(ts)
     session.commit()
+    _fulfil_requests(session, training, ts)
     return ts
+
+
+def _fulfil_requests(session: Session, training: Training, ts: TrainingSession) -> None:
+    """Prévient les personnes qui attendaient la formation et retire leur demande."""
+    waiting = list(
+        session.scalars(
+            select(TrainingEnrollment).where(
+                TrainingEnrollment.training_id == training.id,
+                TrainingEnrollment.interested.is_(True),
+                TrainingEnrollment.enrolled_at.is_(None),
+            )
+        ).all()
+    )
+    if not waiting:
+        return
+    recipients = [e.user_id for e in waiting]
+    for enrollment in waiting:
+        if enrollment.session_id is None and enrollment.completed_at is None:
+            session.delete(enrollment)
+        else:
+            enrollment.interested = False
+    session.commit()
+    notifications.notify(
+        session,
+        recipients,
+        f"La formation « {training.title} » que vous attendiez est programmée "
+        f"le {ts.start_at:%d/%m/%Y}.",
+        kind="training",
+        data={"training_id": str(training.id), "session_id": str(ts.id)},
+    )
 
 
 def update_session(session: Session, user: User, session_id: uuid.UUID, data) -> TrainingSession:

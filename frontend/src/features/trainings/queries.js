@@ -30,6 +30,14 @@ export const useTrainingSessions = (id) =>
     queryFn: () => api.get(`/trainings/${id}/sessions`),
   })
 
+/** Personnes qui attendent la programmation d'une formation (gestionnaires). */
+export const useInterested = (id, enabled) =>
+  useQuery({
+    queryKey: ['trainings', id, 'interested'],
+    queryFn: () => api.get(`/trainings/${id}/interested`),
+    enabled,
+  })
+
 /** Date et heure formatées. */
 export const formatDateTime = (iso) =>
   new Date(iso).toLocaleString('fr-FR', {
