@@ -25,6 +25,17 @@ import {
   useTrainingSessions,
 } from './queries'
 
+/** Plage horaire lisible : « mar. 10 nov., 09:00 – 17:00 » le même jour, sinon début et fin complets. */
+function formatRange(startIso, endIso) {
+  const start = new Date(startIso)
+  const end = new Date(endIso)
+  if (start.toDateString() === end.toDateString()) {
+    const time = end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    return `${formatDateTime(startIso)} – ${time}`
+  }
+  return `${formatDateTime(startIso)} → ${formatDateTime(endIso)}`
+}
+
 /** Ligne d'une session : inscription, désinscription et gestion. */
 function SessionRow({ session, trainingId, canManage, onManage }) {
   const toast = useToast()
@@ -46,11 +57,11 @@ function SessionRow({ session, trainingId, canManage, onManage }) {
   })
 
   return (
-    <li className="flex flex-wrap items-center gap-3 py-3">
+    <li className="flex flex-col gap-3 py-4 sm:flex-row sm:flex-wrap sm:items-center">
       <div className="min-w-0 flex-1 space-y-1">
-        <p className="flex items-center gap-2 font-medium">
-          <CalendarClock size={16} aria-hidden="true" />
-          {formatDateTime(session.start_at)} → {formatDateTime(session.end_at)}
+        <p className="flex items-start gap-2 font-medium">
+          <CalendarClock size={16} className="mt-0.5 shrink-0" aria-hidden="true" />
+          <span>{formatRange(session.start_at, session.end_at)}</span>
         </p>
         <p className="flex flex-wrap items-center gap-x-4 text-sm text-slate-600 dark:text-slate-400">
           {session.location && (
@@ -74,23 +85,26 @@ function SessionRow({ session, trainingId, canManage, onManage }) {
           </span>
         </p>
       </div>
-      {!session.is_public && <Badge>Sur invitation</Badge>}
-      {session.status === 'cancelled' && <Badge tone="danger">Annulée</Badge>}
-      {session.status === 'done' && <Badge>Terminée</Badge>}
-      <Button
-        size="sm"
-        variant={session.is_enrolled ? 'secondary' : 'primary'}
-        disabled={closed || (full && !session.is_enrolled)}
-        loading={toggle.isPending}
-        onClick={() => toggle.mutate()}
-      >
-        {session.is_enrolled ? 'Se désinscrire' : full ? 'Complet' : "S'inscrire"}
-      </Button>
-      {canManage && (
-        <Button size="sm" variant="ghost" onClick={() => onManage(session)}>
-          Gérer
+      <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+        {!session.is_public && <Badge>Sur invitation</Badge>}
+        {session.status === 'cancelled' && <Badge tone="danger">Annulée</Badge>}
+        {session.status === 'done' && <Badge>Terminée</Badge>}
+        <Button
+          size="sm"
+          className="flex-1 sm:flex-none"
+          variant={session.is_enrolled ? 'secondary' : 'primary'}
+          disabled={closed || (full && !session.is_enrolled)}
+          loading={toggle.isPending}
+          onClick={() => toggle.mutate()}
+        >
+          {session.is_enrolled ? 'Se désinscrire' : full ? 'Complet' : "S'inscrire"}
         </Button>
-      )}
+        {canManage && (
+          <Button size="sm" variant="ghost" onClick={() => onManage(session)}>
+            Gérer
+          </Button>
+        )}
+      </div>
     </li>
   )
 }
@@ -151,7 +165,7 @@ export default function TrainingPage() {
         title={t.title}
         actions={
           <div className="flex items-center gap-2">
-            {unscheduled && !canManage && <InterestButton trainingId={t.id} active={interested} />}
+            {unscheduled && <InterestButton trainingId={t.id} active={interested} />}
             {canManage && (
               <>
                 <Button variant="secondary" onClick={() => setEditing(true)}>

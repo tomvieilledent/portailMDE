@@ -147,6 +147,9 @@ export default function TrainingsPage() {
                       {training.is_active && training.upcoming_sessions === 0 && (
                         <Badge tone="warning">À programmer</Badge>
                       )}
+                      {training.is_active && training.upcoming_sessions > 0 && (
+                        <Badge tone="success">Session programmée</Badge>
+                      )}
                       {canManage && training.interested_count > 0 && (
                         <Badge tone="brand">
                           {training.interested_count} demande
