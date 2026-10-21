@@ -18,9 +18,9 @@ export const navItems = [
   { to: '/annuaire', label: 'Annuaire', group: 'community' },
   { to: '/entreprises', label: 'Entreprises', group: 'community' },
   { to: '/messagerie', label: 'Messagerie', group: 'community' },
-  { to: '/actualites', label: 'Actualités', group: 'life' },
-  { to: '/agenda', label: 'Agenda', group: 'life' },
   { to: '/formations', label: 'Formations', group: 'life' },
+  { to: '/agenda', label: 'Agenda', group: 'life' },
+  { to: '/actualites', label: 'Actualités', group: 'life' },
   {
     to: '/mon-entreprise/administration',
     label: 'Administrer mon entreprise',
