@@ -91,3 +91,12 @@ def login(client: TestClient):
 
 
 __all__ = ["UserRole"]
+
+
+@pytest.fixture(autouse=True)
+def upload_dir(tmp_path, monkeypatch):
+    """Les fichiers envoyés pendant un test vont dans un dossier temporaire."""
+    monkeypatch.setenv("UPLOAD_DIR", str(tmp_path))
+    get_settings.cache_clear()
+    yield tmp_path
+    get_settings.cache_clear()

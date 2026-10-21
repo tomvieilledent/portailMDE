@@ -9,6 +9,7 @@ from app.core.permissions import Permission, can_manage_company, has_permission
 from app.core.security import hash_password, verify_password
 from app.models import Company, User
 from app.models.enums import UserRole
+from app.services import storage
 
 
 def get_user(session: Session, user_id: uuid.UUID) -> User:
@@ -161,4 +162,16 @@ def set_company_admin(session: Session, actor: User, target_id: uuid.UUID, value
         raise AppError("L'utilisateur n'est rattaché à aucune entreprise")
     target.is_company_admin = value
     session.commit()
+    return target
+
+
+def set_image(session: Session, actor: User, target: User, field: str, file, category: str) -> User:
+    """Remplace l'image (avatar, carte de visite) de ``target`` ; ancien fichier supprimé."""
+    if actor.id != target.id:
+        _ensure_manageable(actor, target)
+    new_path = storage.save_image(file, category)
+    old_path = getattr(target, field)
+    setattr(target, field, new_path)
+    session.commit()
+    storage.delete_file(old_path)
     return target

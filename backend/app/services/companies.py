@@ -8,6 +8,7 @@ from app.core.errors import ForbiddenError, NotFoundError
 from app.core.permissions import Permission, can_manage_company, has_permission
 from app.models import Company, User
 from app.models.enums import CompanyKind
+from app.services import storage
 
 
 def get_company(session: Session, company_id: uuid.UUID, actor: User) -> Company:
@@ -113,3 +114,15 @@ def remove_member(session: Session, actor: User, company_id: uuid.UUID, user_id:
     user.company_id = None
     user.is_company_admin = False
     session.commit()
+
+
+def set_logo(session: Session, actor: User, company_id: uuid.UUID, file) -> Company:
+    company = get_company(session, company_id, actor)
+    if not can_manage_company(actor, company.id):
+        raise ForbiddenError("Droits insuffisants")
+    new_path = storage.save_image(file, "logos")
+    old_path = company.logo_path
+    company.logo_path = new_path
+    session.commit()
+    storage.delete_file(old_path)
+    return company
