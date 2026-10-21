@@ -5,7 +5,7 @@ import { Plus, Search } from 'lucide-react'
 import { useState } from 'react'
 
 import { useAuth } from '../../auth/AuthProvider'
-import { isSuperAdmin } from '../../auth/permissions'
+import { hasPermission, isSuperAdmin, PERMISSIONS } from '../../auth/permissions'
 import {
   Avatar,
   Badge,
@@ -19,6 +19,7 @@ import {
 import { api } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { fullName } from '../directory/labels'
+import CompanyAssignModal from './CompanyAssignModal'
 import RoleModal from './RoleModal'
 import UserFormModal from './UserFormModal'
 import { ROLES } from './labels'
@@ -34,6 +35,12 @@ export default function UsersAdmin() {
   const [offset, setOffset] = useState(0)
   const [creating, setCreating] = useState(false)
   const [roleTarget, setRoleTarget] = useState(null)
+  const [companyTarget, setCompanyTarget] = useState(null)
+  const companies = useQuery({
+    queryKey: ['admin', 'companies', 'all'],
+    queryFn: () => api.get('/companies', { limit: 200 }),
+  })
+  const companyName = (id) => companies.data?.items.find((c) => c.id === id)?.name
   const debounced = useDebounce(search)
   const users = useQuery({
     queryKey: ['admin', 'users', { search: debounced, offset }],
@@ -84,6 +91,7 @@ export default function UsersAdmin() {
               <tr>
                 <th className="p-3">Compte</th>
                 <th className="p-3">Rôle</th>
+                <th className="p-3">Entreprise</th>
                 <th className="p-3">Statut</th>
                 <th className="p-3 text-right">Actions</th>
               </tr>
@@ -109,6 +117,14 @@ export default function UsersAdmin() {
                     <Badge tone={u.role === 'member' ? 'neutral' : 'brand'}>{ROLES[u.role]}</Badge>
                   </td>
                   <td className="p-3">
+                    {companyName(u.company_id) ?? '—'}
+                    {u.is_company_admin && (
+                      <Badge tone="brand" className="ml-2">
+                        Admin
+                      </Badge>
+                    )}
+                  </td>
+                  <td className="p-3">
                     {u.is_active ? (
                       <Badge tone="success">Actif</Badge>
                     ) : (
@@ -117,6 +133,11 @@ export default function UsersAdmin() {
                   </td>
                   <td className="p-3">
                     <div className="flex justify-end gap-1">
+                      {hasPermission(me, PERMISSIONS.MANAGE_COMPANIES) && (
+                        <Button size="sm" variant="ghost" onClick={() => setCompanyTarget(u)}>
+                          Entreprise
+                        </Button>
+                      )}
                       {isSuperAdmin(me) && (
                         <Button size="sm" variant="ghost" onClick={() => setRoleTarget(u)}>
                           Rôle
@@ -166,6 +187,9 @@ export default function UsersAdmin() {
       )}
       {creating && <UserFormModal onClose={() => setCreating(false)} />}
       {roleTarget && <RoleModal target={roleTarget} onClose={() => setRoleTarget(null)} />}
+      {companyTarget && (
+        <CompanyAssignModal target={companyTarget} onClose={() => setCompanyTarget(null)} />
+      )}
     </>
   )
 }

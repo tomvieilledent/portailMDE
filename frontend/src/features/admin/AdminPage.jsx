@@ -46,10 +46,7 @@ export default function AdminPage() {
         </p>
       ) : (
         <>
-          <nav
-            aria-label="Administration"
-            className="mb-6 flex gap-2 border-b border-slate-200 dark:border-slate-800"
-          >
+          <nav aria-label="Administration" className="mb-6 flex gap-2 border-b border-white/40">
             {allowed.map(({ path, label }) => (
               <NavLink
                 key={path}
@@ -58,8 +55,8 @@ export default function AdminPage() {
                   cn(
                     '-mb-px border-b-2 px-4 py-2 text-sm font-medium',
                     isActive
-                      ? 'border-brand-700 text-brand-700 dark:border-brand-300 dark:text-brand-300'
-                      : 'border-transparent text-slate-500 hover:text-slate-700',
+                      ? 'border-[#7ec843] font-semibold text-white'
+                      : 'border-transparent text-white/75 hover:text-white',
                   )
                 }
               >
