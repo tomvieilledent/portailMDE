@@ -27,7 +27,7 @@ const renderAt = (path) =>
 describe('App', () => {
   it("affiche l'accueil public", () => {
     renderAt('/')
-    expect(screen.getByRole('heading', { name: 'portailMDE' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Se connecter' })).toHaveAttribute('href', '/connexion')
   })
 
   it('affiche la page 404', () => {
