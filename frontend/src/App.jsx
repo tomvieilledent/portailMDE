@@ -10,6 +10,7 @@ import MyCompanyPage from './features/company/MyCompanyPage'
 import ProfilePage from './features/profile/ProfilePage'
 import CompaniesPage from './features/directory/CompaniesPage'
 import CompanyPage from './features/directory/CompanyPage'
+import AdminPage from './features/admin/AdminPage'
 import AgendaPage from './features/agenda/AgendaPage'
 import MessagingPage from './features/messaging/MessagingPage'
 import TrainingPage from './features/trainings/TrainingPage'
@@ -17,7 +18,6 @@ import TrainingsPage from './features/trainings/TrainingsPage'
 import NewsPage from './features/news/NewsPage'
 import NotificationsBell from './features/notifications/NotificationsBell'
 import PeoplePage from './features/directory/PeoplePage'
-import ComingSoonPage from './pages/ComingSoonPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
 import RealtimeEffects from './realtime/RealtimeEffects'
@@ -68,26 +68,11 @@ export default function App() {
           <Route path="/mon-entreprise" element={<MyCompanyPage />} />
           <Route path="/entreprises" element={<CompaniesPage />} />
           <Route path="/entreprises/:companyId" element={<CompanyPage />} />
-          {navItems
-            .filter(
-              (item) =>
-                !item.staffOnly &&
-                ![
-                  '/annuaire',
-                  '/entreprises',
-                  '/mon-entreprise',
-                  '/messagerie',
-                  '/agenda',
-                ].includes(item.to),
-            )
-            .map(({ to, label }) => (
-              <Route key={to} path={to} element={<ComingSoonPage title={label} />} />
-            ))}
         </Route>
       </Route>
       <Route element={<RequireAuth staffOnly />}>
         <Route element={<Shell />}>
-          <Route path="/administration" element={<ComingSoonPage title="Administration" />} />
+          <Route path="/administration/*" element={<AdminPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFoundPage />} />
