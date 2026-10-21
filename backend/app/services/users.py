@@ -10,6 +10,7 @@ from app.core.security import hash_password, verify_password
 from app.models import Company, User
 from app.models.enums import UserRole
 from app.services import storage
+from app.services.mailer import send_later
 
 
 def get_user(session: Session, user_id: uuid.UUID) -> User:
@@ -77,6 +78,13 @@ def create_user(session: Session, actor: User, data) -> User:
     )
     session.add(user)
     session.commit()
+    from app.core.config import get_settings
+    from app.emails import templates
+
+    send_later(
+        user.email,
+        *templates.welcome(user.first_name or user.email, get_settings().frontend_url),
+    )
     return user
 
 
