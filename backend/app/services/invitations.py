@@ -10,6 +10,7 @@ from app.core.errors import AppError, NotFoundError
 from app.models import Event, Invitation, TrainingSession, User
 from app.models.enums import InvitationStatus
 from app.services import notifications
+from app.services.mailer import send_later
 
 
 def invite(
@@ -54,7 +55,22 @@ def invite(
             "session_id": str(session_id) if session_id else None,
         },
     )
+    _email_invitees(session, inviter, [i.invitee_id for i in created], label)
     return created
+
+
+def _email_invitees(session: Session, inviter: User, ids: list[uuid.UUID], label: str) -> None:
+    from app.core.config import get_settings
+    from app.emails import templates
+
+    link = f"{get_settings().frontend_url}/invitations"
+    for user in session.scalars(select(User).where(User.id.in_(ids))):
+        send_later(
+            user.email,
+            *templates.invitation(
+                user.first_name or user.email, notifications.display_name(inviter), label, link
+            ),
+        )
 
 
 def list_for_user(

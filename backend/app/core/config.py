@@ -20,6 +20,15 @@ class Settings(BaseSettings):
     news_sync_enabled: bool = True
     news_sync_interval_minutes: int = 60
     news_retention_days: int = 30
+    frontend_url: str = "http://localhost:5290"
+    mail_backend: str = "smtp"  # "smtp" | "console" | "memory" (tests)
+    mail_host: str = "mailpit"
+    mail_port: int = 1025
+    mail_username: str = ""
+    mail_password: str = ""
+    mail_use_tls: bool = False
+    mail_from: str = "portailMDE <no-reply@portail-mde.local>"
+    reset_token_minutes: int = 60
     cors_origins: list[str] = ["http://localhost:5290"]
 
 

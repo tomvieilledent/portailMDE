@@ -106,3 +106,14 @@ def upload_dir(tmp_path, monkeypatch):
 def _no_scheduler(monkeypatch):
     """Pas de tâches planifiées pendant les tests."""
     monkeypatch.setenv("NEWS_SYNC_ENABLED", "false")
+
+
+@pytest.fixture(autouse=True)
+def mail_outbox(monkeypatch):
+    """Emails capturés en mémoire (``outbox``) pendant les tests."""
+    from app.services import mailer
+
+    monkeypatch.setenv("MAIL_BACKEND", "memory")
+    get_settings.cache_clear()
+    mailer.outbox.clear()
+    return mailer.outbox
