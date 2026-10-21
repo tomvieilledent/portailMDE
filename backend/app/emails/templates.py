@@ -33,18 +33,20 @@ def reset_password(name: str, link: str, minutes: int) -> tuple[str, str, str]:
     return subject, text, html
 
 
-def welcome(name: str, link: str) -> tuple[str, str, str]:
-    """Email de bienvenue après création du compte : ``(sujet, texte, html)``."""
+def welcome(name: str, link: str, temporary_password: str) -> tuple[str, str, str]:
+    """Email de bienvenue avec le mot de passe temporaire : ``(sujet, texte, html)``."""
     subject = "Bienvenue sur le portail de la Maison de l'Entreprise"
     text = (
         f"Bonjour {name},\n\nVotre compte a été créé. Connectez-vous ici : {link}\n"
-        "Votre mot de passe temporaire vous a été communiqué par votre administrateur."
+        f"Mot de passe temporaire : {temporary_password}\n"
+        "Vous devrez le remplacer par un mot de passe personnel dès votre première connexion."
     )
     html = _layout(
         subject,
         f"<p>Bonjour {escape(name)},</p><p>Votre compte a été créé.</p>"
         f'<p><a href="{escape(link)}">Accéder au portail</a></p>'
-        "<p>Votre mot de passe temporaire vous a été communiqué par votre administrateur.</p>",
+        f"<p>Mot de passe temporaire : <strong>{escape(temporary_password)}</strong></p>"
+        "<p>Vous devrez le remplacer par un mot de passe personnel dès votre première connexion.</p>",
     )
     return subject, text, html
 

@@ -62,6 +62,36 @@ def test_list_with_search_and_pagination(client, make_user, login):
     assert [u["email"] for u in found["items"]] == ["a@x.fr"]
 
 
+def test_created_user_must_change_temporary_password(
+    client, make_user, make_company, mail_outbox, login
+):
+    """Un compte créé par un admin reçoit son mot de passe temporaire par email et doit le changer."""
+    make_user("root@x.fr", role=UserRole.SUPER_ADMIN)
+    created = client.post(
+        API,
+        headers=login("root@x.fr"),
+        json=new_user(email="tmp@example.fr", password="Temp-pass-1"),
+    )
+    assert created.status_code == 201 and created.json()["must_change_password"] is True
+    assert len(mail_outbox) == 1 and "Temp-pass-1" in mail_outbox[0].text
+    headers = login("tmp@example.fr", "Temp-pass-1")
+    # Seuls le profil, le changement de mot de passe et la déconnexion restent accessibles.
+    assert client.get(f"{API}/me", headers=headers).json()["must_change_password"] is True
+    blocked = client.get("/api/v1/directory/people", headers=headers)
+    assert blocked.status_code == 403
+    assert blocked.json()["error"]["code"] == "PASSWORD_CHANGE_REQUIRED"
+    changed = client.post(
+        f"{API}/me/password",
+        headers=headers,
+        json={"current_password": "Temp-pass-1", "new_password": "Brand-new-pass-2"},
+    )
+    assert changed.status_code == 200
+    # Les anciens jetons sont révoqués ; la nouvelle paire donne accès au portail.
+    fresh = {"Authorization": f"Bearer {changed.json()['access_token']}"}
+    assert client.get("/api/v1/directory/people", headers=fresh).status_code == 200
+    assert client.get(f"{API}/me", headers=fresh).json()["must_change_password"] is False
+
+
 def test_super_admin_creates_user(client, make_user, login):
     """Le super admin crée un utilisateur."""
     make_user("root@x.fr", role=UserRole.SUPER_ADMIN)

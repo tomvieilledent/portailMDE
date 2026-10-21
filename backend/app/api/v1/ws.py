@@ -73,7 +73,7 @@ def _authenticate(session, token: str) -> User | None:
     if auth_service.is_revoked(session, payload["jti"]):
         return None
     user = session.get(User, payload["sub"])
-    if not user or not user.is_active or user.deleted_at is not None:
+    if not user or not user.is_active or user.deleted_at is not None or user.must_change_password:
         return None
     if not auth_service.session_is_current(user, payload):
         return None

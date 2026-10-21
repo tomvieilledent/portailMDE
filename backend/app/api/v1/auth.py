@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request, Response
 
-from app.api.deps import CurrentUser, SessionDep, get_access_payload
+from app.api.deps import PendingUser, SessionDep, get_access_payload
 from app.core import ratelimit
 from app.core.errors import UnauthorizedError
 from app.schemas.auth import (
@@ -43,7 +43,7 @@ def refresh(body: RefreshRequest, session: SessionDep):
 @router.post("/logout", status_code=204)
 def logout(
     session: SessionDep,
-    _user: CurrentUser,
+    _user: PendingUser,
     payload: Annotated[dict, Depends(get_access_payload)],
     body: RefreshRequest | None = None,
 ):

@@ -27,6 +27,7 @@ class UserRead(BaseModel):
     permissions: list[str]
     company_id: uuid.UUID | None
     is_active: bool
+    must_change_password: bool = False
     created_at: datetime
 
 
