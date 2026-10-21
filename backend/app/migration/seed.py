@@ -9,6 +9,7 @@ from app.core.errors import ConflictError
 from app.core.permissions import validate_permissions
 from app.core.security import hash_password
 from app.migration import seed_assets as assets
+from app.migration.seed_trainings import seed_trainings
 from app.models import (
     Company,
     Conversation,
@@ -19,14 +20,11 @@ from app.models import (
     NewsArticle,
     Notification,
     Training,
-    TrainingEnrollment,
-    TrainingSession,
     User,
 )
 from app.models.enums import (
     ConversationKind,
     InvitationStatus,
-    SessionStatus,
     UserRole,
 )
 
@@ -298,13 +296,19 @@ def _ascii(text: str) -> str:
     return text.lower().translate(table).replace("..", ".").strip(".")
 
 
+def _member_email(idx: int) -> str:
+    """E-mail d'un membre de démo : prénom seul pour les 5 comptes historiques, sinon prénom.nom."""
+    first, last = FIRST[idx], LAST[idx]
+    return f"{_ascii(first)}@demo.fr" if idx < 5 else f"{_ascii(first)}.{_ascii(last)}@demo.fr"
+
+
 def _at(days: int, hour: int, minute: int = 0) -> datetime:
     """Date/heure (UTC) décalée de ``days`` jours par rapport à aujourd'hui."""
     base = datetime.now(UTC).replace(hour=hour, minute=minute, second=0, microsecond=0)
     return base + timedelta(days=days)
 
 
-def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, int]:
+def _seed_base(session: Session, password: str):
     """Jeu de données de démonstration complet, idempotent (rejouable sans doublons).
 
     Couvre les cas à tester : entreprises avec/sans logo, active/désactivée, de chaque type ;
@@ -312,9 +316,6 @@ def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, 
     comptes désactivés ou à mot de passe temporaire ; événements passés/en cours/à venir ;
     formations et sessions de tous statuts ; inscriptions, invitations, messagerie, notifications.
     """
-    if session.scalar(select(Company.id).where(Company.name == "Brasserie des Causses")):
-        return {}
-
     # ── Entreprises (logo généré pour celles qui en ont un) ──────────────────────────────
     companies: dict[str, Company] = {}
     for i, (name, desc, place, kind, color, shape, site) in enumerate(COMPANIES):
@@ -375,8 +376,11 @@ def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, 
     members: list[User] = []
     for idx in range(42):
         first, last = FIRST[idx], LAST[idx]
-        email = "lea@demo.fr" if idx == 0 else f"{_ascii(first)}.{_ascii(last)}@demo.fr"
-        company = company_list[idx % len(company_list)]
+        email = _member_email(idx)
+        # Comptes historiques (tests E2E) : Léa et Hugo chez Atelier Lumière, Sofia et Karim chez
+        # AgriTech, Manon chez Conseil & Co ; les autres tournent sur les autres entreprises.
+        home = {0: 0, 1: 0, 2: 1, 3: 1, 4: 2}
+        company = company_list[home[idx] if idx in home else (idx - 5 + 3) % len(company_list)]
         user = _user(
             session,
             email,
@@ -389,7 +393,7 @@ def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, 
             else f"06 {10 + idx:02d} {20 + idx:02d} {30 + idx:02d} {40 + idx:02d}",
             company_id=company.id,
             # un·e administrateur·rice par entreprise (les 11 premiers), quelques co-responsables
-            is_company_admin=idx < len(company_list) or idx in (12, 20),
+            is_company_admin=idx in (0, 2, 4) or 5 <= idx <= 12 or idx in (20, 27),
             is_active=idx not in (30, 37),  # 2 comptes désactivés
             must_change_password=idx in (25, 41),  # 2 mots de passe temporaires
         )
@@ -469,134 +473,6 @@ def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, 
         events.append(ev)
     session.flush()
 
-    # ── Formations : avec/sans visuel, formation/atelier, active/inactive ────────────────
-    trainings_spec = [
-        ("Réussir son pitch", "Communication", "atelier", "Formations Sud", "#7c3aed", True, True),
-        (
-            "Comptabilité pour dirigeants",
-            "Gestion",
-            "formation",
-            "Cabinet Delmas",
-            "#475569",
-            True,
-            True,
-        ),
-        (
-            "Marketing digital pour TPE",
-            "Marketing",
-            "formation",
-            "NumériSud",
-            "#0891b2",
-            True,
-            True,
-        ),
-        ("Management d'équipe", "Management", "formation", "Coach & Cap", "#db2777", False, True),
-        (
-            "Négocier avec ses fournisseurs",
-            "Commercial",
-            "atelier",
-            "Formations Sud",
-            "#b45309",
-            False,
-            True,
-        ),
-        (
-            "Financer sa première levée",
-            "Finance",
-            "atelier",
-            "Crédit Mutuel Rodez",
-            "#1d4ed8",
-            True,
-            True,
-        ),
-        ("Excel avancé", "Bureautique", "formation", "Formations Sud", "#15803d", False, True),
-        (
-            "Droit du travail (archivée)",
-            "Juridique",
-            "formation",
-            "Cabinet Delmas",
-            "#6b7280",
-            False,
-            False,
-        ),
-    ]
-    trainings = []
-    for i, (title, cat, kind, owner, color, picture, active) in enumerate(trainings_spec):
-        tr = Training(
-            title=title,
-            category=cat,
-            kind=kind,
-            is_active=active,
-            company_id=companies[owner].id,
-            description=f"{title} : programme détaillé, supports fournis et mise en pratique.",
-            picture_path=assets.training_picture(f"training-{i}", title, color)
-            if picture
-            else None,
-        )
-        session.add(tr)
-        trainings.append(tr)
-    session.flush()
-
-    sessions_spec = [  # (indice formation, décalage jours, durée h, statut, public, lieu, lien)
-        (0, 10, 7, SessionStatus.UPCOMING, True, "Salle des Cèdres", None),
-        (0, 40, 7, SessionStatus.UPCOMING, True, None, "https://visio.example/pitch"),
-        (1, 5, 14, SessionStatus.UPCOMING, True, "Salle Aveyron", None),
-        (2, 0, 4, SessionStatus.ONGOING, True, "Espace coworking", None),
-        (2, 18, 4, SessionStatus.UPCOMING, False, None, "https://visio.example/marketing"),
-        (3, 25, 7, SessionStatus.UPCOMING, True, "Salle des Cèdres", None),
-        (4, -20, 3, SessionStatus.DONE, True, "Salle Aveyron", None),
-        (5, 8, 3, SessionStatus.CANCELLED, True, "Salle des Cèdres", None),
-        (6, 14, 7, SessionStatus.UPCOMING, True, None, "https://visio.example/excel"),
-        (7, -60, 7, SessionStatus.DONE, False, "Salle Aveyron", None),
-    ]
-    sessions = []
-    for t_idx, offset, hours, status, public, place, link in sessions_spec:
-        start = _at(offset, 9)
-        sess = TrainingSession(
-            training_id=trainings[t_idx].id,
-            start_at=start,
-            end_at=start + timedelta(hours=hours),
-            max_participants=3 if t_idx == 1 else 12,
-            location=place,
-            link=link,
-            status=status,
-            is_public=public,
-            created_by=admin.id,
-        )
-        session.add(sess)
-        sessions.append(sess)
-    session.flush()
-
-    # Inscriptions : session complète (3/3), intérêt simple, formation terminée
-    for user in members[:3]:
-        session.add(
-            TrainingEnrollment(
-                user_id=user.id,
-                training_id=trainings[1].id,
-                session_id=sessions[2].id,
-                enrolled_at=_at(-2, 10),
-            )
-        )
-    session.add(TrainingEnrollment(user_id=lea.id, training_id=trainings[0].id, interested=True))
-    session.add(
-        TrainingEnrollment(
-            user_id=members[5].id,
-            training_id=trainings[0].id,
-            session_id=sessions[0].id,
-            enrolled_at=_at(-1, 9),
-        )
-    )
-    for user in members[3:6]:
-        session.add(
-            TrainingEnrollment(
-                user_id=user.id,
-                training_id=trainings[4].id,
-                session_id=sessions[6].id,
-                enrolled_at=_at(-30, 9),
-                completed_at=_at(-20, 17),
-            )
-        )
-
     # ── Invitations (en attente / acceptée / refusée) ────────────────────────────────────
     for ev, status in (
         (events[4], InvitationStatus.PENDING),
@@ -613,7 +489,6 @@ def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, 
                 responded_at=None if status == InvitationStatus.PENDING else _at(-1, 11),
             )
         )
-    session.add(Invitation(session_id=sessions[0].id, inviter_id=admin.id, invitee_id=lea.id))
 
     # ── Actualités ───────────────────────────────────────────────────────────────────────
     news = [
@@ -728,11 +603,44 @@ def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, 
         session.add(Notification(recipient_id=lea.id, content=content, kind=kind, is_read=read))
 
     session.commit()
-    return {
+    counts = {
         "entreprises": len(companies),
         "utilisateurs": 3 + len(members) + 2,
         "evenements": len(events),
-        "formations": len(trainings),
-        "sessions": len(sessions),
         "actualites": len(news),
     }
+    return admin, members, companies, counts
+
+
+def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, int]:
+    """Jeu de données de démonstration complet, idempotent (rejouable sans doublons).
+
+    Couvre les cas à tester : entreprises avec/sans logo, active/désactivée, de chaque type ;
+    utilisateurs avec/sans avatar et carte de visite, administrateurs d'entreprise, staff,
+    comptes désactivés ou à mot de passe temporaire ; événements passés/en cours/à venir ;
+    formations (lien, visuel, description longue), sessions de tous statuts, inscriptions et
+    demandes en attente ; invitations, messagerie, notifications. Sur une base déjà peuplée par
+    une version antérieure, seules les formations sont complétées.
+    """
+    fresh = (
+        session.scalar(select(Company.id).where(Company.name == "Brasserie des Causses")) is None
+    )
+    trainings_ready = (
+        session.scalar(select(Training.id).where(Training.title == "Cybersécurité pour dirigeants"))
+        is not None
+    )
+    if not fresh and trainings_ready:
+        return {}
+    if fresh:
+        admin, members, companies, counts = _seed_base(session, password)
+    else:
+        by_email = {u.email.lower(): u for u in session.scalars(select(User)).all()}
+        admin = by_email["admin@demo.fr"]
+        members = [
+            by_email.get(_member_email(i))
+            or by_email[f"{_ascii(FIRST[i])}.{_ascii(LAST[i])}@demo.fr"]  # jeu antérieur
+            for i in range(42)
+        ]
+        companies = {c.name: c for c in session.scalars(select(Company)).all()}
+        counts = {}
+    return {**counts, **seed_trainings(session, companies, admin, members)}
