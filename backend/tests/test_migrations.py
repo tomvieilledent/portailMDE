@@ -52,6 +52,13 @@ def test_constraints(alembic_cfg, test_url):
                 " VALUES (gen_random_uuid(), 'A@x.fr', 'h')"
             )
         )
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO users (id, email, password_hash)"
+                " VALUES (gen_random_uuid(), 'b@x.fr', 'h')"
+            )
+        )
     with pytest.raises(IntegrityError), engine.begin() as conn:
         conn.execute(
             text(

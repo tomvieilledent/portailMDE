@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Boolean, ForeignKey, Index, String, func
+from sqlalchemy import Boolean, ForeignKey, Index, String, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -10,7 +10,7 @@ from app.models.enums import UserRole
 
 class User(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "users"
-    __table_args__ = (Index("uq_users_email_lower", func.lower("email"), unique=True),)
+    __table_args__ = (Index("uq_users_email_lower", func.lower(text("email")), unique=True),)
 
     email: Mapped[str] = mapped_column(String(254), nullable=False)
     password_hash: Mapped[str] = mapped_column(String(256), nullable=False)

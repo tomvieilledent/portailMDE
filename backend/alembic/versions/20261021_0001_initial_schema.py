@@ -160,7 +160,7 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id", name=op.f("pk_users")),
     )
     op.create_index(op.f("ix_users_company_id"), "users", ["company_id"], unique=False)
-    op.create_index("uq_users_email_lower", "users", [sa.text("lower('email')")], unique=True)
+    op.create_index("uq_users_email_lower", "users", [sa.text("lower(email)")], unique=True)
     op.create_table(
         "conversations",
         sa.Column("kind", sa.String(length=10), nullable=False),
