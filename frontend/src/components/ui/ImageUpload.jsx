@@ -1,19 +1,21 @@
 /** Sélecteur d'image avec aperçu. */
 
-import { useId } from 'react'
+import { useId, useState } from 'react'
 
 import Spinner from './Spinner'
 
 /** Sélecteur d'image avec aperçu ; `onSelect(file)` est appelé dès qu'un fichier est choisi. */
 export default function ImageUpload({ label, preview, onSelect, loading = false, error }) {
   const id = useId()
+  const [name, setName] = useState('')
   return (
     <div className="space-y-2">
       <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-slate-300">
         {label}
       </label>
-      <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap sm:gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         {preview}
+        {/* Champ natif masqué : son texte (« Aucun fichier choisi ») était tronqué sur mobile. */}
         <input
           id={id}
           type="file"
@@ -21,11 +23,23 @@ export default function ImageUpload({ label, preview, onSelect, loading = false,
           disabled={loading}
           onChange={(event) => {
             const file = event.target.files?.[0]
-            if (file) onSelect(file)
+            if (file) {
+              setName(file.name)
+              onSelect(file)
+            }
             event.target.value = ''
           }}
-          className="file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-brand-900 dark:file:text-brand-200 block w-full min-w-0 flex-1 truncate text-xs text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-2 file:text-sm file:font-medium sm:text-sm dark:text-slate-300"
+          className="peer sr-only"
         />
+        <label
+          htmlFor={id}
+          className="bg-brand-50 text-brand-700 hover:bg-brand-100 dark:bg-brand-900 dark:text-brand-200 peer-focus-visible:ring-brand-500 inline-flex cursor-pointer items-center rounded-lg px-3 py-2 text-sm font-medium peer-focus-visible:ring-2 peer-disabled:cursor-not-allowed peer-disabled:opacity-60"
+        >
+          Choisir une image
+        </label>
+        <span className="min-w-0 text-xs break-all text-slate-500">
+          {name || 'Aucune image choisie'}
+        </span>
         {loading && <Spinner className="h-5 w-5" />}
       </div>
       {error && (
