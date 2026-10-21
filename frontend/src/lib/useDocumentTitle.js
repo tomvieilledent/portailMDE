@@ -7,7 +7,7 @@ let firstPage = true
 /** Fixe le titre du document ; au changement de page (pas au premier chargement), place le focus sur le <h1>. */
 export function useDocumentTitle(title) {
   useEffect(() => {
-    document.title = `${title} – portailMDE`
+    document.title = `${title} – Maison de l'Économie`
     if (firstPage) {
       firstPage = false
       return

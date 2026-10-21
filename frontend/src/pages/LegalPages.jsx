@@ -23,9 +23,9 @@ export function LegalNoticePage() {
   return (
     <LegalShell title="Mentions légales">
       <p>
-        Le site portailMDE est édité par la Maison de l'Entreprise. Les coordonnées de l'éditeur, du
-        directeur de la publication et de l'hébergeur sont à compléter par l'exploitant avant la
-        mise en production.
+        Le site est édité par la Maison de l'Entreprise. Les coordonnées de l'éditeur, du directeur
+        de la publication et de l'hébergeur sont à compléter par l'exploitant avant la mise en
+        production.
       </p>
       <p>
         Les contenus du portail sont réservés à ses membres. Toute reproduction sans autorisation
