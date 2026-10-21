@@ -38,11 +38,6 @@ export default function HomePage() {
             alt="Rodez Agglomération"
             className="h-14 w-auto rounded-lg bg-white px-2 py-1.5 shadow-md"
           />
-          <div className="h-12 w-px bg-white/30" aria-hidden="true" />
-          <div>
-            <p className="text-xl leading-tight font-bold text-white">Maison de l'Économie</p>
-            <p className="mt-0.5 text-xs text-white/70">Rodez Agglomération</p>
-          </div>
         </div>
         <button
           type="button"

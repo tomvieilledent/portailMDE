@@ -18,7 +18,6 @@ export default function AuthShell({ title, subtitle, children }) {
           className="text-brand-700 dark:text-brand-300 flex flex-col items-center gap-2 text-center text-2xl font-bold"
         >
           <Logo className="h-14" />
-          Maison de l'Économie
         </Link>
         <Card className="space-y-5">
           <div>

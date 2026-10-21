@@ -59,7 +59,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
     const apply = () => {
       const heading = main?.querySelector('h1')
       if (!heading?.textContent) return false
-      document.title = `${heading.textContent} – Maison de l'Économie`
+      document.title = heading.textContent
       if (!isFirst) {
         heading.tabIndex = -1
         heading.focus({ preventScroll: false })
@@ -67,7 +67,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
       return true
     }
     if (!apply()) {
-      document.title = "Maison de l'Économie"
+      document.title = 'Accueil'
       // Titre dépendant de données chargées : on attend l'apparition du <h1>.
       if (main) {
         observer = new MutationObserver(() => {
@@ -124,9 +124,6 @@ export default function AppLayout({ items = navItems, actions = null }) {
       <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block dark:border-slate-800 dark:bg-slate-900">
         <div className="mb-6 space-y-2 px-3">
           <Logo />
-          <p className="text-brand-700 dark:text-brand-300 text-xl font-bold">
-            Maison de l'Économie
-          </p>
         </div>
         <NavList items={items} />
       </aside>
@@ -148,9 +145,6 @@ export default function AppLayout({ items = navItems, actions = null }) {
             <div className="mb-6 flex items-center justify-between px-3">
               <div className="space-y-2">
                 <Logo />
-                <p className="text-brand-700 dark:text-brand-300 text-xl font-bold">
-                  Maison de l'Économie
-                </p>
               </div>
               <button
                 ref={closeButton}
