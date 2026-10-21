@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models.enums import SessionStatus, TrainingKind
 from app.schemas.chat import UserBrief
+from app.schemas.common import HttpUrlStr
 
 
 class TrainingRead(BaseModel):
@@ -72,7 +73,7 @@ class SessionCreate(BaseModel):
     end_at: datetime
     max_participants: int = Field(gt=0)
     location: str | None = Field(None, max_length=512)
-    link: str | None = Field(None, max_length=512)
+    link: HttpUrlStr | None = Field(None, max_length=512)
     is_public: bool = False
 
     @model_validator(mode="after")
@@ -90,7 +91,7 @@ class SessionUpdate(BaseModel):
     end_at: datetime | None = None
     max_participants: int | None = Field(None, gt=0)
     location: str | None = Field(None, max_length=512)
-    link: str | None = Field(None, max_length=512)
+    link: HttpUrlStr | None = Field(None, max_length=512)
     status: SessionStatus | None = None
     is_public: bool | None = None
 

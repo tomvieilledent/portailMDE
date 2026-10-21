@@ -42,6 +42,8 @@ def get_current_user(
     user = session.get(User, payload["sub"])
     if not user or not user.is_active or user.deleted_at is not None:
         raise UnauthorizedError("Utilisateur inactif ou introuvable")
+    if not auth_service.session_is_current(user, payload):
+        raise UnauthorizedError("Session expirée, reconnectez-vous")
     return user
 
 

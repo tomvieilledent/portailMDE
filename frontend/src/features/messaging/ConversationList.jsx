@@ -54,7 +54,7 @@ export default function ConversationList({ conversations, loading, meId, onNew }
                   <div className="flex items-baseline justify-between gap-2">
                     <p className="truncate font-medium">{conversationTitle(conversation, meId)}</p>
                     {conversation.last_message && (
-                      <time className="shrink-0 text-xs text-slate-400">
+                      <time className="shrink-0 text-xs text-slate-500">
                         {formatTime(conversation.last_message.created_at)}
                       </time>
                     )}

@@ -1,15 +1,16 @@
 """Gestion des utilisateurs : comptes, profil, rôles, mots de passe et images."""
 
+import secrets
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, or_, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError, ConflictError, ForbiddenError, NotFoundError
 from app.core.permissions import Permission, can_manage_company, has_permission
 from app.core.security import hash_password, verify_password
-from app.models import Company, User
+from app.models import Company, Message, Notification, User
 from app.models.enums import UserRole
 from app.services import storage
 from app.services.mailer import send_later
@@ -20,6 +21,14 @@ def get_user(session: Session, user_id: uuid.UUID) -> User:
     user = session.get(User, user_id)
     if not user or user.deleted_at is not None:
         raise NotFoundError("Utilisateur introuvable")
+    return user
+
+
+def get_user_for(session: Session, actor: User, user_id: uuid.UUID) -> User:
+    """Profil complet : réservé à soi-même, aux gestionnaires d'utilisateurs et admins d'entreprise."""
+    user = get_user(session, user_id)
+    if user.id != actor.id:
+        _ensure_manageable(actor, user)
     return user
 
 
@@ -159,9 +168,71 @@ def delete_user(session: Session, actor: User, target_id: uuid.UUID) -> None:
         raise ForbiddenError("Vous ne pouvez pas supprimer votre propre compte")
     _ensure_manageable(actor, target)
     _ensure_not_last_super_admin(session, target)
+    _anonymize(session, target)
+
+
+def delete_own_account(session: Session, user: User) -> None:
+    """Efface le compte de l'utilisateur courant (droit à l'effacement)."""
+    _ensure_not_last_super_admin(session, user)
+    _anonymize(session, user)
+
+
+def _anonymize(session: Session, target: User) -> None:
+    """Suppression logique + anonymisation des données personnelles et des fichiers associés."""
+    old_files = [target.avatar_path, target.business_card_path]
     target.deleted_at = datetime.now(UTC)
     target.is_active = False
+    target.email = f"deleted-{target.id}@anonymise.portail-mde.fr"
+    target.password_hash = hash_password(secrets.token_urlsafe(32))
+    target.first_name = "Utilisateur supprimé"
+    target.last_name = None
+    target.job_title = None
+    target.phone = None
+    target.avatar_path = None
+    target.business_card_path = None
+    session.execute(delete(Notification).where(Notification.recipient_id == target.id))
     session.commit()
+    for path in old_files:
+        storage.delete_file(path)
+
+
+def export_personal_data(session: Session, user: User) -> dict:
+    """Rassemble les données personnelles de l'utilisateur (droit d'accès et de portabilité)."""
+    messages = session.scalars(
+        select(Message).where(Message.author_id == user.id, Message.deleted_at.is_(None))
+    ).all()
+    notifications = session.scalars(
+        select(Notification).where(Notification.recipient_id == user.id)
+    ).all()
+    return {
+        "exported_at": datetime.now(UTC).isoformat(),
+        "profile": {
+            "id": str(user.id),
+            "email": user.email,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "job_title": user.job_title,
+            "phone": user.phone,
+            "avatar_path": user.avatar_path,
+            "business_card_path": user.business_card_path,
+            "role": user.role,
+            "company_id": str(user.company_id) if user.company_id else None,
+            "created_at": user.created_at.isoformat(),
+        },
+        "messages": [
+            {
+                "conversation_id": str(m.conversation_id),
+                "content": m.content,
+                "file_name": m.file_name,
+                "created_at": m.created_at.isoformat(),
+            }
+            for m in messages
+        ],
+        "notifications": [
+            {"content": n.content, "kind": n.kind, "created_at": n.created_at.isoformat()}
+            for n in notifications
+        ],
+    }
 
 
 def set_role(session: Session, target_id: uuid.UUID, data) -> User:

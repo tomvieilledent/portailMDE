@@ -27,6 +27,12 @@ _executor = ThreadPoolExecutor(max_workers=2, thread_name_prefix="mailer")
 outbox: list[Mail] = []
 
 
+def _mask(address: str) -> str:
+    """Masque l'adresse pour les journaux (``a***@domaine``)."""
+    local, _, domain = address.partition("@")
+    return f"{local[:1]}***@{domain}"
+
+
 def send_email(to: str, subject: str, text: str, html: str | None = None) -> None:
     """Envoie un email. Une erreur d'envoi est journalisée mais ne fait jamais échouer l'appelant."""
     settings = get_settings()
@@ -36,7 +42,7 @@ def send_email(to: str, subject: str, text: str, html: str | None = None) -> Non
         outbox.append(mail)
         return
     if backend == "console":
-        logger.info("EMAIL à %s — %s\n%s", to, subject, text)
+        logger.info("EMAIL (console) — %s", subject)
         return
     message = EmailMessage()
     message["From"] = settings.mail_from
@@ -53,7 +59,7 @@ def send_email(to: str, subject: str, text: str, html: str | None = None) -> Non
                 smtp.login(settings.mail_username, settings.mail_password)
             smtp.send_message(message)
     except (OSError, smtplib.SMTPException):
-        logger.exception("Échec de l'envoi de l'email à %s", to)
+        logger.exception("Échec de l'envoi de l'email « %s » à %s", subject, _mask(to))
 
 
 def send_later(to: str, subject: str, text: str, html: str | None = None) -> None:

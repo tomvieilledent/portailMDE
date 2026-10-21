@@ -2,6 +2,7 @@
 
 import { Link } from 'react-router-dom'
 
+import LegalLinks from '../../components/LegalLinks'
 import { Card } from '../../components/ui'
 
 /** Cadre commun des pages de connexion / mot de passe. */
@@ -24,6 +25,7 @@ export default function AuthShell({ title, subtitle, children }) {
           </div>
           {children}
         </Card>
+        <LegalLinks className="text-xs text-slate-500" />
       </div>
     </main>
   )

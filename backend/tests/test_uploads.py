@@ -103,3 +103,27 @@ def test_save_document(upload_dir):
 
     path, name = storage.save_document(Upload(), "documents")
     assert path.endswith(".pdf") and name == "notes.pdf"
+
+
+def test_save_document_rejects_mismatched_content(upload_dir):
+    """Un document dont le contenu ne correspond pas à l'extension est refusé."""
+
+    class Upload:
+        """Faux fichier téléversé pour le test."""
+
+        filename = "evil.pdf"
+        file = io.BytesIO(b"<html><script>alert(1)</script></html>")
+
+    with pytest.raises(storage.AppError):
+        storage.save_document(Upload(), "documents")
+
+
+def test_documents_served_as_attachment(upload_dir, client):
+    """Les documents publics sont servis en téléchargement, les images en ligne."""
+    (upload_dir / "trainings").mkdir(parents=True, exist_ok=True)
+    (upload_dir / "trainings" / "a.pdf").write_bytes(b"%PDF-1.4")
+    (upload_dir / "trainings" / "a.png").write_bytes(PNG)
+    pdf = client.get("/uploads/trainings/a.pdf")
+    assert pdf.headers["content-disposition"] == "attachment"
+    assert pdf.headers["x-content-type-options"] == "nosniff"
+    assert "content-disposition" not in client.get("/uploads/trainings/a.png").headers

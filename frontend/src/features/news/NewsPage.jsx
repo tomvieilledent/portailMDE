@@ -19,6 +19,7 @@ import {
 } from '../../components/ui'
 import { api } from '../../lib/api'
 import { cn } from '../../lib/cn'
+import { safeHref } from '../../lib/safeUrl'
 import { useDebounce } from '../../lib/useDebounce'
 import ArticleForm from './ArticleForm'
 import { NEWS_PAGE, formatPublished, useNews, useSavedNews } from './queries'
@@ -39,7 +40,7 @@ function ArticleCard({ article, saved, onToggleSave, onDelete }) {
           >
             <Bookmark
               size={18}
-              className={cn(saved ? 'fill-brand-600 text-brand-600' : 'text-slate-400')}
+              className={cn(saved ? 'fill-brand-600 text-brand-600' : 'text-slate-500')}
               aria-hidden="true"
             />
           </button>
@@ -48,7 +49,7 @@ function ArticleCard({ article, saved, onToggleSave, onDelete }) {
               type="button"
               aria-label="Supprimer l'article"
               onClick={onDelete}
-              className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800"
+              className="rounded-full p-1.5 text-slate-500 hover:bg-slate-100 hover:text-red-600 dark:hover:bg-slate-800"
             >
               <Trash2 size={18} aria-hidden="true" />
             </button>
@@ -63,9 +64,9 @@ function ArticleCard({ article, saved, onToggleSave, onDelete }) {
       {article.summary && (
         <p className="line-clamp-4 text-sm text-slate-600 dark:text-slate-400">{article.summary}</p>
       )}
-      {article.url && (
+      {safeHref(article.url) && (
         <a
-          href={article.url}
+          href={safeHref(article.url)}
           target="_blank"
           rel="noopener noreferrer"
           className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 text-sm hover:underline"

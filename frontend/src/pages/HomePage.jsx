@@ -3,6 +3,7 @@
 import { ArrowRight, Building2, Moon, Rocket, Sprout, Sun } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
+import LegalLinks from '../components/LegalLinks'
 import { useTheme } from '../components/ThemeProvider'
 import { Card } from '../components/ui'
 import { useLanding } from '../features/landing/useLanding'
@@ -84,7 +85,7 @@ export default function HomePage() {
       </main>
 
       <footer className="border-t border-slate-200 py-6 text-center text-sm text-slate-500 dark:border-slate-800">
-        © {new Date().getFullYear()} Maison de l'Entreprise
+        <LegalLinks className="mb-2" />© {new Date().getFullYear()} Maison de l'Entreprise
       </footer>
     </div>
   )

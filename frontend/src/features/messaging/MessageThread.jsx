@@ -193,7 +193,7 @@ export default function MessageThread({ conversation, meId }) {
             </Button>
           </div>
         )}
-        <ul className="space-y-3">
+        <ul role="log" aria-label="Messages" className="space-y-3">
           {messages.map((message) => (
             <Bubble
               key={message.id}

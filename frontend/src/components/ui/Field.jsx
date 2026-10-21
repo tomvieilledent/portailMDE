@@ -5,10 +5,10 @@ import { forwardRef, useId } from 'react'
 import { cn } from '../../lib/cn'
 
 const control =
-  'block w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-900 dark:text-slate-100'
+  'block w-full rounded-lg border bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-900 dark:text-slate-100'
 
 /** Champ de formulaire (libellé, aide, message d'erreur reliés au contrôle pour l'accessibilité). */
-function FieldShell({ label, error, hint, id, children }) {
+function FieldShell({ label, error, hint, id, required, children }) {
   return (
     <div className="space-y-1">
       {label && (
@@ -17,6 +17,15 @@ function FieldShell({ label, error, hint, id, children }) {
           className="block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
           {label}
+          {required && (
+            <>
+              <span aria-hidden="true" className="text-red-600 dark:text-red-400">
+                {' '}
+                *
+              </span>
+              <span className="sr-only"> (obligatoire)</span>
+            </>
+          )}
         </label>
       )}
       {children}
@@ -46,7 +55,7 @@ const borderClass = (error) => (error ? 'border-red-500' : 'border-slate-300 dar
 export const Input = forwardRef(function Input({ label, error, hint, className, ...props }, ref) {
   const id = useId()
   return (
-    <FieldShell label={label} error={error} hint={hint} id={id}>
+    <FieldShell label={label} error={error} hint={hint} id={id} required={props.required}>
       <input
         ref={ref}
         className={cn(control, borderClass(error), className)}
@@ -64,7 +73,7 @@ export const Textarea = forwardRef(function Textarea(
 ) {
   const id = useId()
   return (
-    <FieldShell label={label} error={error} hint={hint} id={id}>
+    <FieldShell label={label} error={error} hint={hint} id={id} required={props.required}>
       <textarea
         ref={ref}
         rows={rows}
@@ -83,7 +92,7 @@ export const Select = forwardRef(function Select(
 ) {
   const id = useId()
   return (
-    <FieldShell label={label} error={error} hint={hint} id={id}>
+    <FieldShell label={label} error={error} hint={hint} id={id} required={props.required}>
       <select
         ref={ref}
         className={cn(control, borderClass(error), className)}

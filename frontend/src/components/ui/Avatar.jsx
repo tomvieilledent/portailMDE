@@ -16,6 +16,8 @@ export default function Avatar({ src, firstName, lastName, size = 'md', classNam
     <img
       src={src}
       alt=""
+      loading="lazy"
+      decoding="async"
       className={cn('shrink-0 rounded-full object-cover', sizes[size], className)}
     />
   ) : (

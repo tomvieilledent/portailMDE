@@ -91,3 +91,38 @@ def test_deleted_user_token_rejected(client, make_user, session):
     session.commit()
     response = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"})
     assert response.status_code == 401
+
+
+def test_login_locked_after_repeated_failures(client, make_user):
+    """Après 5 échecs pour un même email, la connexion est verrouillée (429), même avec le bon mot de passe."""
+    make_user()
+    for _ in range(5):
+        assert _login(client, password="mauvais-mot-de-passe").status_code == 401
+    assert _login(client).status_code == 429
+
+
+def test_forgot_password_rate_limited(client):
+    """La demande de réinitialisation est limitée par email."""
+    for _ in range(3):
+        assert (
+            client.post("/api/v1/auth/forgot-password", json={"email": "a@example.fr"}).status_code
+            == 204
+        )
+    response = client.post("/api/v1/auth/forgot-password", json={"email": "a@example.fr"})
+    assert response.status_code == 429
+
+
+def test_password_change_revokes_old_tokens(client, make_user):
+    """Un jeton émis avant un changement de mot de passe n'est plus accepté."""
+    make_user()
+    pair = _login(client).json()
+    headers = {"Authorization": f"Bearer {pair['access_token']}"}
+    changed = client.post(
+        "/api/v1/users/me/password",
+        headers=headers,
+        json={"current_password": "password123", "new_password": "newpassword1"},
+    )
+    assert changed.status_code == 200
+    assert client.get("/api/v1/users/me", headers=headers).status_code == 401
+    refresh = client.post("/api/v1/auth/refresh", json={"refresh_token": pair["refresh_token"]})
+    assert refresh.status_code == 401
