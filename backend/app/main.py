@@ -7,7 +7,7 @@ from app.api.v1 import api_router
 from app.core.config import get_settings
 from app.core.errors import register_error_handlers
 from app.core.logging import configure_logging
-from app.services.storage import upload_root
+from app.services.storage import PUBLIC_UPLOAD_CATEGORIES, upload_root
 
 
 def create_app() -> FastAPI:
@@ -25,7 +25,12 @@ def create_app() -> FastAPI:
     register_error_handlers(app)
     app.include_router(health.router)
     app.include_router(api_router)
-    app.mount("/uploads", StaticFiles(directory=upload_root()), name="uploads")
+    # Seules les catégories publiques sont servies directement ; les pièces jointes du chat
+    # passent par un endpoint authentifié.
+    for category in PUBLIC_UPLOAD_CATEGORIES:
+        directory = upload_root() / category
+        directory.mkdir(parents=True, exist_ok=True)
+        app.mount(f"/uploads/{category}", StaticFiles(directory=directory), name=category)
     return app
 
 
