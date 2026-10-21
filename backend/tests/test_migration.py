@@ -355,6 +355,7 @@ def test_seed_demo_is_idempotent_and_usable(client, session):
 
 def test_cli_seed_and_refuses_in_production(monkeypatch, capsys):
     monkeypatch.setenv("ENVIRONMENT", "production")
+    monkeypatch.setenv("JWT_SECRET", "s" * 40)
     from app.core.config import get_settings
 
     get_settings.cache_clear()
