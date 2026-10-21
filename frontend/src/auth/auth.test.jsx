@@ -48,6 +48,12 @@ function renderApp(path) {
   )
 }
 
+/** `/users/me` renvoie `me` ; les autres lectures (annuaire…) renvoient une page vide. */
+const mockMe = (me) =>
+  api.get.mockImplementation(async (path) =>
+    path === '/users/me' ? me : { items: [], total: 0, limit: 24, offset: 0 },
+  )
+
 beforeEach(() => {
   vi.resetAllMocks()
 })
@@ -80,7 +86,7 @@ describe('authentification', () => {
 
   it('connecte puis affiche la page demandée', async () => {
     api.post.mockResolvedValue({ access_token: 'A', refresh_token: 'R' })
-    api.get.mockResolvedValue(member)
+    mockMe(member)
     renderApp('/connexion')
     await userEvent.type(screen.getByLabelText('Email'), 'ada@x.fr')
     await userEvent.type(screen.getByLabelText('Mot de passe'), 'password123')
@@ -105,7 +111,7 @@ describe('authentification', () => {
 
   it('restaure la session depuis le jeton et se déconnecte', async () => {
     tokens.set({ access_token: 'A', refresh_token: 'R' })
-    api.get.mockResolvedValue(member)
+    mockMe(member)
     api.post.mockResolvedValue(null)
     renderApp('/annuaire')
     expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
@@ -124,7 +130,7 @@ describe('authentification', () => {
 
   it("cache l'administration aux simples membres", async () => {
     tokens.set({ access_token: 'A', refresh_token: 'R' })
-    api.get.mockResolvedValue(member)
+    mockMe(member)
     renderApp('/administration')
     expect(await screen.findByRole('heading', { name: 'Annuaire' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Administration' })).not.toBeInTheDocument()
@@ -132,7 +138,7 @@ describe('authentification', () => {
 
   it("montre l'administration au staff", async () => {
     tokens.set({ access_token: 'A', refresh_token: 'R' })
-    api.get.mockResolvedValue({ ...member, role: 'staff', permissions: ['manage_users'] })
+    mockMe({ ...member, role: 'staff', permissions: ['manage_users'] })
     renderApp('/administration')
     expect(await screen.findByRole('heading', { name: 'Administration' })).toBeInTheDocument()
     expect(screen.getAllByRole('link', { name: 'Administration' }).length).toBeGreaterThan(0)

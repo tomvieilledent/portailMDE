@@ -6,6 +6,9 @@ import { isStaff } from './auth/permissions'
 import AppLayout from './components/layout/AppLayout'
 import UserMenu from './components/layout/UserMenu'
 import { navItems } from './navigation'
+import CompaniesPage from './features/directory/CompaniesPage'
+import CompanyPage from './features/directory/CompanyPage'
+import PeoplePage from './features/directory/PeoplePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import HomePage from './pages/HomePage'
 import NotFoundPage from './pages/NotFoundPage'
@@ -29,8 +32,11 @@ export default function App() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route element={<RequireAuth />}>
         <Route element={<Shell />}>
+          <Route path="/annuaire" element={<PeoplePage />} />
+          <Route path="/entreprises" element={<CompaniesPage />} />
+          <Route path="/entreprises/:companyId" element={<CompanyPage />} />
           {navItems
-            .filter((item) => !item.staffOnly)
+            .filter((item) => !item.staffOnly && !['/annuaire', '/entreprises'].includes(item.to))
             .map(({ to, label }) => (
               <Route key={to} path={to} element={<ComingSoonPage title={label} />} />
             ))}
