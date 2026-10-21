@@ -19,12 +19,12 @@ export function CompanyLogo({ company, className = 'h-14 w-14' }) {
       loading="lazy"
       decoding="async"
       alt=""
-      className={`${className} shrink-0 rounded-lg object-contain`}
+      className={`${className} shrink-0 rounded-full border border-slate-200 object-cover dark:border-slate-700`}
     />
   ) : (
     <span
       aria-hidden="true"
-      className={`${className} bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200 inline-flex shrink-0 items-center justify-center rounded-lg`}
+      className={`${className} bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200 inline-flex shrink-0 items-center justify-center rounded-full`}
     >
       <Building2 />
     </span>
