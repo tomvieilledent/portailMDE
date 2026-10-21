@@ -2,11 +2,12 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   Badge,
   Button,
+  ImageUpload,
   Input,
   Modal,
   Pagination,
@@ -18,7 +19,15 @@ import {
 import { api } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { COMPANY_KINDS } from '../directory/labels'
+import { CompanyLogo } from '../directory/CompaniesPage'
 import UserPicker from '../messaging/UserPicker'
+
+/** Téléverse le logo d'une entreprise. */
+const uploadLogo = (companyId, file) => {
+  const form = new FormData()
+  form.append('file', file)
+  return api.put(`/companies/${companyId}/logo`, form)
+}
 
 const PAGE = 25
 
@@ -34,8 +43,19 @@ function CompanyFormModal({ company, onClose }) {
     kind: company?.kind ?? 'company',
   })
   const [owner, setOwner] = useState([]) // propriétaire (création uniquement)
+  const [logoFile, setLogoFile] = useState(null) // logo choisi avant la création
+  const logoPreview = useMemo(() => (logoFile ? URL.createObjectURL(logoFile) : null), [logoFile])
+  useEffect(() => () => logoPreview && URL.revokeObjectURL(logoPreview), [logoPreview])
+  const logo = useMutation({
+    mutationFn: (file) => uploadLogo(company.id, file),
+    onSuccess: () => {
+      toast.success('Logo mis à jour.')
+      queryClient.invalidateQueries({ queryKey: ['admin', 'companies'] })
+    },
+    onError: () => toast.error('Logo refusé (image PNG, JPEG, GIF ou WebP).'),
+  })
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const body = {
         name: values.name.trim(),
         description: values.description.trim() || null,
@@ -43,9 +63,10 @@ function CompanyFormModal({ company, onClose }) {
         website_url: values.website_url.trim() || null,
         kind: values.kind,
       }
-      return company
-        ? api.patch(`/companies/${company.id}`, body)
-        : api.post('/companies', { ...body, owner_id: owner[0] })
+      if (company) return api.patch(`/companies/${company.id}`, body)
+      const created = await api.post('/companies', { ...body, owner_id: owner[0] })
+      if (logoFile) await uploadLogo(created.id, logoFile)
+      return created
     },
     onSuccess: () => {
       toast.success(company ? 'Entreprise modifiée.' : 'Entreprise créée.')
@@ -68,6 +89,18 @@ function CompanyFormModal({ company, onClose }) {
         }}
         className="grid gap-4"
       >
+        <ImageUpload
+          label="Logo"
+          loading={logo.isPending}
+          onSelect={company ? logo.mutate : setLogoFile}
+          preview={
+            logoPreview ? (
+              <img src={logoPreview} alt="" className="h-14 w-14 rounded-lg object-contain" />
+            ) : (
+              <CompanyLogo company={company ?? {}} />
+            )
+          }
+        />
         <Input label="Nom" required maxLength={200} {...bind('name')} />
         <Select label="Type" {...bind('kind')}>
           {Object.entries(COMPANY_KINDS).map(([value, label]) => (

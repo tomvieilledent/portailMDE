@@ -203,6 +203,28 @@ describe('entreprises', () => {
     )
   })
 
+  it("envoie le logo choisi après la création de l'entreprise", async () => {
+    URL.createObjectURL = vi.fn(() => 'blob:logo')
+    URL.revokeObjectURL = vi.fn()
+    api.post.mockResolvedValue({ id: 'c9' })
+    api.put.mockResolvedValue({})
+    renderAt('/administration/entreprises', {
+      ...base,
+      role: 'staff',
+      permissions: ['manage_companies'],
+    })
+    await userEvent.click(await screen.findByRole('button', { name: /Nouvelle entreprise/ }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.type(within(dialog).getByLabelText(/^Nom( \*)?( \(obligatoire\))?$/), 'Globex')
+    const file = new File(['x'], 'logo.png', { type: 'image/png' })
+    await userEvent.upload(within(dialog).getByLabelText('Logo'), file)
+    await userEvent.click(await within(dialog).findByRole('checkbox', { name: /Ada Lovelace/ }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Enregistrer' }))
+    await waitFor(() =>
+      expect(api.put).toHaveBeenCalledWith('/companies/c9/logo', expect.any(FormData)),
+    )
+  })
+
   it('désactive et supprime une entreprise', async () => {
     api.post.mockResolvedValue({})
     api.delete.mockResolvedValue(null)

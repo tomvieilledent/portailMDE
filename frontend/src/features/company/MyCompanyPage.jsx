@@ -246,8 +246,11 @@ function MembersCard({ company, canEdit }) {
   )
 }
 
-/** « Mon entreprise » : fiche modifiable par son administrateur et gestion de l'équipe. */
-export default function MyCompanyPage() {
+/**
+ * « Mon entreprise » : fiche et équipe en lecture seule ; avec `manage` (onglet d'administration
+ * de l'entreprise), l'administrateur modifie la fiche et gère l'équipe.
+ */
+export default function MyCompanyPage({ manage = false }) {
   const { user } = useAuth()
   const company = useQuery({
     queryKey: ['companies', 'me'],
@@ -266,7 +269,7 @@ export default function MyCompanyPage() {
   if (company.isLoading) return <Spinner />
   if (company.isError) return <p role="alert">Impossible de charger votre entreprise.</p>
 
-  const canEdit = canManageCompany(user, company.data.id)
+  const canEdit = manage && canManageCompany(user, company.data.id)
   return (
     <>
       <PageHeader

@@ -74,6 +74,7 @@ function renderAt(path, user = me) {
               <Route element={<RequireAuth />}>
                 <Route path="/profil" element={<ProfilePage />} />
                 <Route path="/mon-entreprise" element={<MyCompanyPage />} />
+                <Route path="/mon-entreprise/administration" element={<MyCompanyPage manage />} />
               </Route>
             </Routes>
           </MemoryRouter>
@@ -177,7 +178,7 @@ describe('mon entreprise', () => {
   })
 
   it("permet à l'admin de modifier et d'agir sur l'équipe", async () => {
-    renderAt('/mon-entreprise', { ...me, company_id: 'c1', is_company_admin: true })
+    renderAt('/mon-entreprise/administration', { ...me, company_id: 'c1', is_company_admin: true })
     api.patch.mockResolvedValue(acme)
     api.put.mockResolvedValue(null)
     api.post.mockResolvedValue(null)
@@ -201,7 +202,7 @@ describe('mon entreprise', () => {
   })
 
   it('crée un collaborateur', async () => {
-    renderAt('/mon-entreprise', { ...me, company_id: 'c1', is_company_admin: true })
+    renderAt('/mon-entreprise/administration', { ...me, company_id: 'c1', is_company_admin: true })
     api.post.mockResolvedValue({})
     await userEvent.click(await screen.findByRole('button', { name: 'Ajouter un collaborateur' }))
     const dialog = await screen.findByRole('dialog')

@@ -36,7 +36,10 @@ const NewsPage = lazy(() => import('./features/news/NewsPage'))
 function Shell() {
   const { user } = useAuth()
   const items = navItems.filter(
-    (item) => (!item.staffOnly || isStaff(user)) && (!item.needsCompany || user.company_id),
+    (item) =>
+      (!item.staffOnly || isStaff(user)) &&
+      (!item.needsCompany || user.company_id) &&
+      (!item.companyAdminOnly || (user.is_company_admin && user.company_id)),
   )
   return (
     <RealtimeProvider>
@@ -82,6 +85,11 @@ export default function App() {
             <Route path="/mon-entreprise" element={<MyCompanyPage />} />
             <Route path="/entreprises" element={<CompaniesPage />} />
             <Route path="/entreprises/:companyId" element={<CompanyPage />} />
+          </Route>
+        </Route>
+        <Route element={<RequireAuth companyAdmin />}>
+          <Route element={<Shell />}>
+            <Route path="/mon-entreprise/administration" element={<MyCompanyPage manage />} />
           </Route>
         </Route>
         <Route element={<RequireAuth staffOnly />}>
