@@ -1,4 +1,4 @@
-.PHONY: up down logs build ps test
+.PHONY: up down logs build ps test seed
 
 up:
 	docker compose up -d --build
@@ -17,3 +17,6 @@ ps:
 
 test:
 	docker compose exec api pytest
+
+seed:
+	docker compose exec api python -m app.cli seed-demo

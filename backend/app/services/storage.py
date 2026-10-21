@@ -16,6 +16,7 @@ _IMAGE_SIGNATURES = {
     ".gif": (b"GIF87a", b"GIF89a"),
     ".webp": (b"RIFF",),
 }
+PUBLIC_UPLOAD_CATEGORIES = ("avatars", "business-cards", "logos", "trainings")
 DOCUMENT_EXTENSIONS = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".csv"}
 
 

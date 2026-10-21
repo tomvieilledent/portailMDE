@@ -83,3 +83,50 @@ def purge_expired(session: Session) -> int:
     )
     session.commit()
     return result.rowcount
+
+
+# --- Réinitialisation du mot de passe -----------------------------------------------------
+
+
+def request_password_reset(session: Session, email: str) -> None:
+    """Envoie un lien de réinitialisation si le compte existe (réponse identique sinon)."""
+    from app.core.config import get_settings
+    from app.core.security import password_fingerprint
+    from app.emails import templates
+    from app.services.mailer import send_later
+
+    user = session.scalar(
+        select(User).where(
+            func.lower(User.email) == email.lower(),
+            User.deleted_at.is_(None),
+            User.is_active.is_(True),
+        )
+    )
+    if not user:
+        return
+    settings = get_settings()
+    token, _, _ = create_token(
+        str(user.id), "reset", {"pwd": password_fingerprint(user.password_hash)}
+    )
+    link = f"{settings.frontend_url}/reset-password?token={token}"
+    name = user.first_name or user.email
+    send_later(user.email, *templates.reset_password(name, link, settings.reset_token_minutes))
+
+
+def reset_password(session: Session, token: str, new_password: str) -> None:
+    from app.core.security import password_fingerprint
+
+    try:
+        payload = decode_token(token, "reset")
+    except InvalidTokenError as exc:
+        raise UnauthorizedError("Lien invalide ou expiré") from exc
+    user = session.get(User, payload["sub"])
+    if (
+        not user
+        or not user.is_active
+        or user.deleted_at is not None
+        or payload.get("pwd") != password_fingerprint(user.password_hash)
+    ):
+        raise UnauthorizedError("Lien invalide ou expiré")
+    user.password_hash = hash_password(new_password)
+    session.commit()
