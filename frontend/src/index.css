@@ -62,14 +62,14 @@ body {
 }
 .glass-panel
   :is(.text-slate-500, .text-slate-600, .text-slate-700, .text-slate-800, .text-slate-900):not(
-    :is(.bg-white, .bg-slate-50, .bg-slate-100) *
-  ):not(.bg-white) {
+    :is(.bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-200, .bg-brand-50, .bg-brand-100) *
+  ):not([class*='bg-']) {
   color: rgb(255 255 255 / 0.88);
 }
 .glass-panel
   :is(.text-brand-600, .text-brand-700, .text-brand-800):not(
-    :is(.bg-white, .bg-slate-50, .bg-slate-100) *
-  ):not(.bg-white) {
+    :is(.bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-200, .bg-brand-50, .bg-brand-100) *
+  ):not([class*='bg-']) {
   color: #d5eebb;
 }
 
