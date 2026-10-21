@@ -14,6 +14,8 @@ import AgendaPage from './features/agenda/AgendaPage'
 import MessagingPage from './features/messaging/MessagingPage'
 import TrainingPage from './features/trainings/TrainingPage'
 import TrainingsPage from './features/trainings/TrainingsPage'
+import NewsPage from './features/news/NewsPage'
+import NotificationsBell from './features/notifications/NotificationsBell'
 import PeoplePage from './features/directory/PeoplePage'
 import ComingSoonPage from './pages/ComingSoonPage'
 import HomePage from './pages/HomePage'
@@ -32,7 +34,15 @@ function Shell() {
   return (
     <RealtimeProvider>
       <RealtimeEffects />
-      <AppLayout items={items} actions={<UserMenu />} />
+      <AppLayout
+        items={items}
+        actions={
+          <>
+            <NotificationsBell />
+            <UserMenu />
+          </>
+        }
+      />
     </RealtimeProvider>
   )
 }
@@ -53,6 +63,7 @@ export default function App() {
           <Route path="/agenda" element={<AgendaPage />} />
           <Route path="/formations" element={<TrainingsPage />} />
           <Route path="/formations/:trainingId" element={<TrainingPage />} />
+          <Route path="/actualites" element={<NewsPage />} />
           <Route path="/profil" element={<ProfilePage />} />
           <Route path="/mon-entreprise" element={<MyCompanyPage />} />
           <Route path="/entreprises" element={<CompaniesPage />} />
