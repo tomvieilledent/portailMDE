@@ -64,6 +64,8 @@ export default function PersonModal({ person, onClose }) {
         {person.business_card_path && (
           <img
             src={uploadUrl(person.business_card_path)}
+            loading="lazy"
+            decoding="async"
             alt={`Carte de visite de ${fullName(person)}`}
             className="max-h-48 rounded-lg border border-slate-200 dark:border-slate-700"
           />

@@ -4,9 +4,11 @@ import { Link } from 'react-router-dom'
 
 import LegalLinks from '../../components/LegalLinks'
 import { Card } from '../../components/ui'
+import { useDocumentTitle } from '../../lib/useDocumentTitle'
 
 /** Cadre commun des pages de connexion / mot de passe. */
 export default function AuthShell({ title, subtitle, children }) {
+  useDocumentTitle(title)
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">

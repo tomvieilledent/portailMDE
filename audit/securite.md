@@ -19,3 +19,10 @@ Non corrigé : JWT en localStorage / jeton WS dans l'URL — passage aux cookies
 - [mineur] frontend/nginx.conf:20,28 — les `add_header` des blocs `location /uploads/` et `/assets/` annulent l'héritage des en-têtes de sécurité du bloc `server` (CSP, HSTS, nosniff, X-Frame-Options absents sur ces réponses) → répéter les en-têtes dans ces locations (ou un `include` commun)
 - [mineur] frontend/src/lib/tokens.js:26 et api/v1/ws.py:17 — JWT en localStorage et jeton WebSocket dans l'URL (reporté au tour 1, refonte auth) → cookie HttpOnly ou jeton WS éphémère ; atténué par la CSP stricte, à ne pas logger la query string
 Corrigé depuis le tour précédent : rate limiting auth (IP + verrou par email, 429), GET /users/{id} restreint, URLs http(s) validées (HttpUrlStr + safeHref), sessions révoquées au changement/reset de mot de passe, CSP/HSTS/Permissions-Policy, signatures des documents + attachment/nosniff sur /uploads, Origin + taille/débit WebSocket. Aucune régression trouvée ; `npm audit` : 0 vulnérabilité. Note : limiteur en mémoire, valable pour un seul worker (documenté).
+Corrections appliquées : nginx.conf — en-têtes de sécurité répétés dans /uploads/ et /assets/.
+Non corrigé : JWT localStorage / jeton WS dans l'URL — accepté (refonte auth) ; jeton WS éphémère nécessiterait endpoint + changement frontend, hors périmètre minimal.
+
+## Tour 3 — note : 97/100
+À corriger :
+- [mineur] frontend/src/lib/tokens.js:26 et api/v1/ws.py:17 — JWT en localStorage et jeton WebSocket dans l'URL (le log d'accès uvicorn par défaut enregistre la query string) → cookie HttpOnly ou jeton WS éphémère ; a minima désactiver/filtrer la query string des logs d'accès
+Corrigé depuis le tour précédent : nginx.conf — en-têtes de sécurité (CSP, HSTS, nosniff, X-Frame-Options, Referrer/Permissions-Policy) répétés dans /uploads/ et /assets/. Aucune régression trouvée (anonymisation des messages, tri des conversations sans impact sécurité) ; `npm audit` : 0 vulnérabilité (pip-audit non disponible).

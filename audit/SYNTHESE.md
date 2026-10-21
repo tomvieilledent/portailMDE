@@ -25,3 +25,16 @@ Priorités pour le prochain tour :
 1. Sécurité : en-têtes de sécurité répétés dans les locations nginx /uploads et /assets ; JWT localStorage/jeton WS (refonte auth, à arbitrer).
 2. Accessibilité : piège de focus du tiroir mobile, titres/focus des pages hors layout ou à h1 dynamique, horodatage 11 px.
 3. Qualité/performance : anonymisation des messages d'un compte supprimé ; lazy loading des images de listes, limite des conversations en SQL.
+
+## Tour 3 — Globale 98/100 — Validé
+| Thème | Note | Critiques | Majeurs | Mineurs |
+|---|---|---|---|---|
+| Sécurité (35 %) | 97 | 0 | 0 | 1 |
+| Accessibilité (25 %) | 97 | 0 | 0 | 1 |
+| Qualité/RGPD (20 %) | 100 | 0 | 0 | 0 |
+| Performance (20 %) | 97 | 0 | 0 | 1 |
+
+Priorités pour le prochain tour :
+1. Sécurité : JWT en localStorage / jeton WS dans l'URL (au minimum filtrer la query string des logs d'accès).
+2. Accessibilité : `useDocumentTitle('Page introuvable')` dans NotFoundPage.
+3. Performance : pagination par curseur des conversations si le volume grandit.

@@ -56,7 +56,7 @@ function Bubble({ message, mine, onDelete }) {
             <Paperclip size={14} aria-hidden="true" /> {message.file_name}
           </a>
         )}
-        <div className="mt-1 flex items-center justify-end gap-2 text-[11px] opacity-70">
+        <div className="mt-1 flex items-center justify-end gap-2 text-xs">
           <time>{formatTime(message.created_at)}</time>
           {mine && (
             <button

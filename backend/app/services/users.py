@@ -178,7 +178,7 @@ def delete_own_account(session: Session, user: User) -> None:
 
 
 def _anonymize(session: Session, target: User) -> None:
-    """Suppression logique + anonymisation des données personnelles et des fichiers associés."""
+    """Suppression logique + anonymisation des données personnelles, messages et fichiers associés."""
     old_files = [target.avatar_path, target.business_card_path]
     target.deleted_at = datetime.now(UTC)
     target.is_active = False
@@ -191,6 +191,15 @@ def _anonymize(session: Session, target: User) -> None:
     target.avatar_path = None
     target.business_card_path = None
     session.execute(delete(Notification).where(Notification.recipient_id == target.id))
+    now = target.deleted_at
+    for message in session.scalars(select(Message).where(Message.author_id == target.id)):
+        if message.file_path:
+            old_files.append(message.file_path)
+        message.content = ""
+        message.file_path = None
+        message.file_name = None
+        message.author_id = None
+        message.deleted_at = message.deleted_at or now
     session.commit()
     for path in old_files:
         storage.delete_file(path)

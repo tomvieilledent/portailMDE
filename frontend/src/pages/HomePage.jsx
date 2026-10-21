@@ -7,6 +7,7 @@ import LegalLinks from '../components/LegalLinks'
 import { useTheme } from '../components/ThemeProvider'
 import { Card } from '../components/ui'
 import { useLanding } from '../features/landing/useLanding'
+import { useDocumentTitle } from '../lib/useDocumentTitle'
 
 // Les icônes sont associées aux cartes par position (seul le texte est éditable).
 const icons = [Rocket, Sprout, Building2]
@@ -15,6 +16,7 @@ const icons = [Rocket, Sprout, Building2]
 export default function HomePage() {
   const { content } = useLanding()
   const { theme, toggle } = useTheme()
+  useDocumentTitle('Accueil')
 
   return (
     <div className="min-h-screen">

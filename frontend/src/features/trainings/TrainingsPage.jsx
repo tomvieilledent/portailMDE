@@ -126,6 +126,8 @@ export default function TrainingsPage() {
                   {training.picture_path ? (
                     <img
                       src={uploadUrl(training.picture_path)}
+                      loading="lazy"
+                      decoding="async"
                       alt=""
                       className="h-36 w-full object-cover"
                     />

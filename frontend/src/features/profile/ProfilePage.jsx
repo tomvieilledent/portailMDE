@@ -113,6 +113,8 @@ function ImagesCard() {
           user.business_card_path ? (
             <img
               src={uploadUrl(user.business_card_path)}
+              loading="lazy"
+              decoding="async"
               alt="Votre carte de visite"
               className="h-16 rounded border border-slate-200 dark:border-slate-700"
             />
