@@ -51,4 +51,5 @@ docker compose -f docker-compose.prod.yml --env-file .env up -d --build
 - [Architecture](docs/architecture.md)
 - [API](docs/api.md)
 - [Modèle de données](docs/data-model.md)
+- [Déploiement sur vlldnt.fr](docs/deployment.md)
 - [Contribuer](CONTRIBUTING.md)

@@ -1,4 +1,5 @@
 # Production : docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+# Sur vlldnt.fr : déployé par deploy-project.sh (voir docs/deployment.md).
 # Variables obligatoires dans .env : POSTGRES_PASSWORD, JWT_SECRET (32 caractères minimum),
 # FRONTEND_URL (URL publique du site) et les paramètres SMTP (MAIL_*).
 services:
@@ -45,7 +46,8 @@ services:
       target: prod
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-80}:80"
+      # Loopback uniquement : le nginx du VPS est le seul point d'entrée public.
+      - "127.0.0.1:${WEB_PORT:-8087}:80"
     depends_on:
       api:
         condition: service_healthy
