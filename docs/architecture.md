@@ -20,7 +20,7 @@ flowchart LR
 | `core`       | Configuration, sécurité (JWT), permissions, erreurs, logs   |
 | `db`         | Base déclarative et session                                 |
 | `emails`     | Gabarits d'emails                                           |
-| `migration`  | Import depuis `legacy/` et jeu de données de démonstration  |
+| `migration`  | Import depuis l'ancienne application et jeu de données de démonstration  |
 
 Les migrations sont dans `backend/alembic`.
 
