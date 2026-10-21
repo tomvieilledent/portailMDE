@@ -221,7 +221,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
         <main
           id="contenu"
           ref={mainRef}
-          className="glass-panel mx-4 mb-2 min-h-0 flex-1 overflow-y-auto overscroll-contain rounded-md border border-white/30 bg-white/20 p-5 backdrop-blur-xl sm:mx-6 sm:p-8 xl:mx-auto xl:w-full xl:max-w-6xl"
+          className="glass-panel mx-4 mb-2 min-h-0 flex-1 overflow-y-auto overscroll-y-contain rounded-md border border-white/30 bg-white/20 p-5 backdrop-blur-xl sm:mx-6 sm:p-8 xl:mx-auto xl:w-full xl:max-w-6xl"
         >
           <Outlet />
         </main>
