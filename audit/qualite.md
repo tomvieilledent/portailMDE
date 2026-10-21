@@ -10,3 +10,8 @@
 - [mineur] backend/app/services/auth.py:88 — durée de conservation définie pour les jetons et actualités (config.py:27) mais aucune pour comptes supprimés/messages/notifications → définir et purger (tâche planifiée)
 Corrigé depuis le tour précédent : (premier tour)
 Corrections appliquées : pages légales + liens + mention à la connexion ; anonymisation à la suppression (fichiers effacés) ; export et auto-suppression (/users/me) ; mailer sans corps ni email en clair, console interdit en production ; purge quotidienne (jetons, notifications 90 j, messages supprimés 30 j).
+
+## Tour 2 — note : 97/100
+À corriger :
+- [mineur] backend/app/services/users.py:180 — l'anonymisation conserve les messages du compte supprimé (contenu et pièces jointes, Message.author_id) sans purge ni mention dans la politique → supprimer/anonymiser ces messages ou documenter leur conservation
+Corrigé depuis le tour précédent : pages légales + liens + mention à la connexion ; anonymisation à la suppression avec effacement des fichiers avatar/carte ; export (/users/me/export) et auto-suppression (/users/me) avec UI profil ; mailer sans corps ni email en clair, console/memory refusés en production ; purge quotidienne planifiée (jetons, notifications 90 j, messages supprimés 30 j). Pas de régression constatée (tests non exécutés : python absent du shell).

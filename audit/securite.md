@@ -13,3 +13,9 @@
 Corrigé depuis le tour précédent : sans objet (premier tour). Points sains : Argon2, secret JWT refusé en production, rotation/révocation des refresh, anti-timing au login, uploads à nom aléatoire avec magic bytes pour images, pièces jointes de chat authentifiées, ORM sans SQL brut, `npm audit` : 0 vulnérabilité (pip-audit non disponible).
 Corrections appliquées : rate limiting auth (IP + verrou par email, 429), GET /users/{id} restreint, URLs http(s) validées + safeHref au rendu, sessions révoquées via empreinte du mot de passe (change/reset), CSP/HSTS/Permissions-Policy (script de thème externalisé), signatures des documents + attachment/nosniff sur /uploads, Origin + taille/débit WebSocket.
 Non corrigé : JWT en localStorage / jeton WS dans l'URL — passage aux cookies HttpOnly ou jeton WS éphémère = refonte d'architecture auth (backend + frontend), hors périmètre d'un correctif minimal.
+
+## Tour 2 — note : 94/100
+À corriger :
+- [mineur] frontend/nginx.conf:20,28 — les `add_header` des blocs `location /uploads/` et `/assets/` annulent l'héritage des en-têtes de sécurité du bloc `server` (CSP, HSTS, nosniff, X-Frame-Options absents sur ces réponses) → répéter les en-têtes dans ces locations (ou un `include` commun)
+- [mineur] frontend/src/lib/tokens.js:26 et api/v1/ws.py:17 — JWT en localStorage et jeton WebSocket dans l'URL (reporté au tour 1, refonte auth) → cookie HttpOnly ou jeton WS éphémère ; atténué par la CSP stricte, à ne pas logger la query string
+Corrigé depuis le tour précédent : rate limiting auth (IP + verrou par email, 429), GET /users/{id} restreint, URLs http(s) validées (HttpUrlStr + safeHref), sessions révoquées au changement/reset de mot de passe, CSP/HSTS/Permissions-Policy, signatures des documents + attachment/nosniff sur /uploads, Origin + taille/débit WebSocket. Aucune régression trouvée ; `npm audit` : 0 vulnérabilité. Note : limiteur en mémoire, valable pour un seul worker (documenté).
