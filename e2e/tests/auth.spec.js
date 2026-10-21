@@ -31,7 +31,7 @@ test.describe('authentification', () => {
   /** Connexion puis déconnexion, avec retour à la page de connexion. */
   test('connexion puis déconnexion', async ({ page }) => {
     await login(page, 'lea@demo.fr')
-    await expect(page.getByRole('heading', { name: 'Annuaire' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /Bonjour/ })).toBeVisible()
     await page.getByRole('button', { name: 'Se déconnecter' }).click()
     await expect(page).toHaveURL(/\/connexion$/)
     await page.goto('/annuaire')

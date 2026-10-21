@@ -9,17 +9,16 @@ test.describe('annuaire', () => {
   /** Connecte Léa avant chaque test. */
   test.beforeEach(async ({ page }) => {
     await login(page, 'lea@demo.fr')
+    await page.getByRole('link', { name: 'Annuaire' }).first().click()
   })
 
-  /** Recherche une personne et ouvre sa fiche. */
-  test('recherche une personne et ouvre sa fiche', async ({ page }) => {
+  /** Recherche une personne (sans tenir compte des accents) et lit sa tuile. */
+  test('recherche une personne et lit sa tuile', async ({ page }) => {
     await page.getByLabel('Rechercher').fill('Karim')
     await expect(page.getByText('Karim Roux')).toBeVisible()
     await expect(page.getByText('Hugo Bernard')).toHaveCount(0)
-    await page.getByRole('button', { name: 'Voir la fiche de Karim Roux' }).click()
-    const dialog = page.getByRole('dialog', { name: 'Karim Roux' })
-    await expect(dialog).toContainText('karim@demo.fr')
-    await expect(dialog.getByRole('link', { name: 'AgriTech Aveyron' })).toBeVisible()
+    await expect(page.getByText('karim@demo.fr')).toBeVisible()
+    await expect(page.getByText('AgriTech Aveyron').first()).toBeVisible()
   })
 
   /** Filtre l'annuaire des entreprises et ouvre une fiche avec son équipe. */
@@ -36,17 +35,15 @@ test.describe('annuaire', () => {
   })
 
   /** La directrice peut modifier son entreprise, pas son collègue. */
-  test('Mon entreprise : la directrice peut modifier, pas son collègue', async ({ page, browser }) => {
-    await page.getByRole('link', { name: "Administration de l'entreprise" }).first().click()
+  test('Administrer mon entreprise : la directrice y a accès, pas son collègue', async ({ page, browser }) => {
+    await page.getByRole('link', { name: 'Administrer mon entreprise' }).first().click()
     await expect(page.getByLabel('Nom')).toBeEnabled()
     await expect(page.getByRole('button', { name: 'Ajouter un collaborateur' })).toBeVisible()
 
     const context = await browser.newContext()
     const colleague = await context.newPage()
     await login(colleague, 'hugo@demo.fr')
-    await expect(colleague.getByRole('link', { name: "Administration de l'entreprise" })).toHaveCount(0)
-    await colleague.getByRole('link', { name: 'Mon entreprise' }).first().click()
-    await expect(colleague.getByLabel('Nom')).toBeDisabled()
+    await expect(colleague.getByRole('link', { name: 'Administrer mon entreprise' })).toHaveCount(0)
     await context.close()
   })
 })

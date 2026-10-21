@@ -29,7 +29,7 @@ test("le super admin crée un compte puis l'utilise", async ({ browser, page }) 
   await nina.getByLabel('Nouveau mot de passe').fill('mon-mot-de-passe-1')
   await nina.getByLabel('Confirmation').fill('mon-mot-de-passe-1')
   await nina.getByRole('button', { name: 'Enregistrer' }).click()
-  await expect(nina).toHaveURL(/\/annuaire$/)
+  await expect(nina).toHaveURL(/\/accueil$/)
   await context.close()
 
   // désactivation : la connexion est ensuite refusée
