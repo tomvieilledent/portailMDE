@@ -7,6 +7,9 @@ import Logo from '../components/Logo'
 import { useLanding } from '../features/landing/useLanding'
 import { useDocumentTitle } from '../lib/useDocumentTitle'
 
+/** Numéro de contact affiché sur la page de garde (factice, à remplacer). */
+const CONTACT_PHONE = '00 00 00 00 00'
+
 /** Page de garde : photo plein cadre, titre en grand et dispositifs numérotés. */
 export default function HomePage() {
   const { content } = useLanding()
@@ -30,12 +33,20 @@ export default function HomePage() {
             Rodez Agglomération
           </p>
         </div>
-        <Link
-          to="/connexion"
-          className="border border-white/50 px-5 py-2 text-sm font-semibold transition hover:bg-[#5da020] hover:text-[#4a7a1a]"
-        >
-          Se connecter
-        </Link>
+        <div className="flex items-center gap-4">
+          <a
+            href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
+            className="hidden text-sm font-medium text-white/85 hover:text-white hover:underline lg:block"
+          >
+            Pour plus de renseignements, appelez le {CONTACT_PHONE}
+          </a>
+          <Link
+            to="/connexion"
+            className="border border-white/50 px-5 py-2 text-sm font-semibold transition hover:bg-white hover:text-[#4a7a1a]"
+          >
+            Se connecter
+          </Link>
+        </div>
       </header>
 
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-1 flex-col justify-center px-6 py-16">
@@ -81,6 +92,11 @@ export default function HomePage() {
       </section>
 
       <footer className="relative z-10 pb-6 text-center text-xs text-white/50">
+        <p className="mb-2 lg:hidden">
+          <a href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`} className="text-white/80 underline">
+            Pour plus de renseignements, appelez le {CONTACT_PHONE}
+          </a>
+        </p>
         <LegalLinks className="mb-2" />© {new Date().getFullYear()} Maison de l'Entreprise
       </footer>
     </div>
