@@ -43,7 +43,7 @@ export default function HomePage() {
         </Link>
       </header>
 
-      <main className="relative z-10 mx-auto grid min-h-0 w-full max-w-7xl flex-1 items-center gap-8 px-6 py-6 lg:grid-cols-[1.15fr_1fr] lg:gap-12">
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col justify-center px-6 py-4">
         <div>
           <p className="mb-4 text-sm font-semibold text-[#7ec843]">
             Maison de l'Économie · Rodez Agglomération
@@ -52,46 +52,54 @@ export default function HomePage() {
             {content.slogan}
           </h1>
           <span className="mt-5 block h-1 w-20 bg-[#7ec843]" aria-hidden="true" />
-          {content.subtitle && (
-            <p className="mt-5 max-w-xl border border-white/20 bg-black/35 px-5 py-4 text-lg leading-relaxed font-semibold text-white backdrop-blur-md">
-              {content.subtitle}
-            </p>
-          )}
-          <a
-            href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
-            aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
-            className="mt-7 flex w-fit flex-col gap-1 border-l-4 border-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 sm:flex-row sm:items-baseline sm:gap-3"
-          >
-            <span className="text-base text-white/85">Pour plus de renseignements, appelez le</span>
-            <strong className="text-2xl font-bold tracking-wide text-[#7ec843]">
-              {CONTACT_PHONE}
-            </strong>
-          </a>
-        </div>
-
-        <section aria-label="Nos dispositifs" className="grid min-h-0 gap-3">
-          {content.sections.map((section, index) => (
-            <article
-              key={section.title}
-              className="border-l-4 border-[#7ec843] bg-black/40 px-5 py-4 backdrop-blur-md"
+          {/* Sous-titre et contact dans un même bloc translucide */}
+          <div className="mt-5 max-w-xl border border-white/20 bg-black/35 backdrop-blur-md">
+            {content.subtitle && (
+              <p className="px-5 py-4 text-lg leading-relaxed font-semibold text-white">
+                {content.subtitle}
+              </p>
+            )}
+            <a
+              href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
+              aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
+              className="block border-t border-l-4 border-white/20 border-l-[#7ec843] px-5 py-3 transition hover:bg-black/30"
             >
-              <p className="text-sm font-semibold text-[#7ec843]">
-                {String(index + 1).padStart(2, '0')}
-                {section.duration && <span className="text-white/60"> — {section.duration}</span>}
-              </p>
-              <h2 className="font-display text-xl font-semibold">{section.title}</h2>
-              <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-white/80">
-                {section.description}
-              </p>
-              {section.highlight && (
-                <p className="mt-2 line-clamp-1 text-sm font-medium text-white">
-                  {section.highlight}
-                </p>
-              )}
-            </article>
-          ))}
-        </section>
+              <span className="block text-base text-white/85">
+                Pour plus de renseignements, appelez le
+              </span>
+              <strong className="block text-3xl font-bold tracking-wide text-[#7ec843]">
+                {CONTACT_PHONE}
+              </strong>
+            </a>
+          </div>
+        </div>
       </main>
+
+      <section
+        aria-label="Nos dispositifs"
+        className="relative z-10 mx-auto grid w-full max-w-7xl shrink-0 gap-3 px-6 pb-3 md:grid-cols-3"
+      >
+        {content.sections.map((section, index) => (
+          <article
+            key={section.title}
+            className="border-l-4 border-[#7ec843] bg-black/40 px-5 py-4 backdrop-blur-md"
+          >
+            <p className="text-sm font-semibold text-[#7ec843]">
+              {String(index + 1).padStart(2, '0')}
+              {section.duration && <span className="text-white/60"> — {section.duration}</span>}
+            </p>
+            <h2 className="font-display text-xl font-semibold">{section.title}</h2>
+            <p className="mt-1 line-clamp-3 text-sm leading-relaxed text-white/80 [@media(min-height:820px)]:line-clamp-6">
+              {section.description}
+            </p>
+            {section.highlight && (
+              <p className="mt-2 line-clamp-1 text-sm font-medium text-white [@media(max-height:780px)]:hidden">
+                {section.highlight}
+              </p>
+            )}
+          </article>
+        ))}
+      </section>
 
       <footer className="relative z-10 shrink-0 py-3 text-center text-xs text-white/60">
         <LegalLinks className="mb-1" />© {new Date().getFullYear()} Maison de l'Entreprise
