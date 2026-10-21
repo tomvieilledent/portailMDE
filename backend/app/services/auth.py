@@ -139,4 +139,5 @@ def reset_password(session: Session, token: str, new_password: str) -> None:
     ):
         raise UnauthorizedError("Lien invalide ou expiré")
     user.password_hash = hash_password(new_password)
+    user.must_change_password = False
     session.commit()

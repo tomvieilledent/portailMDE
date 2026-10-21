@@ -80,6 +80,7 @@ def create_user(session: Session, actor: User, data) -> User:
         is_company_admin=data.is_company_admin,
         role=data.role,
         permissions=data.permissions if data.role == UserRole.STAFF else [],
+        must_change_password=True,
     )
     session.add(user)
     session.commit()
@@ -88,7 +89,9 @@ def create_user(session: Session, actor: User, data) -> User:
 
     send_later(
         user.email,
-        *templates.welcome(user.first_name or user.email, get_settings().frontend_url),
+        *templates.welcome(
+            user.first_name or user.email, get_settings().frontend_url, data.password
+        ),
     )
     return user
 
@@ -114,6 +117,7 @@ def change_password(session: Session, user: User, current: str, new: str) -> Non
     if not verify_password(current, user.password_hash):
         raise AppError("Mot de passe actuel incorrect")
     user.password_hash = hash_password(new)
+    user.must_change_password = False
     session.commit()
 
 

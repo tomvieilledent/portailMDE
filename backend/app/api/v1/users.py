@@ -5,7 +5,13 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Response, UploadFile
 
-from app.api.deps import CurrentUser, SessionDep, require_permission, require_super_admin
+from app.api.deps import (
+    CurrentUser,
+    PendingUser,
+    SessionDep,
+    require_permission,
+    require_super_admin,
+)
 from app.core.permissions import Permission
 from app.schemas.common import Page
 from app.schemas.user import (
@@ -44,7 +50,7 @@ def create_user(body: UserCreate, session: SessionDep, current: CurrentUser):
 
 
 @router.get("/me", response_model=UserRead)
-def read_me(current: CurrentUser):
+def read_me(current: PendingUser):
     """Retourne le profil de l'utilisateur courant."""
     return current
 
@@ -56,7 +62,7 @@ def update_me(body: UserUpdate, session: SessionDep, current: CurrentUser):
 
 
 @router.post("/me/password", status_code=204)
-def change_my_password(body: PasswordChange, session: SessionDep, current: CurrentUser):
+def change_my_password(body: PasswordChange, session: SessionDep, current: PendingUser):
     """Change le mot de passe de l'utilisateur courant."""
     service.change_password(session, current, body.current_password, body.new_password)
     return Response(status_code=204)

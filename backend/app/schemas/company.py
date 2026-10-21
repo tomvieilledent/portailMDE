@@ -32,6 +32,8 @@ class CompanyCreate(BaseModel):
     location: str | None = Field(None, max_length=200)
     website_url: str | None = Field(None, max_length=512)
     kind: CompanyKind = CompanyKind.COMPANY
+    # Compte qui devient propriétaire (administrateur) de l'entreprise créée.
+    owner_id: uuid.UUID
 
 
 class CompanyUpdate(BaseModel):
