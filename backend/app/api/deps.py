@@ -4,10 +4,12 @@ from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
-from app.core.errors import UnauthorizedError
+from app.core.errors import ForbiddenError, UnauthorizedError
+from app.core.permissions import Permission, has_permission
 from app.core.security import InvalidTokenError, decode_token
 from app.db.session import get_session
 from app.models import User
+from app.models.enums import UserRole
 from app.services import auth as auth_service
 
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -40,3 +42,20 @@ def get_current_user(
 
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
+
+
+def require_permission(permission: Permission):
+    """Dépendance : l'utilisateur doit détenir ``permission`` (super admin inclus)."""
+
+    def checker(user: CurrentUser) -> User:
+        if not has_permission(user, permission):
+            raise ForbiddenError("Droits insuffisants")
+        return user
+
+    return checker
+
+
+def require_super_admin(user: CurrentUser) -> User:
+    if user.role != UserRole.SUPER_ADMIN:
+        raise ForbiddenError("Réservé au super administrateur")
+    return user
