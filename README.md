@@ -9,7 +9,7 @@ Portail de mise en relation des entreprises d'une pépinière d'entreprises : an
 - Base de données : PostgreSQL
 - Conteneurisation : Docker Compose
 
-> Refonte de `portfolio-MDE_dashboard`. L'ancien code est conservé dans `legacy/` pendant la migration.
+> Refonte de `portfolio-MDE_dashboard`. L'ancien code reste disponible dans l'historique git.
 
 ## Démarrage (Docker)
 
