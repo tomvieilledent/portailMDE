@@ -103,6 +103,20 @@ describe('administration', () => {
     ).toEqual(['Utilisateurs', 'Entreprises', 'Contenu'])
   })
 
+  it("construit des liens absolus sans empiler les segments d'URL", async () => {
+    renderAt('/administration/utilisateurs', root)
+    const nav = await screen.findByRole('navigation', { name: 'Administration' })
+    await userEvent.click(within(nav).getByRole('link', { name: 'Entreprises' }))
+    expect(within(nav).getByRole('link', { name: 'Contenu' })).toHaveAttribute(
+      'href',
+      '/administration/contenu',
+    )
+    expect(within(nav).getByRole('link', { name: 'Utilisateurs' })).toHaveAttribute(
+      'href',
+      '/administration/utilisateurs',
+    )
+  })
+
   it("explique l'absence de droits", async () => {
     renderAt('/administration', { ...base, role: 'staff', permissions: ['manage_trainings'] })
     expect(await screen.findByText(/Aucun droit d'administration/)).toBeInTheDocument()
