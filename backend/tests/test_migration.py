@@ -354,9 +354,11 @@ def test_create_admin(session):
 def test_seed_demo_is_idempotent_and_usable(client, session):
     """Le jeu de démo est idempotent et utilisable."""
     first = seed_demo(session)
-    assert first["entreprises"] == 4
+    assert first["entreprises"] >= 10
+    assert first["utilisateurs"] >= 40
+    assert first["evenements"] >= 10
     assert seed_demo(session) == {}
-    assert session.scalar(select(func.count()).select_from(Company)) == 4
+    assert session.scalar(select(func.count()).select_from(Company)) == first["entreprises"]
     login = client.post(
         f"{API}/auth/login", json={"email": "lea@demo.fr", "password": "demo-password-1"}
     )
