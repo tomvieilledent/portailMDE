@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Bookmark, ExternalLink, Newspaper, Plus, RefreshCw, Search, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 import { useAuth } from '../../auth/AuthProvider'
 import { PERMISSIONS, hasPermission } from '../../auth/permissions'
@@ -13,6 +13,7 @@ import {
   Card,
   EmptyState,
   Input,
+  Modal,
   Pagination,
   Spinner,
   useToast,
@@ -26,10 +27,20 @@ import { NEWS_PAGE, formatPublished, useNews, useSavedNews } from './queries'
 
 /** Carte d'une actualité : favori et suppression. */
 function ArticleCard({ article, saved, onToggleSave, onDelete }) {
+  const summary = useRef(null)
+  const [truncated, setTruncated] = useState(false)
+  const [reading, setReading] = useState(false)
+  // Le résumé est tronqué si son contenu dépasse la zone visible : on propose alors de le lire en entier.
+  useLayoutEffect(() => {
+    const el = summary.current
+    if (el) setTruncated(el.scrollHeight > el.clientHeight + 1)
+  }, [article.summary])
+  const href = safeHref(article.url)
+
   return (
-    <Card className="flex flex-col gap-2">
+    <Card className="flex h-64 flex-col gap-2 overflow-hidden">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="font-semibold">{article.title}</h2>
+        <h2 className="line-clamp-2 font-semibold">{article.title}</h2>
         <div className="flex shrink-0 gap-1">
           <button
             type="button"
@@ -61,18 +72,43 @@ function ArticleCard({ article, saved, onToggleSave, onDelete }) {
         {article.source && <span>{article.source}</span>}
         {article.published_at && <time>{formatPublished(article.published_at)}</time>}
       </div>
-      {article.summary && (
-        <p className="line-clamp-4 text-sm text-slate-600 dark:text-slate-400">{article.summary}</p>
-      )}
-      {safeHref(article.url) && (
-        <a
-          href={safeHref(article.url)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 text-sm hover:underline"
-        >
-          Lire l'article <ExternalLink size={14} aria-hidden="true" />
-        </a>
+      <p
+        ref={summary}
+        className="line-clamp-4 min-h-0 flex-1 overflow-hidden text-sm text-slate-600 dark:text-slate-400"
+      >
+        {article.summary}
+      </p>
+      <div className="mt-auto h-6 shrink-0">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 text-sm hover:underline"
+          >
+            Lire l'article <ExternalLink size={14} aria-hidden="true" />
+          </a>
+        ) : (
+          truncated && (
+            <button
+              type="button"
+              onClick={() => setReading(true)}
+              className="text-brand-700 dark:text-brand-300 text-sm hover:underline"
+            >
+              Lire l'article
+            </button>
+          )
+        )}
+      </div>
+      {reading && (
+        <Modal open onClose={() => setReading(false)} title={article.title}>
+          <p className="mb-3 text-xs text-slate-500">
+            {[article.source, article.published_at && formatPublished(article.published_at)]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          <p className="text-sm whitespace-pre-line">{article.summary}</p>
+        </Modal>
       )}
     </Card>
   )
