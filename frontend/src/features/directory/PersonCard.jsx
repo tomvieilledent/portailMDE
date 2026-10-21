@@ -1,9 +1,12 @@
 /** Tuile « carte de visite » d'une personne de l'annuaire, qui se retourne sur sa carte. */
 
-import { Download, Mail, Phone, Undo2 } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { Download, Mail, MessageSquare, Phone, Undo2 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { Avatar, uploadUrl } from '../../components/ui'
+import { Avatar, uploadUrl, useToast } from '../../components/ui'
+import { api } from '../../lib/api'
 import { cardLines, exportCardPng, exportCardVCard } from '../../lib/businessCard'
 import { cn } from '../../lib/cn'
 import { fullName } from './labels'
@@ -72,6 +75,14 @@ function GeneratedCard({ person }) {
 export default function PersonCard({ person }) {
   const [flipped, setFlipped] = useState(false)
   const [seen, setSeen] = useState(false) // le verso n'est rendu qu'après le premier retournement
+  const navigate = useNavigate()
+  const toast = useToast()
+  // Démarre (ou retrouve) la conversation directe avec cette personne.
+  const startChat = useMutation({
+    mutationFn: () => api.post('/conversations', { kind: 'direct', user_id: person.id }),
+    onSuccess: (conversation) => navigate(`/messagerie/${conversation.id}`),
+    onError: () => toast.error('Conversation impossible.'),
+  })
   const name = fullName(person)
   const cardUrl = uploadUrl(person.business_card_path)
 
@@ -181,6 +192,13 @@ export default function PersonCard({ person }) {
                         </CardAction>
                       </>
                     )}
+                    <CardAction
+                      icon={MessageSquare}
+                      aria-label={`Écrire un message à ${name}`}
+                      onClick={() => startChat.mutate()}
+                    >
+                      Écrire
+                    </CardAction>
                     <CardAction
                       icon={Undo2}
                       aria-label={`Retour aux informations de ${name}`}
