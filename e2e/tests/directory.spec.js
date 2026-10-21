@@ -37,13 +37,14 @@ test.describe('annuaire', () => {
 
   /** La directrice peut modifier son entreprise, pas son collègue. */
   test('Mon entreprise : la directrice peut modifier, pas son collègue', async ({ page, browser }) => {
-    await page.getByRole('link', { name: 'Mon entreprise' }).first().click()
+    await page.getByRole('link', { name: "Administration de l'entreprise" }).first().click()
     await expect(page.getByLabel('Nom')).toBeEnabled()
     await expect(page.getByRole('button', { name: 'Ajouter un collaborateur' })).toBeVisible()
 
     const context = await browser.newContext()
     const colleague = await context.newPage()
     await login(colleague, 'hugo@demo.fr')
+    await expect(colleague.getByRole('link', { name: "Administration de l'entreprise" })).toHaveCount(0)
     await colleague.getByRole('link', { name: 'Mon entreprise' }).first().click()
     await expect(colleague.getByLabel('Nom')).toBeDisabled()
     await context.close()

@@ -9,9 +9,15 @@ import { hasPermission, isStaff } from './permissions'
 /**
  * Garde de route : redirige vers la connexion si non connecté.
  * `permission` restreint l'accès à un droit staff ; `staffOnly` à tout le staff ;
+ * `companyAdmin` réserve la route aux administrateurs de leur entreprise ;
  * `allowPending` laisse passer un utilisateur qui doit encore changer son mot de passe.
  */
-export default function RequireAuth({ permission, staffOnly = false, allowPending = false }) {
+export default function RequireAuth({
+  permission,
+  staffOnly = false,
+  companyAdmin = false,
+  allowPending = false,
+}) {
   const { user, loading } = useAuth()
   const location = useLocation()
 
@@ -26,6 +32,9 @@ export default function RequireAuth({ permission, staffOnly = false, allowPendin
   // Mot de passe temporaire : changement obligatoire avant tout accès au portail.
   if (user.must_change_password && !allowPending) {
     return <Navigate to="/changer-mot-de-passe" replace />
+  }
+  if (companyAdmin && !(user.is_company_admin && user.company_id)) {
+    return <Navigate to="/annuaire" replace />
   }
   if ((permission && !hasPermission(user, permission)) || (staffOnly && !isStaff(user))) {
     return <Navigate to="/annuaire" replace />

@@ -149,6 +149,25 @@ describe('authentification', () => {
     expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
   })
 
+  it("montre l'onglet d'administration de l'entreprise à son administrateur, avant Administration", async () => {
+    tokens.set({ access_token: 'A', refresh_token: 'R' })
+    mockMe({ ...member, role: 'super_admin', company_id: 'c1', is_company_admin: true })
+    renderApp('/annuaire')
+    const company = await screen.findAllByRole('link', { name: "Administration de l'entreprise" })
+    const admin = screen.getAllByRole('link', { name: 'Administration' })
+    expect(
+      company[0].compareDocumentPosition(admin[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('cache cet onglet à un simple membre', async () => {
+    tokens.set({ access_token: 'A', refresh_token: 'R' })
+    mockMe({ ...member, company_id: 'c1' })
+    renderApp('/annuaire')
+    await screen.findByText('Ada Lovelace')
+    expect(screen.queryByRole('link', { name: "Administration de l'entreprise" })).toBeNull()
+  })
+
   it('vide la session si /users/me échoue', async () => {
     tokens.set({ access_token: 'A', refresh_token: 'R' })
     api.get.mockRejectedValue(new ApiError(401, 'UNAUTHORIZED', 'x'))
