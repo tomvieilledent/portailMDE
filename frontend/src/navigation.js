@@ -5,11 +5,13 @@ import {
   GraduationCap,
   MessageSquare,
   Newspaper,
+  Store,
   Users,
 } from 'lucide-react'
 
-/** Entrées du menu principal. `staffOnly` : réservé au staff et au super admin. */
+/** Entrées du menu principal. `staffOnly` : réservé au staff et au super admin ; `needsCompany` : membres rattachés à une entreprise. */
 export const navItems = [
+  { to: '/mon-entreprise', label: 'Mon entreprise', icon: Store, needsCompany: true },
   { to: '/annuaire', label: 'Annuaire', icon: Users },
   { to: '/entreprises', label: 'Entreprises', icon: Building2 },
   { to: '/messagerie', label: 'Messagerie', icon: MessageSquare },
