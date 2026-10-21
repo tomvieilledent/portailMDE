@@ -138,3 +138,28 @@ def test_ics_export(client, make_user, login):
     assert response.headers["content-type"].startswith("text/calendar")
     assert "DTSTART:20261105T090000" in response.text
     assert "SUMMARY:Réunion" + chr(92) + "; importante" in response.text
+
+
+def test_pdf_export_is_a_valid_poster(client, make_user, login):
+    """L'export PDF produit un document PDF avec les événements du mois."""
+    make_user("pdf@x.fr")
+    headers = login("pdf@x.fr")
+    client.post(
+        f"{API}/events",
+        headers=headers,
+        json={"title": "Afterwork", "event_date": "2026-11-12", "event_time": "18:30:00"},
+    )
+    response = client.get(
+        f"{API}/events/export.pdf",
+        headers=headers,
+        params={"start": "2026-11-01", "end": "2026-11-30"},
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content.startswith(b"%PDF")
+    empty = client.get(
+        f"{API}/events/export.pdf",
+        headers=headers,
+        params={"start": "2027-02-01", "end": "2027-02-28"},
+    )
+    assert empty.content.startswith(b"%PDF")

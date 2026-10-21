@@ -27,6 +27,8 @@ export default function AgendaPage() {
   const weeks = useMemo(() => buildMonthGrid(cursor.year, cursor.month), [cursor])
   const start = weeks[0][0].iso
   const end = weeks[weeks.length - 1][6].iso
+  const monthStart = toISODate(new Date(cursor.year, cursor.month, 1))
+  const monthEnd = toISODate(new Date(cursor.year, cursor.month + 1, 0))
   const { data: events = [], isError } = useEvents(start, end)
 
   const byDay = useMemo(() => {
@@ -48,6 +50,16 @@ export default function AgendaPage() {
         actions={
           <div className="flex gap-2">
             <Button
+              onClick={() =>
+                downloadFile(
+                  `/api/v1/events/export.pdf?start=${monthStart}&end=${monthEnd}`,
+                  `agenda-${monthStart.slice(0, 7)}.pdf`,
+                ).catch(() => toast.error('Export impossible.'))
+              }
+            >
+              <Download size={16} aria-hidden="true" /> Affiche PDF du mois
+            </Button>
+            <Button
               variant="secondary"
               onClick={() =>
                 downloadFile(
@@ -56,7 +68,7 @@ export default function AgendaPage() {
                 ).catch(() => toast.error('Export impossible.'))
               }
             >
-              <Download size={16} aria-hidden="true" /> Exporter (.ics)
+              <Download size={16} aria-hidden="true" /> Calendrier (.ics)
             </Button>
             <Button onClick={() => setForm({ defaultDate: today })}>
               <Plus size={16} aria-hidden="true" /> Événement
