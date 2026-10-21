@@ -1,7 +1,8 @@
 /** Page de profil de l'utilisateur. */
 
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../auth/AuthProvider'
 import PageHeader from '../../components/layout/PageHeader'
@@ -14,6 +15,39 @@ const toFormData = (file) => {
   const form = new FormData()
   form.append('file', file)
   return form
+}
+
+/** Entreprise de rattachement de l'utilisateur. */
+function CompanyCard() {
+  const { user } = useAuth()
+  const company = useQuery({
+    queryKey: ['companies', 'me'],
+    queryFn: () => api.get('/companies/me'),
+    enabled: Boolean(user.company_id),
+  })
+
+  return (
+    <Card>
+      <h2 className="mb-2 text-lg font-semibold">Entreprise</h2>
+      {!user.company_id ? (
+        <p className="text-sm text-slate-600 dark:text-slate-400">Aucune entreprise rattachée.</p>
+      ) : company.isLoading ? (
+        <p className="text-sm text-slate-600 dark:text-slate-400">Chargement…</p>
+      ) : company.data ? (
+        <p className="text-sm">
+          <Link
+            to={`/entreprises/${company.data.id}`}
+            className="text-brand-700 dark:text-brand-300 font-medium underline"
+          >
+            {company.data.name}
+          </Link>
+          {user.is_company_admin && ' · administrateur de l’entreprise'}
+        </p>
+      ) : (
+        <p className="text-sm text-slate-600 dark:text-slate-400">Entreprise indisponible.</p>
+      )}
+    </Card>
+  )
 }
 
 /** Formulaire des informations personnelles. */
@@ -256,6 +290,7 @@ export default function ProfilePage() {
       />
       <div className="space-y-6">
         <InfoForm />
+        <CompanyCard />
         <ImagesCard />
         <PasswordForm />
         <PrivacyCard />
