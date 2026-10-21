@@ -62,7 +62,7 @@ export default function HomePage() {
             <a
               href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
               aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
-              className="flex shrink-0 flex-col justify-center border border-l-4 border-white/20 border-l-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 md:w-80"
+              className="flex shrink-0 flex-col justify-center border border-white/20 bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 md:w-80"
             >
               <span className="text-sm whitespace-nowrap text-white/85">
                 Pour plus de renseignements, appelez le
@@ -82,7 +82,7 @@ export default function HomePage() {
         {content.sections.map((section, index) => (
           <article
             key={section.title}
-            className="border-l-4 border-[#7ec843] bg-black/40 px-5 py-4 backdrop-blur-md"
+            className="border border-white/20 bg-black/40 px-5 py-4 backdrop-blur-md"
           >
             <p className="text-sm font-semibold text-[#7ec843]">
               {String(index + 1).padStart(2, '0')}
