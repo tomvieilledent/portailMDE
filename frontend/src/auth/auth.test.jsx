@@ -99,7 +99,7 @@ describe('authentification', () => {
       'password123',
     )
     await userEvent.click(screen.getByRole('button', { name: 'Se connecter' }))
-    expect(await screen.findByRole('heading', { name: 'Annuaire' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /Bonjour/ })).toBeInTheDocument()
     expect(api.post).toHaveBeenCalledWith(
       '/auth/login',
       { email: 'ada@x.fr', password: 'password123' },
