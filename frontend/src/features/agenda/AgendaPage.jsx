@@ -2,20 +2,22 @@
 
 import { ChevronLeft, ChevronRight, Download, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import PageHeader from '../../components/layout/PageHeader'
 import { Button, useToast } from '../../components/ui'
 import { cn } from '../../lib/cn'
-import { WEEKDAYS, buildMonthGrid, monthLabel, shortTime, toISODate } from '../../lib/calendar'
+import { WEEKDAYS, buildMonthGrid, monthLabel, toISODate } from '../../lib/calendar'
 import { downloadFile } from '../../lib/download'
 import EventDetailModal from './EventDetailModal'
 import EventFormModal from './EventFormModal'
 import InvitationsPanel from './InvitationsPanel'
-import { useEvents } from './queries'
+import { KIND_STYLES, useAgendaItems } from './useAgendaItems'
 
 /** Agenda mensuel : événements publics et ceux auxquels on est invité. */
 export default function AgendaPage() {
   const toast = useToast()
+  const navigate = useNavigate()
   const today = toISODate(new Date())
   const [cursor, setCursor] = useState(() => {
     const now = new Date()
@@ -29,13 +31,8 @@ export default function AgendaPage() {
   const end = weeks[weeks.length - 1][6].iso
   const monthStart = toISODate(new Date(cursor.year, cursor.month, 1))
   const monthEnd = toISODate(new Date(cursor.year, cursor.month + 1, 0))
-  const { data: events = [], isError } = useEvents(start, end)
 
-  const byDay = useMemo(() => {
-    const map = new Map()
-    events.forEach((e) => map.set(e.event_date, [...(map.get(e.event_date) ?? []), e]))
-    return map
-  }, [events])
+  const { byDay, isError } = useAgendaItems(start, end)
 
   const move = (delta) =>
     setCursor(({ year, month }) => {
@@ -89,6 +86,13 @@ export default function AgendaPage() {
           <ChevronRight size={18} />
         </Button>
       </div>
+      <ul aria-label="Légende" className="mb-3 flex flex-wrap gap-2 text-xs">
+        {Object.entries(KIND_STYLES).map(([kind, style]) => (
+          <li key={kind} className={cn('rounded px-2 py-1', style.chip)}>
+            {style.label}
+          </li>
+        ))}
+      </ul>
       {isError && <p role="alert">Impossible de charger l'agenda.</p>}
 
       <div
@@ -138,15 +142,22 @@ export default function AgendaPage() {
                   {day.date.getDate()}
                 </button>
                 <ul className="space-y-0.5">
-                  {(byDay.get(day.iso) ?? []).slice(0, 2).map((event) => (
-                    <li key={event.id}>
+                  {(byDay.get(day.iso) ?? []).slice(0, 2).map((item) => (
+                    <li key={item.key}>
                       <button
                         type="button"
-                        onClick={() => setDetail(event)}
-                        className="bg-brand-100 text-brand-800 hover:bg-brand-200 dark:bg-brand-900 dark:text-brand-100 block w-full truncate rounded px-1 py-0.5 text-left text-xs"
+                        onClick={() =>
+                          item.kind === 'event'
+                            ? setDetail(item.event)
+                            : navigate(`/formations/${item.trainingId}`)
+                        }
+                        className={cn(
+                          'block w-full truncate rounded px-1 py-0.5 text-left text-xs',
+                          KIND_STYLES[item.kind].chip,
+                        )}
                       >
-                        {shortTime(event.event_time) && <span>{shortTime(event.event_time)} </span>}
-                        {event.title}
+                        {item.time && <span>{item.time} </span>}
+                        {item.title}
                       </button>
                     </li>
                   ))}

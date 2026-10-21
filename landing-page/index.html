@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portail MDE — le portail interne de la Maison de l'Économie</title>
+<meta name="description" content="Portail MDE : annuaire des entreprises, messagerie, agenda, formations et actualités économiques pour la Maison de l'Économie de Rodez Agglomération. Projet de Tom Vieilledent." />
+<link rel="canonical" href="https://vlldnt.fr/mde/" />
+<link rel="icon" type="image/png" href="./favicon.png" />
+<meta property="og:title" content="Portail MDE" />
+<meta property="og:description" content="Le portail interne de la Maison de l'Économie : annuaire, messagerie, agenda, formations, actualités." />
+<meta property="og:image" content="https://vlldnt.fr/mde/portfolio.png" />
+<meta name="theme-color" content="#4a7a1a" />
+<style>
+:root{--green:#4a7a1a;--lime:#7ec843;--ink:#111827;--muted:#4b5563;--line:#e5e7eb;--bg:#f9fafb;--card:#fff;
+--sans:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--green)}img{max-width:100%;height:auto;display:block}
+:focus-visible{outline:3px solid var(--lime);outline-offset:3px;border-radius:4px}
+.wrap{max-width:68rem;margin:0 auto;padding:0 20px}
+header.top{background:var(--green);color:#fff}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 20px;flex-wrap:wrap}
+header.top strong{font-size:1.05rem;letter-spacing:.01em}
+header.top nav{display:flex;gap:18px;flex-wrap:wrap}
+header.top a{color:#fff;text-decoration:none;font-weight:500}
+header.top a:hover{text-decoration:underline}
+.hero{background:linear-gradient(180deg,var(--green) 0,#3d6616 100%);color:#fff;padding:48px 0 0;overflow:hidden}
+.hero .wrap{display:grid;gap:32px;grid-template-columns:1fr;align-items:center}
+.eyebrow{font-size:.8rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:#d5eebb;margin:0 0 12px}
+h1{font-size:clamp(2rem,5vw,3.4rem);line-height:1.08;letter-spacing:-.02em;margin:0 0 6px;font-weight:300}
+h1 b{font-weight:800}
+.bar{display:block;width:56px;height:5px;background:var(--lime);margin:16px 0 20px}
+.lead{font-size:1.1rem;max-width:34rem;color:#eaf5dc;margin:0 0 26px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:12px 22px;border-radius:4px;font-weight:700;text-decoration:none}
+.btn.primary{background:var(--lime);color:#10230a}.btn.primary:hover{background:#fff}
+.btn.ghost{border:2px solid rgba(255,255,255,.7);color:#fff}.btn.ghost:hover{background:rgba(255,255,255,.14)}
+.hero figure{margin:0 0 -4px}
+.hero img.cover{border-radius:8px 8px 0 0;box-shadow:0 -4px 40px rgba(0,0,0,.35)}
+@media(min-width:56rem){.hero .wrap{grid-template-columns:1fr 1.25fr}}
+section{padding:64px 0}
+h2{font-size:clamp(1.5rem,3vw,2.1rem);letter-spacing:-.015em;margin:0 0 8px;font-weight:300}
+h2 b{font-weight:800}
+.sub{color:var(--muted);max-width:40rem;margin:0 0 32px}
+.features{display:grid;gap:28px}
+.feature{display:grid;gap:18px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px}
+.feature img{border-radius:4px;border:1px solid var(--line)}
+.feature h3{margin:0 0 6px;font-size:1.25rem}
+.feature p{margin:0;color:var(--muted)}
+@media(min-width:48rem){.feature{grid-template-columns:1fr 1.5fr}.feature:nth-child(even){grid-template-columns:1.5fr 1fr}.feature:nth-child(even) .text{order:2}}
+.band{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.two{display:grid;gap:32px;align-items:center}
+@media(min-width:48rem){.two{grid-template-columns:1fr 1fr}}
+.phone{max-width:260px;margin:0 auto;border:8px solid #111827;border-radius:28px;overflow:hidden}
+.demo{background:#eef6e3;border:1px solid #cfe5b0;border-radius:6px;padding:20px}
+.demo code{background:#fff;border:1px solid var(--line);padding:2px 8px;border-radius:3px;font-size:.95rem}
+.demo ul{margin:10px 0 0;padding-left:18px}
+.stack{display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:0;list-style:none}
+.stack li{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 14px;font-weight:600;font-size:.9rem}
+footer{padding:32px 0;color:var(--muted);font-size:.9rem;text-align:center}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <strong>Portail MDE</strong>
+  <nav aria-label="Navigation"><a href="#fonctions">Fonctionnalités</a><a href="#demo">Démo</a><a href="https://github.com/tomvieilledent/portailMDE">Code source</a></nav>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <div>
+    <p class="eyebrow">Maison de l'Économie · Rodez Agglomération</p>
+    <h1><span>Le portail</span><br /><b>des entreprises</b></h1>
+    <span class="bar" aria-hidden="true"></span>
+    <p class="lead">Un espace interne pour se trouver, se parler, se retrouver à un événement et se former : annuaire avec cartes de visite, messagerie en temps réel, agenda, formations et veille économique.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://mde.vlldnt.fr">Essayer la démo</a>
+      <a class="btn ghost" href="https://github.com/tomvieilledent/portailMDE">Voir le code</a>
+    </div>
+  </div>
+  <figure><img class="cover" src="./portfolio.png" width="1600" height="1000" alt="Page d'accueil du portail : calendrier, événements et formations" /></figure>
+</div></div>
+
+<section id="fonctions"><div class="wrap">
+  <h2><span>Tout ce qu'il faut pour </span><b>faire vivre la Maison</b></h2>
+  <p class="sub">Cinq outils reliés entre eux, pensés pour des équipes qui partagent les mêmes locaux.</p>
+  <div class="features">
+    <article class="feature"><div class="text"><h3>Annuaire et cartes de visite</h3><p>Chaque personne a sa tuile, qui se retourne sur sa carte de visite. Recherche par nom, fonction ou entreprise, sans tenir compte des accents ; message direct en un clic.</p></div>
+      <img src="./shot-annuaire.jpg" loading="lazy" alt="Annuaire des personnes" /></article>
+    <article class="feature"><div class="text"><h3>Messagerie en temps réel</h3><p>Conversations directes et groupes, pièces jointes, messages non lus. Un groupe peut être créé en sélectionnant tout le monde, ou toute une entreprise.</p></div>
+      <img src="./shot-messagerie.jpg" loading="lazy" alt="Messagerie" /></article>
+    <article class="feature"><div class="text"><h3>Agenda partagé</h3><p>Événements publics ou sur invitation, sessions de formation en couleur (proposées, ou déjà inscrit), export en affiche PDF prête à imprimer.</p></div>
+      <img src="./shot-agenda.jpg" loading="lazy" alt="Agenda mensuel" /></article>
+    <article class="feature"><div class="text"><h3>Formations à la demande</h3><p>Une formation n'est pas programmée ? On le signale d'un clic. L'équipe voit combien de personnes l'attendent, planifie une session, et chacun est prévenu.</p></div>
+      <img src="./shot-formations.jpg" loading="lazy" alt="Catalogue des formations" /></article>
+    <article class="feature"><div class="text"><h3>Actualités économiques</h3><p>Une veille réglementaire synchronisée chaque jour, avec une rubrique « Nouvelles infos du jour » et la possibilité de garder ses articles en favoris.</p></div>
+      <img src="./shot-actualites.jpg" loading="lazy" alt="Actualités économiques" /></article>
+  </div>
+</div></section>
+
+<section class="band"><div class="wrap two">
+  <div>
+    <h2><span>Pensé pour </span><b>le mobile aussi</b></h2>
+    <p class="sub">Menu en tiroir, tableaux adaptés, notifications et sessions de formation lisibles sur un petit écran.</p>
+    <ul class="stack" aria-label="Technologies">
+      <li>React</li><li>Vite</li><li>Tailwind CSS</li><li>FastAPI</li><li>PostgreSQL</li><li>WebSocket</li><li>Docker</li>
+    </ul>
+  </div>
+  <div class="phone"><img src="./shot-mobile.jpg" loading="lazy" alt="Le portail sur téléphone" /></div>
+</div></section>
+
+<section id="demo"><div class="wrap">
+  <h2><span>Essayer </span><b>la démo</b></h2>
+  <div class="demo">
+    <p style="margin:0">La démo contient un jeu de données fictif (12 entreprises, une quarantaine de personnes). Mot de passe commun : <code>demo-password-1</code></p>
+    <ul>
+      <li><code>lea@demo.fr</code> — responsable d'une entreprise (administre sa fiche)</li>
+      <li><code>hugo@demo.fr</code> — simple membre</li>
+      <li><code>staff@demo.fr</code> — équipe de la Maison (formations, actualités)</li>
+      <li><code>admin@demo.fr</code> — super administrateur</li>
+    </ul>
+    <p style="margin:16px 0 0"><a class="btn primary" href="https://mde.vlldnt.fr">Ouvrir mde.vlldnt.fr</a></p>
+  </div>
+</div></section>
+
+<footer><div class="wrap">Projet de <a href="https://vlldnt.fr">Tom Vieilledent</a> · <a href="https://github.com/tomvieilledent/portailMDE">Code source sur GitHub</a></div></footer>
+</body>
+</html>

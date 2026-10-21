@@ -90,13 +90,26 @@ function renderAt(path) {
 beforeEach(() => {
   vi.resetAllMocks()
   window.HTMLElement.prototype.scrollIntoView = vi.fn()
-  api.get.mockImplementation(async (path) => {
+  api.get.mockImplementation(async (path, params) => {
     if (path === '/users/me') return me
     if (path === '/conversations') return [direct, group]
     if (path === '/conversations/c1/messages') return [msg('2', 'Salut !'), msg('1', 'Bonjour')]
     if (path === '/conversations/g1/messages') return []
-    if (path === '/directory/people')
-      return { items: [{ ...ada, email: 'a@x.fr', company: null }], total: 1 }
+    if (path === '/directory/companies') return { items: [{ id: 'c9', name: 'Acme' }], total: 1 }
+    if (path === '/directory/people') {
+      const acme = { id: 'c9', name: 'Acme' }
+      const people = [{ ...ada, email: 'a@x.fr', company: acme }]
+      if (params?.company_id) {
+        people.push({
+          id: 'bob',
+          first_name: 'Bob',
+          last_name: 'Martin',
+          email: 'b@x.fr',
+          company: acme,
+        })
+      }
+      return { items: people, total: people.length }
+    }
     throw new Error(`appel inattendu ${path}`)
   })
   api.post.mockResolvedValue(null)
@@ -181,6 +194,26 @@ describe('messagerie', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Créer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/conversations', { kind: 'direct', user_id: 'ada' }),
+    )
+  })
+
+  it('sélectionne tout le monde, y compris par entreprise', async () => {
+    api.post.mockResolvedValue({ id: 'g3' })
+    renderAt('/messagerie')
+    await userEvent.click(await screen.findByRole('button', { name: /Nouveau/ }))
+    await userEvent.click(screen.getByLabelText('Groupe de discussion'))
+    await userEvent.type(screen.getByLabelText('Nom du groupe'), 'Acme')
+    await userEvent.selectOptions(screen.getByLabelText('Filtrer par entreprise'), 'c9')
+    await screen.findByRole('checkbox', { name: /Bob Martin/ })
+    await userEvent.click(screen.getByRole('button', { name: 'Tout sélectionner' }))
+    expect(screen.getByText(/2 personnes sélectionnées/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Créer' }))
+    await waitFor(() =>
+      expect(api.post).toHaveBeenCalledWith('/conversations', {
+        kind: 'group',
+        title: 'Acme',
+        user_ids: ['ada', 'bob'],
+      }),
     )
   })
 

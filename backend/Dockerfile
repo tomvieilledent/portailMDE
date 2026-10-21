@@ -12,7 +12,8 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload
 
 FROM base AS prod
 COPY . .
-RUN useradd --system app && chown -R app /app
+# /app/uploads existe dans l'image et appartient à `app` : un volume nommé monté dessus en hérite.
+RUN useradd --system app && mkdir -p /app/uploads && chown -R app /app
 USER app
 ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

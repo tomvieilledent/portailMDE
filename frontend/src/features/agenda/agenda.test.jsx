@@ -76,6 +76,41 @@ beforeEach(() => {
     if (path === '/users/me') return me
     if (path === '/events') return [mine, others]
     if (path === '/invitations/me') return []
+    if (path === '/trainings') {
+      return {
+        items: [
+          { id: 't1', title: 'Excel avancé' },
+          { id: 't2', title: 'Pitch' },
+        ],
+        total: 2,
+      }
+    }
+    if (path === '/training-sessions') {
+      const base = { status: 'upcoming', enrolled_count: 0, max_participants: 5 }
+      return [
+        {
+          ...base,
+          id: 's1',
+          training_id: 't1',
+          start_at: '2026-10-23T09:00:00',
+          is_enrolled: false,
+        },
+        {
+          ...base,
+          id: 's2',
+          training_id: 't2',
+          start_at: '2026-10-24T09:00:00',
+          is_enrolled: true,
+        },
+        {
+          ...base,
+          id: 's3',
+          training_id: 't1',
+          start_at: '2026-10-25T09:00:00',
+          status: 'cancelled',
+        },
+      ]
+    }
     if (path === '/events/e1/invitations')
       return [
         { id: 'i1', status: 'accepted' },
@@ -90,6 +125,15 @@ afterEach(() => vi.useRealTimers())
 
 /** Affichage des événements, création et invitations. */
 describe('agenda', () => {
+  it('affiche les formations proposées et celles où l’on est inscrit, en couleurs distinctes', async () => {
+    renderPage()
+    const proposed = await screen.findByRole('button', { name: /Excel avancé/ })
+    const enrolled = await screen.findByRole('button', { name: /Pitch/ })
+    expect(proposed.className).toContain('bg-violet-100')
+    expect(enrolled.className).toContain('bg-orange-100')
+    expect(screen.getAllByRole('button', { name: /Excel avancé/ })).toHaveLength(1) // annulée exclue
+  })
+
   it('affiche le mois courant avec ses événements', async () => {
     renderPage()
     expect(await screen.findByText('octobre 2026')).toBeInTheDocument()
