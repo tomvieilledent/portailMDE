@@ -30,6 +30,16 @@ def test_people_search_and_company_filter(client, make_user, make_company, login
     assert filtered["total"] == 2
 
 
+def test_people_search_ignores_accents_and_case(client, make_user, login):
+    """La recherche ne tient compte ni des accents ni de la casse."""
+    make_user("me@x.fr", first_name="Moi", last_name="Zzz")
+    make_user("dev@x.fr", first_name="Éloïse", last_name="Durand", job_title="Développeuse")
+    headers = login("me@x.fr")
+    for term in ("developpeuse", "DÉVELOPPEUSE", "eloise", "Éloïse"):
+        found = client.get(f"{API}/people", headers=headers, params={"search": term}).json()
+        assert [p["email"] for p in found["items"]] == ["dev@x.fr"], term
+
+
 def test_people_hides_inactive_users_and_companies(client, make_user, make_company, login):
     """Les utilisateurs et entreprises inactifs sont masqués."""
     dead = make_company("Dead", is_active=False)

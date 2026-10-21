@@ -13,6 +13,7 @@ from app.models import Invitation, Training, TrainingEnrollment, TrainingSession
 from app.models.enums import SessionStatus, TrainingKind
 from app.schemas.training import SessionRead
 from app.services import storage
+from app.services.search import contains
 
 
 def _is_manager(user: User) -> bool:
@@ -48,8 +49,9 @@ def list_trainings(
     if not _is_manager(user):
         query = query.where(Training.is_active.is_(True))
     if search:
-        pattern = f"%{search.strip()}%"
-        query = query.where(or_(Training.title.ilike(pattern), Training.description.ilike(pattern)))
+        query = query.where(
+            or_(contains(Training.title, search), contains(Training.description, search))
+        )
     if category:
         query = query.where(Training.category == category)
     if kind:

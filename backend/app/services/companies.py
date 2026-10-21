@@ -11,6 +11,7 @@ from app.core.permissions import Permission, can_manage_company, has_permission
 from app.models import Company, User
 from app.models.enums import CompanyKind
 from app.services import storage
+from app.services.search import contains
 
 
 def get_company(session: Session, company_id: uuid.UUID, actor: User) -> Company:
@@ -37,7 +38,7 @@ def list_companies(
     if not has_permission(actor, Permission.MANAGE_COMPANIES):
         query = query.where(Company.is_active.is_(True))
     if search:
-        query = query.where(Company.name.ilike(f"%{search.strip()}%"))
+        query = query.where(contains(Company.name, search))
     if kind:
         query = query.where(Company.kind == kind)
     total = session.scalar(select(func.count()).select_from(query.subquery())) or 0

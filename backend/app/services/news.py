@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.errors import ConflictError, NotFoundError
 from app.models import NewsArticle, SavedArticle
+from app.services.search import contains
 
 logger = logging.getLogger(__name__)
 
@@ -64,9 +65,8 @@ def list_articles(
     """Liste les articles, du plus récent au plus ancien, avec recherche et filtre par catégorie."""
     query = select(NewsArticle)
     if search:
-        pattern = f"%{search.strip()}%"
         query = query.where(
-            or_(NewsArticle.title.ilike(pattern), NewsArticle.summary.ilike(pattern))
+            or_(contains(NewsArticle.title, search), contains(NewsArticle.summary, search))
         )
     if category:
         query = query.where(NewsArticle.category == category)
