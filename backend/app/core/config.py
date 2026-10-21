@@ -1,5 +1,6 @@
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +19,14 @@ class Settings(BaseSettings):
     max_image_bytes: int = 5 * 1024 * 1024
     max_document_bytes: int = 15 * 1024 * 1024
     cors_origins: list[str] = ["http://localhost:5290"]
+
+    @model_validator(mode="after")
+    def _refuse_default_secret_in_production(self):
+        if self.environment == "production" and (
+            self.jwt_secret == "dev-secret-change-me" or len(self.jwt_secret) < 32
+        ):
+            raise ValueError("JWT_SECRET doit être défini (32 caractères minimum) en production")
+        return self
 
 
 @lru_cache
