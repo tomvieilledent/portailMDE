@@ -186,7 +186,7 @@ def list_conversations(session: Session, actor: User) -> list[ConversationRead]:
     ).all()
     reads = [to_read(session, c, actor) for c in conversations]
     reads.sort(
-        key=lambda r: (r.last_message.created_at if r.last_message else r.created_at), reverse=True
+        key=lambda r: r.last_message.created_at if r.last_message else r.created_at, reverse=True
     )
     return reads
 
