@@ -140,6 +140,7 @@ def test_completion_and_my_trainings(client, make_user, login, manager):
     client.post(f"{API}/training-sessions/{ts['id']}/enroll", headers=login())
     listing = client.get(f"{API}/training-sessions/{ts['id']}/enrollments", headers=manager).json()
     assert len(listing) == 1
+    assert listing[0]["user"]["id"] == str(user.id)
     done = client.post(
         f"{API}/training-sessions/{ts['id']}/enrollments/{user.id}/complete", headers=manager
     )
