@@ -1,16 +1,19 @@
 /** Tuile « carte de visite » d'une personne de l'annuaire, qui se retourne sur sa carte. */
 
-import { Download, Mail, Phone, Undo2 } from 'lucide-react'
+import { useMutation } from '@tanstack/react-query'
+import { Download, Mail, MessageSquare, Phone, Undo2 } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { Avatar, uploadUrl } from '../../components/ui'
+import { Avatar, uploadUrl, useToast } from '../../components/ui'
+import { api } from '../../lib/api'
 import { cardLines, exportCardPng, exportCardVCard } from '../../lib/businessCard'
 import { cn } from '../../lib/cn'
 import { fullName } from './labels'
 
 /** Face commune : même cadre, masquée quand elle est de dos. */
 const FACE =
-  'absolute inset-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm [backface-visibility:hidden] dark:border-slate-700 dark:bg-slate-900'
+  'absolute inset-0 overflow-hidden rounded-xl border border-slate-200 bg-white [backface-visibility:hidden] dark:border-slate-700 dark:bg-slate-900'
 
 /** Pastille ronde avec le logo de l'entreprise (initiale à défaut), en haut à droite du recto. */
 function CompanyBadge({ company }) {
@@ -26,7 +29,7 @@ function CompanyBadge({ company }) {
           alt=""
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-contain p-1"
+          className="h-full w-full object-cover"
         />
       ) : (
         company.name.slice(0, 1).toUpperCase()
@@ -67,12 +70,19 @@ function GeneratedCard({ person }) {
 
 /**
  * Tuile au format carte de visite (85 × 55). Au clic, elle se retourne : carte enregistrée
- * dans le profil, ou à défaut carte générée exportable (PNG / vCard). « Voir la fiche »
- * ouvre la fiche détaillée.
+ * dans le profil, ou à défaut carte générée exportable (PNG / vCard).
  */
-export default function PersonCard({ person, onSelect }) {
+export default function PersonCard({ person }) {
   const [flipped, setFlipped] = useState(false)
   const [seen, setSeen] = useState(false) // le verso n'est rendu qu'après le premier retournement
+  const navigate = useNavigate()
+  const toast = useToast()
+  // Démarre (ou retrouve) la conversation directe avec cette personne.
+  const startChat = useMutation({
+    mutationFn: () => api.post('/conversations', { kind: 'direct', user_id: person.id }),
+    onSuccess: (conversation) => navigate(`/messagerie/${conversation.id}`),
+    onError: () => toast.error('Conversation impossible.'),
+  })
   const name = fullName(person)
   const cardUrl = uploadUrl(person.business_card_path)
 
@@ -98,6 +108,12 @@ export default function PersonCard({ person, onSelect }) {
               />
             )}
             {person.company && <CompanyBadge company={person.company} />}
+            <span
+              aria-hidden="true"
+              className="absolute right-3 bottom-2 text-[11px] text-slate-500"
+            >
+              Carte de visite au dos
+            </span>
             <Avatar
               src={uploadUrl(person.avatar_path)}
               firstName={person.first_name}
@@ -105,7 +121,7 @@ export default function PersonCard({ person, onSelect }) {
               size="lg"
             />
             <div className="min-w-0 space-y-0.5">
-              <p className="truncate text-lg font-semibold">{name}</p>
+              <p className="font-display truncate text-lg font-semibold">{name}</p>
               {person.job_title && (
                 <p className="truncate text-sm text-slate-600 dark:text-slate-400">
                   {person.job_title}
@@ -177,6 +193,13 @@ export default function PersonCard({ person, onSelect }) {
                       </>
                     )}
                     <CardAction
+                      icon={MessageSquare}
+                      aria-label={`Écrire un message à ${name}`}
+                      onClick={() => startChat.mutate()}
+                    >
+                      Écrire
+                    </CardAction>
+                    <CardAction
                       icon={Undo2}
                       aria-label={`Retour aux informations de ${name}`}
                       onClick={() => setFlipped(false)}
@@ -190,14 +213,6 @@ export default function PersonCard({ person, onSelect }) {
           </div>
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => onSelect(person)}
-        aria-label={`Voir la fiche de ${name}`}
-        className="text-brand-700 dark:text-brand-300 text-sm font-medium hover:underline"
-      >
-        Voir la fiche
-      </button>
     </div>
   )
 }

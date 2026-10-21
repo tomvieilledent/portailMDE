@@ -7,14 +7,12 @@ import PageHeader from '../../components/layout/PageHeader'
 import { EmptyState, Input, Pagination, Spinner } from '../../components/ui'
 import { useDebounce } from '../../lib/useDebounce'
 import PersonCard from './PersonCard'
-import PersonModal from './PersonModal'
 import { PAGE_SIZE, usePeople } from './queries'
 
 /** Trombinoscope : recherche par nom, fonction ou entreprise. */
 export default function PeoplePage() {
   const [search, setSearch] = useState('')
   const [offset, setOffset] = useState(0)
-  const [selected, setSelected] = useState(null)
   const debounced = useDebounce(search)
   const { data, isLoading, isError } = usePeople({ search: debounced, offset })
 
@@ -22,7 +20,7 @@ export default function PeoplePage() {
     <>
       <PageHeader
         title="Annuaire"
-        description="Retrouvez les personnes des entreprises de la pépinière."
+        description="Retrouvez les personnes de la Maison de l'Économie."
       />
       <div className="relative mb-6 max-w-md">
         <Search
@@ -52,7 +50,7 @@ export default function PeoplePage() {
         <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {data.items.map((person) => (
             <li key={person.id}>
-              <PersonCard person={person} onSelect={setSelected} />
+              <PersonCard person={person} />
             </li>
           ))}
         </ul>
@@ -60,7 +58,6 @@ export default function PeoplePage() {
       {data && (
         <Pagination total={data.total} limit={PAGE_SIZE} offset={offset} onChange={setOffset} />
       )}
-      {selected && <PersonModal person={selected} onClose={() => setSelected(null)} />}
     </>
   )
 }

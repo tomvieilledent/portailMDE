@@ -28,6 +28,7 @@ class Training(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
     picture_path: Mapped[str | None] = mapped_column(String(512))
+    link: Mapped[str | None] = mapped_column(String(512))
     category: Mapped[str | None] = mapped_column(String(100), index=True)
     kind: Mapped[TrainingKind] = mapped_column(
         String(20),

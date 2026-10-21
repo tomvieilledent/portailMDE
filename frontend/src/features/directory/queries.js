@@ -27,7 +27,11 @@ export function useCompanies(params) {
 
 /** Fiche d'une entreprise. */
 export function useCompany(id) {
-  return useQuery({ queryKey: ['companies', id], queryFn: () => api.get(`/companies/${id}`) })
+  return useQuery({
+    queryKey: ['companies', id],
+    queryFn: () => api.get(`/companies/${id}`),
+    enabled: Boolean(id),
+  })
 }
 
 /** Membres d'une entreprise. */

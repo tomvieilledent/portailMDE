@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Paperclip, Send, Settings, Trash2 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { Avatar, Button, Spinner, uploadUrl, useToast } from '../../components/ui'
@@ -14,29 +14,44 @@ import GroupSettingsModal from './GroupSettingsModal'
 import { conversationTitle, formatTime } from './helpers'
 import { useMessages } from './queries'
 
-/** Bulle d'un message, avec pièce jointe et suppression. */
-function Bubble({ message, mine, onDelete }) {
+/** Libellé d'un jour pour les séparateurs : « Aujourd'hui », « Hier » ou la date. */
+function dayLabel(iso) {
+  const date = new Date(iso)
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(today.getDate() - 1)
+  if (date.toDateString() === today.toDateString()) return "Aujourd'hui"
+  if (date.toDateString() === yesterday.toDateString()) return 'Hier'
+  return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
+/** Bulle d'un message, avec pièce jointe et suppression ; `showAuthor` affiche l'expéditeur (groupes). */
+function Bubble({ message, mine, showAuthor, firstOfRun, onDelete }) {
   const toast = useToast()
   return (
-    <li className={cn('flex gap-2', mine && 'flex-row-reverse')}>
+    <li className={cn('flex items-end gap-2', mine && 'flex-row-reverse', !firstOfRun && 'mt-0.5')}>
       {!mine && (
-        <Avatar
-          src={uploadUrl(message.author?.avatar_path)}
-          firstName={message.author?.first_name}
-          lastName={message.author?.last_name}
-          size="sm"
-        />
+        <span className="w-8 shrink-0">
+          {firstOfRun && (
+            <Avatar
+              src={uploadUrl(message.author?.avatar_path)}
+              firstName={message.author?.first_name}
+              lastName={message.author?.last_name}
+              size="sm"
+            />
+          )}
+        </span>
       )}
       <div
         className={cn(
-          'group max-w-[75%] rounded-2xl px-4 py-2 text-sm',
+          'group max-w-[72%] rounded-lg px-3.5 py-2 text-sm',
           mine
-            ? 'bg-brand-700 text-white'
-            : 'bg-white shadow-sm dark:bg-slate-800 dark:text-slate-100',
+            ? 'bg-brand-600 rounded-br-sm text-white'
+            : 'rounded-bl-sm border border-slate-200 bg-white text-slate-900',
         )}
       >
-        {!mine && message.author && (
-          <p className="text-brand-700 dark:text-brand-300 mb-0.5 text-xs font-semibold">
+        {showAuthor && !mine && message.author && (
+          <p className="text-brand-700 mb-0.5 text-xs font-semibold">
             {message.author.first_name} {message.author.last_name}
           </p>
         )}
@@ -51,12 +66,20 @@ function Bubble({ message, mine, onDelete }) {
                 toast.error('Téléchargement impossible.'),
               )
             }}
-            className="mt-1 inline-flex items-center gap-1 underline"
+            className={cn(
+              'mt-1 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium underline',
+              mine ? 'bg-white/15' : 'bg-slate-100',
+            )}
           >
-            <Paperclip size={14} aria-hidden="true" /> {message.file_name}
+            <Paperclip size={13} aria-hidden="true" /> {message.file_name}
           </a>
         )}
-        <div className="mt-1 flex items-center justify-end gap-2 text-xs">
+        <div
+          className={cn(
+            'mt-0.5 flex items-center justify-end gap-2 text-[11px]',
+            mine ? 'text-white/75' : 'text-slate-500',
+          )}
+        >
           <time>{formatTime(message.created_at)}</time>
           {mine && (
             <button
@@ -160,26 +183,33 @@ export default function MessageThread({ conversation, meId }) {
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center gap-3 border-b border-slate-200 p-4 dark:border-slate-800">
+      <header className="flex items-center gap-3 border-b border-slate-200 px-4 py-3">
         <Link to="/messagerie" aria-label="Retour aux conversations" className="lg:hidden">
           <ArrowLeft size={20} />
         </Link>
-        <h2 className="flex-1 truncate text-lg font-semibold">
-          {conversationTitle(conversation, meId)}
-        </h2>
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-lg leading-tight font-semibold">
+            {conversationTitle(conversation, meId)}
+          </h2>
+          <p className="text-xs text-slate-500">
+            {conversation.kind === 'group'
+              ? `Groupe · ${conversation.participants.length} participants`
+              : 'Discussion directe'}
+          </p>
+        </div>
         {conversation.kind === 'group' && (
           <button
             type="button"
             onClick={() => setSettings(true)}
             aria-label="Paramètres du groupe"
-            className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-md p-2 hover:bg-slate-100"
           >
             <Settings size={18} />
           </button>
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto bg-slate-100/60 p-4 dark:bg-slate-950/40">
+      <div className="flex-1 overflow-y-auto bg-slate-50 px-4 py-5">
         {isLoading && <Spinner />}
         {hasNextPage && (
           <div className="mb-4 text-center">
@@ -193,22 +223,45 @@ export default function MessageThread({ conversation, meId }) {
             </Button>
           </div>
         )}
-        <ul role="log" aria-label="Messages" className="space-y-3">
-          {messages.map((message) => (
-            <Bubble
-              key={message.id}
-              message={message}
-              mine={message.author_id === meId}
-              onDelete={remove.mutate}
-            />
-          ))}
+        {!isLoading && messages.length === 0 && (
+          <p className="py-10 text-center text-sm text-slate-500">
+            Aucun message pour le moment. Écrivez le premier !
+          </p>
+        )}
+        <ul role="log" aria-label="Messages">
+          {messages.map((message, index) => {
+            const previous = messages[index - 1]
+            const newDay =
+              !previous ||
+              new Date(previous.created_at).toDateString() !==
+                new Date(message.created_at).toDateString()
+            const firstOfRun = newDay || previous.author_id !== message.author_id
+            return (
+              <Fragment key={message.id}>
+                {newDay && (
+                  <li className="my-4 flex justify-center">
+                    <span className="rounded-full bg-slate-200 px-3 py-0.5 text-xs font-medium text-slate-600 capitalize">
+                      {dayLabel(message.created_at)}
+                    </span>
+                  </li>
+                )}
+                <Bubble
+                  message={message}
+                  mine={message.author_id === meId}
+                  showAuthor={conversation.kind === 'group' && firstOfRun}
+                  firstOfRun={firstOfRun}
+                  onDelete={remove.mutate}
+                />
+              </Fragment>
+            )
+          })}
         </ul>
         <div ref={bottomRef} />
       </div>
 
       <form
         onSubmit={onSubmit}
-        className="flex items-end gap-2 border-t border-slate-200 p-3 dark:border-slate-800"
+        className="flex items-end gap-2 border-t border-slate-200 bg-white p-3"
       >
         <input
           ref={fileInput}
@@ -246,7 +299,7 @@ export default function MessageThread({ conversation, meId }) {
                 onSubmit(e)
               }
             }}
-            className="focus:ring-brand-500 block max-h-32 w-full resize-none rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:outline-none dark:border-slate-700 dark:bg-slate-900"
+            className="focus:ring-brand-500 block max-h-32 w-full resize-none rounded-md border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:outline-none"
           />
         </div>
         <Button type="submit" aria-label="Envoyer" loading={send.isPending}>

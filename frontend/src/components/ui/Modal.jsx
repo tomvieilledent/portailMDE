@@ -2,6 +2,7 @@
 
 import { X } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
+import { createPortal } from 'react-dom'
 
 import { cn } from '../../lib/cn'
 
@@ -48,9 +49,10 @@ export default function Modal({ open, onClose, title, children, footer, classNam
   }, [open, onClose])
 
   if (!open) return null
-  return (
+  // Rendue dans <body> : un ancêtre flouté (backdrop-filter) piégerait sinon le positionnement fixe.
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 backdrop-blur-[2px] sm:items-center sm:p-4"
       onMouseDown={(event) => event.target === event.currentTarget && onClose()}
     >
       <div
@@ -60,19 +62,19 @@ export default function Modal({ open, onClose, title, children, footer, classNam
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          'max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl focus:outline-none sm:max-w-lg sm:rounded-2xl dark:bg-slate-900',
+          'max-h-[90vh] w-full overflow-y-auto border border-slate-200 bg-white p-6 text-slate-900 shadow-lg focus:outline-none sm:max-w-lg',
           className,
         )}
       >
         <div className="mb-4 flex items-start justify-between gap-4">
-          <h2 id={titleId} className="text-lg font-semibold">
+          <h2 id={titleId} className="font-display text-lg font-semibold">
             {title}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Fermer"
-            className="rounded-lg p-1 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="rounded-md p-1 text-slate-500 hover:bg-slate-100"
           >
             <X size={18} />
           </button>
@@ -80,6 +82,7 @@ export default function Modal({ open, onClose, title, children, footer, classNam
         {children}
         {footer && <div className="mt-6 flex justify-end gap-2">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

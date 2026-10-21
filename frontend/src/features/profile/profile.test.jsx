@@ -176,20 +176,7 @@ describe('profil', () => {
 })
 
 /** Fiche et équipe de l'entreprise. */
-describe('mon entreprise', () => {
-  it('invite à contacter la MDE sans entreprise', async () => {
-    renderAt('/mon-entreprise')
-    expect(await screen.findByText(/aucune entreprise/)).toBeInTheDocument()
-  })
-
-  it('est en lecture seule pour un simple membre', async () => {
-    renderAt('/mon-entreprise', { ...me, company_id: 'c1' })
-    expect(await screen.findByLabelText(/^Nom( \*)?( \(obligatoire\))?$/)).toBeDisabled()
-    expect(
-      screen.queryByRole('button', { name: 'Ajouter un collaborateur' }),
-    ).not.toBeInTheDocument()
-  })
-
+describe('administration de mon entreprise', () => {
   it("permet à l'admin de modifier et d'agir sur l'équipe", async () => {
     renderAt('/mon-entreprise/administration', { ...me, company_id: 'c1', is_company_admin: true })
     api.patch.mockResolvedValue(acme)

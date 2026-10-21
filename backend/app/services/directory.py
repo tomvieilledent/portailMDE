@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from app.models import Company, User
 from app.models.enums import CompanyKind
 from app.schemas.directory import CompanyCard
+from app.services.search import contains
 
 
 def search_people(
@@ -31,13 +32,12 @@ def search_people(
     if company_id:
         query = query.where(User.company_id == company_id)
     if search:
-        pattern = f"%{search.strip()}%"
         query = query.where(
             or_(
-                User.first_name.ilike(pattern),
-                User.last_name.ilike(pattern),
-                User.job_title.ilike(pattern),
-                Company.name.ilike(pattern),
+                contains(User.first_name, search),
+                contains(User.last_name, search),
+                contains(User.job_title, search),
+                contains(Company.name, search),
             )
         )
     total = session.scalar(select(func.count()).select_from(query.subquery())) or 0
@@ -71,8 +71,9 @@ def search_companies(
         .where(Company.deleted_at.is_(None), Company.is_active.is_(True))
     )
     if search:
-        pattern = f"%{search.strip()}%"
-        query = query.where(or_(Company.name.ilike(pattern), Company.description.ilike(pattern)))
+        query = query.where(
+            or_(contains(Company.name, search), contains(Company.description, search))
+        )
     if kind:
         query = query.where(Company.kind == kind)
     total = session.scalar(select(func.count()).select_from(query.subquery())) or 0

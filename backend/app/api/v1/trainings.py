@@ -63,7 +63,8 @@ def my_trainings(session: SessionDep, current: CurrentUser):
 @router.get("/trainings/{training_id}", response_model=TrainingRead)
 def read_training(training_id: uuid.UUID, session: SessionDep, current: CurrentUser):
     """Retourne une formation."""
-    return service.get_training(session, training_id, current)
+    training = service.get_training(session, training_id, current)
+    return service.annotate(session, [training], current)[0]
 
 
 @router.patch("/trainings/{training_id}", response_model=TrainingRead)

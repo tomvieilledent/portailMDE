@@ -15,6 +15,8 @@ test("le super admin crée un compte puis l'utilise", async ({ browser, page }) 
   await dialog.getByLabel('Email').fill(email)
   await dialog.getByLabel('Mot de passe temporaire').fill('temporaire-123')
   await dialog.getByRole('button', { name: 'Créer le compte' }).click()
+  // La liste est paginée (jeu de démo de ~50 comptes) : on cible le nouveau compte par recherche.
+  await page.getByLabel('Rechercher un compte').fill(email)
   await expect(page.getByText(email)).toBeVisible()
 
   const context = await browser.newContext()
@@ -29,7 +31,7 @@ test("le super admin crée un compte puis l'utilise", async ({ browser, page }) 
   await nina.getByLabel('Nouveau mot de passe').fill('mon-mot-de-passe-1')
   await nina.getByLabel('Confirmation').fill('mon-mot-de-passe-1')
   await nina.getByRole('button', { name: 'Enregistrer' }).click()
-  await expect(nina).toHaveURL(/\/annuaire$/)
+  await expect(nina).toHaveURL(/\/accueil$/)
   await context.close()
 
   // désactivation : la connexion est ensuite refusée

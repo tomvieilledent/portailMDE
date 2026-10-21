@@ -8,8 +8,25 @@ from sqlalchemy.orm import Session
 from app.core.errors import ConflictError
 from app.core.permissions import validate_permissions
 from app.core.security import hash_password
-from app.models import Company, Event, NewsArticle, Training, TrainingSession, User
-from app.models.enums import UserRole
+from app.migration import seed_assets as assets
+from app.migration.seed_trainings import seed_trainings
+from app.models import (
+    Company,
+    Conversation,
+    ConversationParticipant,
+    Event,
+    Invitation,
+    Message,
+    NewsArticle,
+    Notification,
+    Training,
+    User,
+)
+from app.models.enums import (
+    ConversationKind,
+    InvitationStatus,
+    UserRole,
+)
 
 
 def create_admin(session: Session, email: str, password: str, *, first_name=None, last_name=None):
@@ -39,109 +56,591 @@ def _user(session, email, password, **fields) -> User:
     return user
 
 
-def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, int]:
-    """Jeu de données de démonstration, idempotent (rejouable sans doublons)."""
-    if session.scalar(select(Company.id).where(Company.name == "Atelier Lumière")):
-        return {}
+# (nom, description, lieu, type, couleur, forme du logo ou None si sans logo, site web)
+COMPANIES = [
+    (
+        "Atelier Lumière",
+        "Studio de design graphique et d'identité visuelle.",
+        "Rodez",
+        "company",
+        "#e07a1f",
+        "circle",
+        "https://atelier-lumiere.example",
+    ),
+    (
+        "AgriTech Aveyron",
+        "Capteurs connectés pour l'agriculture de précision.",
+        "Rodez",
+        "company",
+        "#5da020",
+        "square",
+        "https://agritech-aveyron.example",
+    ),
+    (
+        "Conseil & Co",
+        "Accompagnement RH et gestion pour les TPE.",
+        "Onet-le-Château",
+        "company",
+        "#2563eb",
+        "diamond",
+        None,
+    ),
+    (
+        "Formations Sud",
+        "Organisme de formation professionnelle.",
+        "Rodez",
+        "trainer",
+        "#7c3aed",
+        "bars",
+        "https://formations-sud.example",
+    ),
+    (
+        "Brasserie des Causses",
+        "Brasserie artisanale et circuits courts.",
+        "Millau",
+        "company",
+        "#b45309",
+        "circle",
+        "https://brasserie-causses.example",
+    ),
+    (
+        "NumériSud",
+        "Développement web et applications mobiles.",
+        "Rodez",
+        "company",
+        "#0891b2",
+        "square",
+        "https://numerisud.example",
+    ),
+    (
+        "Cabinet Delmas",
+        "Expertise comptable et gestion de patrimoine.",
+        "Rodez",
+        "company",
+        "#475569",
+        None,
+        None,
+    ),
+    (
+        "Éco-Bâti 12",
+        "Rénovation énergétique et éco-construction.",
+        "Villefranche-de-Rouergue",
+        "company",
+        "#15803d",
+        "diamond",
+        None,
+    ),
+    (
+        "Rouergue Robotique",
+        "Robots collaboratifs pour l'industrie locale.",
+        "Rodez",
+        "company",
+        "#dc2626",
+        "bars",
+        "https://rouergue-robotique.example",
+    ),
+    (
+        "Coach & Cap",
+        "Coaching de dirigeants et d'équipes.",
+        "Rodez",
+        "trainer",
+        "#db2777",
+        None,
+        None,
+    ),
+    (
+        "Crédit Mutuel Rodez",
+        "Partenaire bancaire de la Maison de l'Économie.",
+        "Rodez",
+        "partner",
+        "#1d4ed8",
+        "square",
+        None,
+    ),
+    (
+        "Ancienne Fabrique",
+        "Entreprise hébergée jusqu'en 2023 (désactivée).",
+        "Rodez",
+        "company",
+        "#6b7280",
+        None,
+        None,
+    ),
+]
 
-    companies = {
-        name: Company(name=name, description=desc, location="Rodez", kind=kind)
-        for name, desc, kind in [
-            ("Atelier Lumière", "Studio de design graphique et d'identité visuelle.", "company"),
-            ("AgriTech Aveyron", "Capteurs connectés pour l'agriculture de précision.", "company"),
-            ("Conseil & Co", "Accompagnement RH et gestion pour les TPE.", "company"),
-            ("Formations Sud", "Organisme de formation professionnelle.", "trainer"),
-        ]
-    }
-    session.add_all(companies.values())
+FIRST = [
+    "Léa",
+    "Hugo",
+    "Sofia",
+    "Karim",
+    "Manon",
+    "Lucas",
+    "Camille",
+    "Nathan",
+    "Inès",
+    "Théo",
+    "Chloé",
+    "Maxime",
+    "Jade",
+    "Antoine",
+    "Zoé",
+    "Romain",
+    "Clara",
+    "Julien",
+    "Emma",
+    "Paul",
+    "Sarah",
+    "Adrien",
+    "Louise",
+    "Mathis",
+    "Anaïs",
+    "Baptiste",
+    "Eva",
+    "Quentin",
+    "Lina",
+    "Florian",
+    "Margaux",
+    "Étienne",
+    "Salomé",
+    "Victor",
+    "Noémie",
+    "Gabriel",
+    "Alice",
+    "Damien",
+    "Océane",
+    "Samir",
+    "Elsa",
+    "Thomas",
+    "Yasmine",
+    "Benoît",
+    "Clémence",
+    "Axel",
+]
+LAST = [
+    "Martin",
+    "Bernard",
+    "Petit",
+    "Roux",
+    "Durand",
+    "Moreau",
+    "Laurent",
+    "Simon",
+    "Michel",
+    "Lefebvre",
+    "Garcia",
+    "David",
+    "Bertrand",
+    "Morel",
+    "Fournier",
+    "Girard",
+    "Bonnet",
+    "Dupont",
+    "Lambert",
+    "Fontaine",
+    "Rousseau",
+    "Vincent",
+    "Muller",
+    "Faure",
+    "Andre",
+    "Mercier",
+    "Blanc",
+    "Guerin",
+    "Boyer",
+    "Garnier",
+    "Chevalier",
+    "Francois",
+    "Legrand",
+    "Gauthier",
+    "Perrin",
+    "Robin",
+    "Clement",
+    "Morin",
+    "Nicolas",
+    "Henry",
+    "Roussel",
+    "Mathieu",
+    "Gautier",
+    "Masson",
+    "Marchand",
+    "Duval",
+]
+JOBS = [
+    "Directeur·rice",
+    "Développeur·se",
+    "Responsable commercial",
+    "Chargé·e de communication",
+    "Comptable",
+    "Ingénieur·e",
+    "Designer",
+    "Consultant·e",
+    "Chef de projet",
+    "Assistant·e de direction",
+    "Technicien·ne",
+]
+COLORS = [
+    "#5da020",
+    "#e07a1f",
+    "#2563eb",
+    "#7c3aed",
+    "#0891b2",
+    "#dc2626",
+    "#db2777",
+    "#15803d",
+    "#b45309",
+]
+
+
+def _ascii(text: str) -> str:
+    """Minuscules sans accent, pour construire les adresses e-mail."""
+    table = str.maketrans("àâäéèêëîïôöùûüç·", "aaaeeeeiioouuuc.")
+    return text.lower().translate(table).replace("..", ".").strip(".")
+
+
+def _member_email(idx: int) -> str:
+    """E-mail d'un membre de démo : prénom seul pour les 5 comptes historiques, sinon prénom.nom."""
+    first, last = FIRST[idx], LAST[idx]
+    return f"{_ascii(first)}@demo.fr" if idx < 5 else f"{_ascii(first)}.{_ascii(last)}@demo.fr"
+
+
+def _at(days: int, hour: int, minute: int = 0) -> datetime:
+    """Date/heure (UTC) décalée de ``days`` jours par rapport à aujourd'hui."""
+    base = datetime.now(UTC).replace(hour=hour, minute=minute, second=0, microsecond=0)
+    return base + timedelta(days=days)
+
+
+def _seed_base(session: Session, password: str):
+    """Jeu de données de démonstration complet, idempotent (rejouable sans doublons).
+
+    Couvre les cas à tester : entreprises avec/sans logo, active/désactivée, de chaque type ;
+    utilisateurs avec/sans avatar et carte de visite, administrateurs d'entreprise, staff,
+    comptes désactivés ou à mot de passe temporaire ; événements passés/en cours/à venir ;
+    formations et sessions de tous statuts ; inscriptions, invitations, messagerie, notifications.
+    """
+    # ── Entreprises (logo généré pour celles qui en ont un) ──────────────────────────────
+    companies: dict[str, Company] = {}
+    for i, (name, desc, place, kind, color, shape, site) in enumerate(COMPANIES):
+        company = session.scalar(select(Company).where(Company.name == name)) or Company(name=name)
+        company.description, company.location, company.kind = desc, place, kind
+        company.website_url = site
+        company.is_active = name != "Ancienne Fabrique"
+        company.logo_path = assets.logo(f"company-{i}", name, color, shape) if shape else None
+        session.add(company)
+        companies[name] = company
     session.flush()
+    company_list = [c for n, c in companies.items() if n != "Ancienne Fabrique"]
 
+    # ── Comptes de référence ─────────────────────────────────────────────────────────────
     admin = _user(
         session,
         "admin@demo.fr",
         password,
         first_name="Alice",
         last_name="Admin",
+        job_title="Directrice de la Maison de l'Économie",
+        phone="05 65 00 00 01",
         role=UserRole.SUPER_ADMIN,
     )
-    _user(
+    admin.avatar_path = assets.avatar("admin", "Alice", "Admin", "#4a7a1a")
+    admin.business_card_path = assets.business_card(
+        "admin",
+        "Alice Admin",
+        "Directrice",
+        "Maison de l'Économie",
+        "admin@demo.fr",
+        "05 65 00 00 01",
+        "#4a7a1a",
+    )
+    staff_full = _user(
         session,
         "staff@demo.fr",
         password,
         first_name="Samuel",
         last_name="Staff",
+        job_title="Chargé de mission",
         role=UserRole.STAFF,
         permissions=validate_permissions(["manage_trainings", "manage_news"]),
     )
-    people = [
-        ("lea@demo.fr", "Léa", "Martin", "Directrice artistique", "Atelier Lumière", True),
-        ("hugo@demo.fr", "Hugo", "Bernard", "Développeur", "Atelier Lumière", False),
-        ("sofia@demo.fr", "Sofia", "Petit", "Fondatrice", "AgriTech Aveyron", True),
-        ("karim@demo.fr", "Karim", "Roux", "Ingénieur capteurs", "AgriTech Aveyron", False),
-        ("manon@demo.fr", "Manon", "Durand", "Consultante RH", "Conseil & Co", True),
-    ]
-    for email, first, last, job, company, boss in people:
-        _user(
+    staff_full.avatar_path = assets.avatar("staff", "Samuel", "Staff", "#2563eb")
+    _user(
+        session,
+        "staff-entreprises@demo.fr",
+        password,
+        first_name="Nadia",
+        last_name="Gestion",
+        job_title="Chargée d'accueil",
+        role=UserRole.STAFF,
+        permissions=validate_permissions(["manage_companies", "manage_users"]),
+    )
+
+    # ── Membres : 42 personnes réparties sur les entreprises actives ─────────────────────
+    members: list[User] = []
+    for idx in range(42):
+        first, last = FIRST[idx], LAST[idx]
+        email = _member_email(idx)
+        # Comptes historiques (tests E2E) : Léa et Hugo chez Atelier Lumière, Sofia et Karim chez
+        # AgriTech, Manon chez Conseil & Co ; les autres tournent sur les autres entreprises.
+        home = {0: 0, 1: 0, 2: 1, 3: 1, 4: 2}
+        company = company_list[home[idx] if idx in home else (idx - 5 + 3) % len(company_list)]
+        user = _user(
             session,
             email,
             password,
             first_name=first,
             last_name=last,
-            job_title=job,
-            company_id=companies[company].id,
-            is_company_admin=boss,
+            job_title=None if idx % 9 == 4 else JOBS[idx % len(JOBS)],
+            phone=None
+            if idx % 7 == 3
+            else f"06 {10 + idx:02d} {20 + idx:02d} {30 + idx:02d} {40 + idx:02d}",
+            company_id=company.id,
+            # un·e administrateur·rice par entreprise (les 11 premiers), quelques co-responsables
+            is_company_admin=idx in (0, 2, 4) or 5 <= idx <= 12 or idx in (20, 27),
+            is_active=idx not in (30, 37),  # 2 comptes désactivés
+            must_change_password=idx in (25, 41),  # 2 mots de passe temporaires
         )
-
-    today = date.today()
-    session.add_all(
-        [
-            Event(
-                title="Afterwork des entrepreneurs",
-                event_date=today + timedelta(days=7),
-                event_time=time(18, 30),
-                description="Rencontre conviviale ouverte à tous.",
-                is_public=True,
-                created_by=admin.id,
-            ),
-            Event(
-                title="Comité d'accompagnement",
-                event_date=today + timedelta(days=14),
-                event_time=time(9, 0),
-                created_by=admin.id,
-            ),
-        ]
-    )
-    training = Training(
-        title="Réussir son pitch",
-        category="Communication",
-        kind="atelier",
-        description="Structurer et présenter son projet en 5 minutes.",
-        company_id=companies["Formations Sud"].id,
-    )
-    session.add(training)
+        color = COLORS[idx % len(COLORS)]
+        user.avatar_path = (
+            assets.avatar(f"user-{idx}", first, last, color) if idx % 5 != 2 else None
+        )
+        if idx % 5 in (0, 1):  # ~40 % ont une carte de visite
+            user.business_card_path = assets.business_card(
+                f"user-{idx}",
+                f"{first} {last}",
+                user.job_title or "",
+                company.name,
+                email,
+                user.phone or "",
+                color,
+            )
+        members.append(user)
+    # Quelques personnes sans entreprise (cas « non rattaché »)
+    for first, last in [("Pierre", "Solo"), ("Marie", "Indépendante")]:
+        _user(
+            session,
+            f"{_ascii(first)}.{_ascii(last)}@demo.fr",
+            password,
+            first_name=first,
+            last_name=last,
+            job_title="Porteur de projet",
+        )
     session.flush()
-    start = datetime.now(UTC).replace(hour=9, minute=0, second=0, microsecond=0) + timedelta(
-        days=10
-    )
-    session.add(
-        TrainingSession(
-            training_id=training.id,
-            start_at=start,
-            end_at=start + timedelta(hours=7),
-            max_participants=12,
-            location="Salle des Cèdres",
-            is_public=True,
+    lea = members[0]
+
+    # ── Événements : passés, aujourd'hui, à venir (10+ actuels ou à venir) ───────────────
+    today = date.today()
+    events_spec = [
+        (-12, time(9, 0), "Atelier réseau (passé)", True, None),
+        (-3, time(14, 0), "Point d'étape trimestriel (passé)", False, None),
+        (0, time(10, 0), "Petit-déjeuner des entrepreneurs", True, "Ouvert à tous, café offert."),
+        (0, time(17, 30), "Permanence juridique", False, "Sur rendez-vous."),
+        (2, time(12, 15), "Déjeuner partenaires bancaires", False, None),
+        (
+            4,
+            time(18, 30),
+            "Afterwork des entrepreneurs",
+            True,
+            "Rencontre conviviale ouverte à tous.",
+        ),
+        (7, time(9, 0), "Comité d'accompagnement", False, "Présentation des projets en cours."),
+        (
+            9,
+            time(14, 0),
+            "Webinaire : financer sa croissance",
+            True,
+            "Lien de connexion envoyé la veille.",
+        ),
+        (13, None, "Journée portes ouvertes", True, "Toute la journée."),
+        (16, time(10, 30), "Visite d'un site industriel", False, None),
+        (
+            21,
+            time(18, 0),
+            "Conférence : IA et PME",
+            True,
+            "Amphithéâtre de la Maison de l'Économie.",
+        ),
+        (30, time(9, 30), "Assemblée générale", False, "Réservée aux entreprises hébergées."),
+    ]
+    events = []
+    for offset, hour, title, public, desc in events_spec:
+        ev = Event(
+            title=title,
+            event_date=today + timedelta(days=offset),
+            event_time=hour,
+            description=desc,
+            is_public=public,
             created_by=admin.id,
         )
-    )
-    session.add(
-        NewsArticle(
-            title="Bienvenue sur le portail",
-            source="MDE",
-            category="vie de la pépinière",
-            summary="Retrouvez ici l'annuaire, la messagerie, l'agenda et les formations.",
-            published_at=datetime.now(UTC),
+        session.add(ev)
+        events.append(ev)
+    session.flush()
+
+    # ── Invitations (en attente / acceptée / refusée) ────────────────────────────────────
+    for ev, status in (
+        (events[4], InvitationStatus.PENDING),
+        (events[6], InvitationStatus.PENDING),
+        (events[7], InvitationStatus.ACCEPTED),
+        (events[9], InvitationStatus.DECLINED),
+    ):
+        session.add(
+            Invitation(
+                event_id=ev.id,
+                inviter_id=admin.id,
+                invitee_id=lea.id,
+                status=status,
+                responded_at=None if status == InvitationStatus.PENDING else _at(-1, 11),
+            )
         )
+
+    # ── Actualités ───────────────────────────────────────────────────────────────────────
+    news = [
+        (
+            "Bienvenue sur le portail",
+            "MDE",
+            "vie de la Maison",
+            "Retrouvez ici l'annuaire, la messagerie, l'agenda et les formations.",
+        ),
+        (
+            "Nouvelle aide régionale à l'innovation",
+            "Région Occitanie",
+            "financement",
+            "Un dispositif ouvert aux jeunes entreprises jusqu'à fin d'année.",
+        ),
+        (
+            "Aveyron : la création d'entreprises en hausse",
+            "Presse locale",
+            "économie",
+            "Le département enregistre une progression des créations sur un an.",
+        ),
+        (
+            "Atelier cybersécurité pour les TPE",
+            "MDE",
+            "formation",
+            "Un atelier pratique pour protéger ses données.",
+        ),
+        (
+            "Appel à projets transition énergétique",
+            "ADEME",
+            "innovation",
+            "Candidatures ouvertes jusqu'au mois prochain.",
+        ),
+        (
+            "Une entreprise hébergée primée",
+            "MDE",
+            "vie de la Maison",
+            "Félicitations à l'équipe pour ce prix régional.",
+        ),
+        (
+            "Recrutement : les bons réflexes",
+            "Conseil & Co",
+            "ressources humaines",
+            "Cinq conseils pour structurer ses premières embauches.",
+        ),
+        (
+            "Nouveaux horaires de l'accueil",
+            "MDE",
+            "vie de la Maison",
+            "L'accueil est ouvert de 8 h 30 à 18 h.",
+        ),
+    ]
+    for i, (title, source, category, summary) in enumerate(news):
+        session.add(
+            NewsArticle(
+                title=title,
+                source=source,
+                category=category,
+                summary=summary,
+                published_at=datetime.now(UTC) - timedelta(days=i * 3),
+            )
+        )
+
+    # ── Messagerie : une conversation directe et un groupe, avec messages non lus ────────
+    direct = Conversation(kind=ConversationKind.DIRECT, creator_id=admin.id)
+    group = Conversation(
+        kind=ConversationKind.GROUP, title="Entrepreneurs Rodez", creator_id=lea.id
     )
+    session.add_all([direct, group])
+    session.flush()
+    for user in (admin, lea):
+        session.add(
+            ConversationParticipant(
+                conversation_id=direct.id,
+                user_id=user.id,
+                last_read_at=_at(-1, 9) if user is lea else _at(0, 8),
+            )
+        )
+    for user in [lea, admin, *members[1:5]]:
+        session.add(
+            ConversationParticipant(
+                conversation_id=group.id,
+                user_id=user.id,
+                last_read_at=_at(-2, 9) if user is lea else _at(0, 8),
+            )
+        )
+    chat = [
+        (direct, admin, "Bonjour Léa, avez-vous reçu l'invitation au comité ?", -1, 9),
+        (direct, lea, "Oui, merci ! Je confirme ma présence.", -1, 10),
+        (direct, admin, "Parfait, à bientôt.", 0, 8),
+        (group, lea, "Bonjour à tous, qui vient à l'afterwork jeudi ?", -1, 17),
+        (group, members[1], "Présent !", -1, 18),
+        (group, members[2], "Je serai en retard mais je viens.", 0, 7),
+        (group, members[3], "Quelqu'un connaît un bon imprimeur sur Rodez ?", 0, 8),
+    ]
+    for conv, author, text, offset, hour in chat:
+        session.add(
+            Message(
+                conversation_id=conv.id,
+                author_id=author.id,
+                content=text,
+                created_at=_at(offset, hour),
+            )
+        )
+
+    # ── Notifications ────────────────────────────────────────────────────────────────────
+    for content, kind, read in (
+        ("Alice Admin vous invite à « Déjeuner partenaires bancaires »", "invitation", False),
+        ("Nouveau message dans « Entrepreneurs Rodez »", "conversation", False),
+        ("Une nouvelle formation est disponible : Marketing digital pour TPE", "annonce", True),
+    ):
+        session.add(Notification(recipient_id=lea.id, content=content, kind=kind, is_read=read))
+
     session.commit()
-    return {"entreprises": len(companies), "utilisateurs": 2 + len(people)}
+    counts = {
+        "entreprises": len(companies),
+        "utilisateurs": 3 + len(members) + 2,
+        "evenements": len(events),
+        "actualites": len(news),
+    }
+    return admin, members, companies, counts
+
+
+def seed_demo(session: Session, password: str = "demo-password-1") -> dict[str, int]:
+    """Jeu de données de démonstration complet, idempotent (rejouable sans doublons).
+
+    Couvre les cas à tester : entreprises avec/sans logo, active/désactivée, de chaque type ;
+    utilisateurs avec/sans avatar et carte de visite, administrateurs d'entreprise, staff,
+    comptes désactivés ou à mot de passe temporaire ; événements passés/en cours/à venir ;
+    formations (lien, visuel, description longue), sessions de tous statuts, inscriptions et
+    demandes en attente ; invitations, messagerie, notifications. Sur une base déjà peuplée par
+    une version antérieure, seules les formations sont complétées.
+    """
+    fresh = (
+        session.scalar(select(Company.id).where(Company.name == "Brasserie des Causses")) is None
+    )
+    trainings_ready = (
+        session.scalar(select(Training.id).where(Training.title == "Cybersécurité pour dirigeants"))
+        is not None
+    )
+    if not fresh and trainings_ready:
+        return {}
+    if fresh:
+        admin, members, companies, counts = _seed_base(session, password)
+    else:
+        by_email = {u.email.lower(): u for u in session.scalars(select(User)).all()}
+        admin = by_email["admin@demo.fr"]
+        members = [
+            by_email.get(_member_email(i))
+            or by_email[f"{_ascii(FIRST[i])}.{_ascii(LAST[i])}@demo.fr"]  # jeu antérieur
+            for i in range(42)
+        ]
+        companies = {c.name: c for c in session.scalars(select(Company)).all()}
+        counts = {}
+    return {**counts, **seed_trainings(session, companies, admin, members)}

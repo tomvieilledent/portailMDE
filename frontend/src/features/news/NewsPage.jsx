@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Bookmark, ExternalLink, Newspaper, Plus, RefreshCw, Search, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { useAuth } from '../../auth/AuthProvider'
 import { PERMISSIONS, hasPermission } from '../../auth/permissions'
@@ -13,6 +13,7 @@ import {
   Card,
   EmptyState,
   Input,
+  Modal,
   Pagination,
   Spinner,
   useToast,
@@ -26,10 +27,13 @@ import { NEWS_PAGE, formatPublished, useNews, useSavedNews } from './queries'
 
 /** Carte d'une actualité : favori et suppression. */
 function ArticleCard({ article, saved, onToggleSave, onDelete }) {
+  const [reading, setReading] = useState(false)
+  const href = safeHref(article.url)
+
   return (
-    <Card className="flex flex-col gap-2">
+    <Card className="flex h-64 flex-col gap-2 overflow-hidden">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="font-semibold">{article.title}</h2>
+        <h2 className="line-clamp-2 font-semibold">{article.title}</h2>
         <div className="flex shrink-0 gap-1">
           <button
             type="button"
@@ -61,18 +65,34 @@ function ArticleCard({ article, saved, onToggleSave, onDelete }) {
         {article.source && <span>{article.source}</span>}
         {article.published_at && <time>{formatPublished(article.published_at)}</time>}
       </div>
-      {article.summary && (
-        <p className="line-clamp-4 text-sm text-slate-600 dark:text-slate-400">{article.summary}</p>
-      )}
-      {safeHref(article.url) && (
-        <a
-          href={safeHref(article.url)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 text-sm hover:underline"
-        >
-          Lire l'article <ExternalLink size={14} aria-hidden="true" />
-        </a>
+      <p className="line-clamp-4 min-h-0 flex-1 overflow-hidden text-sm text-slate-600 dark:text-slate-400">
+        {article.summary}
+      </p>
+      <div className="mt-auto shrink-0">
+        {href ? (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-brand-600 hover:bg-brand-700 inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold text-white"
+          >
+            Lire l'article <ExternalLink size={14} aria-hidden="true" />
+          </a>
+        ) : (
+          <Button size="sm" onClick={() => setReading(true)}>
+            Lire l'article
+          </Button>
+        )}
+      </div>
+      {reading && (
+        <Modal open onClose={() => setReading(false)} title={article.title}>
+          <p className="mb-3 text-xs text-slate-500">
+            {[article.source, article.published_at && formatPublished(article.published_at)]
+              .filter(Boolean)
+              .join(' · ')}
+          </p>
+          <p className="text-sm whitespace-pre-line">{article.summary}</p>
+        </Modal>
       )}
     </Card>
   )
@@ -89,7 +109,18 @@ export default function NewsPage() {
   const [offset, setOffset] = useState(0)
   const [publishing, setPublishing] = useState(false)
   const debounced = useDebounce(search)
-  const news = useNews({ search: debounced, offset })
+  // Base vide : le serveur lance seul la synchronisation, on réinterroge quelques fois.
+  const news = useNews(
+    { search: debounced, offset },
+    {
+      refetchInterval: (query) =>
+        query.state.data?.total === 0 && query.state.dataUpdateCount < 12 ? 5000 : false,
+    },
+  )
+  // « Nouvelles infos du jour » : articles des dernières 24 h.
+  const since = useMemo(() => new Date(Date.now() - 24 * 3600 * 1000).toISOString(), [])
+  const today = useNews({ since, limit: 4 })
+  const syncing = news.data?.total === 0 && !debounced && offset === 0
   const saved = useSavedNews()
   const savedByArticle = new Map(
     (saved.data ?? []).filter((s) => s.article_id).map((s) => [s.article_id, s]),
@@ -174,6 +205,33 @@ export default function NewsPage() {
 
       {tab === 'all' && (
         <>
+          {today.data?.items.length > 0 && (
+            <section aria-labelledby="news-today" className="mb-10">
+              <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
+                À la une
+              </p>
+              <h2
+                id="news-today"
+                aria-label="Nouvelles infos du jour"
+                className="mb-4 text-2xl tracking-tight"
+              >
+                <span className="font-light">Nouvelles infos </span>
+                <span className="font-bold">du jour</span>
+              </h2>
+              <ul className="grid gap-4 md:grid-cols-2">
+                {today.data.items.map((article) => (
+                  <li key={article.id}>
+                    <ArticleCard
+                      article={article}
+                      saved={savedByArticle.has(article.id)}
+                      onToggleSave={() => toggleSave.mutate(article)}
+                      onDelete={canManage ? () => remove.mutate(article) : undefined}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           <div className="relative mb-6 max-w-md">
             <Search
               size={16}
@@ -193,7 +251,14 @@ export default function NewsPage() {
           </div>
           {news.isLoading && <Spinner />}
           {news.isError && <p role="alert">Impossible de charger les actualités.</p>}
-          {news.data?.items.length === 0 && <EmptyState icon={Newspaper} title="Aucun article" />}
+          {syncing && (
+            <div className="mb-4 flex items-center gap-3 text-sm text-slate-600">
+              <Spinner /> Synchronisation des actualités en cours…
+            </div>
+          )}
+          {news.data?.items.length === 0 && !syncing && (
+            <EmptyState icon={Newspaper} title="Aucun article" />
+          )}
           <ul className="grid gap-4 md:grid-cols-2">
             {news.data?.items.map((article) => (
               <li key={article.id}>

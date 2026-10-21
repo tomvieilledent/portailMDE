@@ -17,6 +17,7 @@ from app.schemas.event import (
 )
 from app.services import events as service
 from app.services import invitations
+from app.services.agenda_pdf import build_agenda_pdf
 
 router = APIRouter(tags=["events"])
 
@@ -39,6 +40,19 @@ def export_events(
         service.export_ics(events),
         media_type="text/calendar",
         headers={"Content-Disposition": 'attachment; filename="agenda.ics"'},
+    )
+
+
+@router.get("/events/export.pdf")
+def export_events_pdf(
+    session: SessionDep, current: CurrentUser, start: date | None = None, end: date | None = None
+):
+    """Exporte les événements visibles en affiche PDF prête à imprimer ou à afficher."""
+    events = service.list_events(session, current, start=start, end=end)
+    return Response(
+        build_agenda_pdf(events, start, end),
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="agenda.pdf"'},
     )
 
 

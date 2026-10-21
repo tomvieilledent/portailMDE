@@ -14,6 +14,7 @@ from app.models import Company, Message, Notification, User
 from app.models.enums import UserRole
 from app.services import storage
 from app.services.mailer import send_later
+from app.services.search import contains
 
 
 def get_user(session: Session, user_id: uuid.UUID) -> User:
@@ -38,12 +39,11 @@ def list_users(
     """Liste les utilisateurs avec recherche par email ou nom."""
     query = select(User).where(User.deleted_at.is_(None))
     if search:
-        pattern = f"%{search.strip()}%"
         query = query.where(
             or_(
-                User.email.ilike(pattern),
-                User.first_name.ilike(pattern),
-                User.last_name.ilike(pattern),
+                contains(User.email, search),
+                contains(User.first_name, search),
+                contains(User.last_name, search),
             )
         )
     total = session.scalar(select(func.count()).select_from(query.subquery())) or 0

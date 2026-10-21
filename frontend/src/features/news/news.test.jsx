@@ -39,9 +39,13 @@ let saved
 /** Affiche le composant avec les fournisseurs nécessaires. */
 function setup(ui, user = member, extra = {}) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
-  api.get.mockImplementation(async (url) => {
+  api.get.mockImplementation(async (url, params) => {
     if (url === '/users/me') return user
-    if (url === '/news') return { items: [article], total: 1, limit: 20, offset: 0 }
+    if (url === '/news') {
+      // `since` = rubrique « infos du jour » : vide par défaut, remplie via `extra.today`
+      const items = params?.since ? (extra.today ?? []) : [article]
+      return { items, total: items.length, limit: 20, offset: 0 }
+    }
     if (url === '/news/saved') return saved
     if (url === '/notifications/unread-count') return { count: extra.unread ?? 0 }
     if (url === '/notifications') return extra.notifications ?? []
@@ -200,5 +204,20 @@ describe('cloche de notifications', () => {
     expect(await screen.findByRole('dialog', { name: 'Notifications' })).toBeInTheDocument()
     await userEvent.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})
+
+/** Rubrique « Nouvelles infos du jour ». */
+describe('nouvelles infos du jour', () => {
+  it("n'affiche pas la rubrique sans actualité du jour", async () => {
+    setup(<NewsPage />)
+    await screen.findByText('Nouvelle TVA')
+    expect(screen.queryByRole('heading', { name: /infos du jour/i })).not.toBeInTheDocument()
+  })
+
+  it('affiche la rubrique en tête quand il y a une actualité du jour', async () => {
+    setup(<NewsPage />, member, { today: [{ ...article, id: 'a2', title: 'Info fraîche' }] })
+    expect(await screen.findByText('Info fraîche')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: /infos du jour/i })).toBeInTheDocument()
   })
 })

@@ -144,3 +144,67 @@ def test_landing_content_public_with_default_and_edit(client, make_user, login):
     )
     assert edited.status_code == 200
     assert client.get(f"{API}/content/landing").json()["value"] == {"slogan": "Nouveau"}
+
+
+def test_since_filter_keeps_only_todays_news(client, make_user, login, session):
+    """Le paramètre `since` ne garde que les articles récents (rubrique « infos du jour »)."""
+    make_user("m@x.fr")
+    now = datetime.now(UTC)
+    session.add_all(
+        [
+            NewsArticle(title="Frais", published_at=now - timedelta(hours=2)),
+            NewsArticle(title="Ancien", published_at=now - timedelta(days=5)),
+        ]
+    )
+    session.commit()
+    since = (now - timedelta(hours=24)).isoformat()
+    found = client.get(f"{API}/news", headers=login("m@x.fr"), params={"since": since}).json()
+    assert [a["title"] for a in found["items"]] == ["Frais"]
+
+
+def test_empty_news_triggers_background_sync(client, make_user, login, monkeypatch):
+    """Une base vide lance toute seule la synchronisation ; pas si un article existe déjà."""
+    make_user("m@x.fr")
+    calls = []
+    monkeypatch.setattr(service, "sync_in_background", lambda: calls.append(1))
+    monkeypatch.setenv("NEWS_SYNC_ENABLED", "true")
+    from app.core.config import get_settings
+
+    get_settings.cache_clear()
+    client.get(f"{API}/news", headers=login("m@x.fr"))
+    assert calls == [1]
+    get_settings.cache_clear()
+
+
+def test_customs_feed_keeps_only_regulation(session):
+    """Les Douanes ne remontent que de la réglementation, pas les faits divers."""
+    rss = """<?xml version="1.0"?><rss version="2.0"><channel><title>t</title>
+<item><title>Saisie de 40 kg de cocaïne à Roissy</title><link>https://d.fr/1</link>
+<description>Les douaniers ont saisi une cargaison.</description></item>
+<item><title>Nouvelle procédure de dédouanement à l'import</title><link>https://d.fr/2</link>
+<description>Un décret modifie les formalités déclaratives.</description></item>
+<item><title>Journée portes ouvertes</title><link>https://d.fr/3</link>
+<description>Venez découvrir nos métiers.</description></item>
+</channel></rss>"""
+    sources = [
+        {"name": "Douanes", "category": "réglementation", "url": "u", "regulatory_only": True}
+    ]
+    assert service.sync_all(session, fetch=lambda _: rss, sources=sources) == 1
+    assert [a.title for a in session.query(NewsArticle).all()] == [
+        "Nouvelle procédure de dédouanement à l'import"
+    ]
+
+
+def test_list_is_limited_to_the_last_month(client, make_user, login, session):
+    """Les actualités de plus d'un mois glissant ne sont pas listées."""
+    make_user("m@x.fr")
+    now = datetime.now(UTC)
+    session.add_all(
+        [
+            NewsArticle(title="Récent", published_at=now - timedelta(days=10)),
+            NewsArticle(title="Trop vieux", published_at=now - timedelta(days=45)),
+        ]
+    )
+    session.commit()
+    found = client.get(f"{API}/news", headers=login("m@x.fr")).json()
+    assert [a["title"] for a in found["items"]] == ["Récent"]

@@ -130,7 +130,11 @@ describe('messagerie', () => {
     renderAt('/messagerie/c1')
     await screen.findByText('Bonjour')
     const thread = within(screen.getByRole('region', { name: 'Discussion' }))
-    const order = thread.getAllByRole('listitem').map((li) => li.textContent)
+    const separator = /^(Aujourd'hui|Hier|[\p{L}]+ \d+ [\p{L}]+)$/u // séparateurs de jours
+    const order = thread
+      .getAllByRole('listitem')
+      .map((li) => li.textContent)
+      .filter((text) => !separator.test(text))
     expect(order[0]).toContain('Bonjour')
     expect(order[1]).toContain('Salut !')
     await waitFor(() => expect(api.post).toHaveBeenCalledWith('/conversations/c1/read'))

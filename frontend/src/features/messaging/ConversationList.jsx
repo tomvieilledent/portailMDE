@@ -11,8 +11,8 @@ import { conversationTitle, formatTime, previewText } from './helpers'
 export default function ConversationList({ conversations, loading, meId, onNew }) {
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-slate-200 p-4 dark:border-slate-800">
-        <h1 className="text-lg font-semibold">Messagerie</h1>
+      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+        <h1 className="text-xl font-semibold">Messagerie</h1>
         <Button size="sm" onClick={onNew}>
           <Plus size={16} aria-hidden="true" /> Nouveau
         </Button>
@@ -34,8 +34,9 @@ export default function ConversationList({ conversations, loading, meId, onNew }
                 to={`/messagerie/${conversation.id}`}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 border-b border-slate-100 p-4 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50',
-                    isActive && 'bg-brand-50 dark:bg-slate-800',
+                    'relative flex items-center gap-3 border-b border-slate-100 px-4 py-3 hover:bg-slate-50',
+                    isActive &&
+                      'bg-brand-50 before:absolute before:inset-y-0 before:left-0 before:w-[3px] before:bg-[#7ec843]',
                   )
                 }
               >
@@ -52,14 +53,28 @@ export default function ConversationList({ conversations, loading, meId, onNew }
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-2">
-                    <p className="truncate font-medium">{conversationTitle(conversation, meId)}</p>
+                    <p
+                      className={cn(
+                        'truncate',
+                        conversation.unread_count > 0 ? 'font-bold' : 'font-medium',
+                      )}
+                    >
+                      {conversationTitle(conversation, meId)}
+                    </p>
                     {conversation.last_message && (
                       <time className="shrink-0 text-xs text-slate-500">
                         {formatTime(conversation.last_message.created_at)}
                       </time>
                     )}
                   </div>
-                  <p className="truncate text-sm text-slate-500">
+                  <p
+                    className={cn(
+                      'truncate text-sm',
+                      conversation.unread_count > 0
+                        ? 'font-medium text-slate-800'
+                        : 'text-slate-500',
+                    )}
+                  >
                     {previewText(conversation.last_message)}
                   </p>
                 </div>

@@ -1,10 +1,11 @@
 /** Modale de création ou de modification d'une formation. */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { Button, Input, Modal, Select, Textarea, useToast } from '../../components/ui'
+import { Button, ImageUpload, Input, Modal, Select, Textarea, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
+import { uploadUrl } from '../../lib/uploads'
 import { TRAINING_KINDS } from './queries'
 
 /** Création / modification d'une formation (réservé à `manage_trainings`). */
@@ -16,16 +17,29 @@ export default function TrainingFormModal({ training, onClose }) {
     description: training?.description ?? '',
     category: training?.category ?? '',
     kind: training?.kind ?? 'formation',
+    link: training?.link ?? '',
   })
+  const [picture, setPicture] = useState(null) // plaquette choisie, téléversée à l'enregistrement
+  const preview = useMemo(() => (picture ? URL.createObjectURL(picture) : null), [picture])
+  useEffect(() => () => preview && URL.revokeObjectURL(preview), [preview])
   const save = useMutation({
-    mutationFn: () => {
+    mutationFn: async () => {
       const body = {
         title: values.title.trim(),
         description: values.description.trim() || null,
         category: values.category.trim() || null,
         kind: values.kind,
+        link: values.link.trim() || null,
       }
-      return training ? api.patch(`/trainings/${training.id}`, body) : api.post('/trainings', body)
+      const saved = await (training
+        ? api.patch(`/trainings/${training.id}`, body)
+        : api.post('/trainings', body))
+      if (picture) {
+        const form = new FormData()
+        form.append('file', picture)
+        await api.put(`/trainings/${saved.id}/picture`, form)
+      }
+      return saved
     },
     onSuccess: () => {
       toast.success(training ? 'Formation modifiée.' : 'Formation créée.')
@@ -59,7 +73,27 @@ export default function TrainingFormModal({ training, onClose }) {
           </Select>
           <Input label="Catégorie" maxLength={100} {...bind('category')} />
         </div>
-        <Textarea label="Description" {...bind('description')} />
+        <Textarea label="Description détaillée" rows={8} {...bind('description')} />
+        <Input
+          label="Lien (page de la formation, inscription…)"
+          type="url"
+          placeholder="https://"
+          maxLength={512}
+          {...bind('link')}
+        />
+        <ImageUpload
+          label="Image ou plaquette de la formation"
+          preview={
+            preview || training?.picture_path ? (
+              <img
+                src={preview ?? uploadUrl(training.picture_path)}
+                alt=""
+                className="h-16 w-24 rounded-md border border-slate-200 object-cover"
+              />
+            ) : null
+          }
+          onSelect={setPicture}
+        />
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Annuler

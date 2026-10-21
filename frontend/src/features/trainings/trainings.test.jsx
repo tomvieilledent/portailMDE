@@ -32,7 +32,10 @@ const excel = {
   category: 'Bureautique',
   kind: 'formation',
   documents: ['trainings/support.pdf'],
+  link: null,
   is_active: true,
+  upcoming_sessions: 0,
+  interested_count: 0,
 }
 const atelier = {
   ...excel,
@@ -58,6 +61,7 @@ const session = {
 }
 
 let mineData
+let trainingOne = excel
 /** Affiche la page avec l'utilisateur et les sessions donnés. */
 function setup(path, user = member, sessions = [session]) {
   tokens.set({ access_token: 'A', refresh_token: 'R' })
@@ -65,9 +69,12 @@ function setup(path, user = member, sessions = [session]) {
     if (url === '/users/me') return user
     if (url === '/trainings') return { items: [excel, atelier], total: 2 }
     if (url === '/trainings/mine') return mineData
-    if (url === '/trainings/t1') return excel
+    if (url === '/trainings/t1') return trainingOne
     if (url === '/trainings/t1/sessions') return sessions
     if (url === '/training-sessions/s1/enrollments') return []
+    if (url === '/trainings/t1/interested') {
+      return [{ id: 'e1', user: { first_name: 'Ada', last_name: 'Lovelace' } }]
+    }
     throw new Error(`appel inattendu ${url}`)
   })
   return render(
@@ -93,6 +100,7 @@ function setup(path, user = member, sessions = [session]) {
 beforeEach(() => {
   vi.resetAllMocks()
   mineData = []
+  trainingOne = excel
 })
 
 /** Liste, filtres et favoris. */
@@ -133,7 +141,7 @@ describe('catalogue', () => {
   it('ajoute une formation aux favoris', async () => {
     api.put.mockResolvedValue(null)
     setup('/formations')
-    const buttons = await screen.findAllByRole('button', { name: 'Ajouter aux favoris' })
+    const buttons = await screen.findAllByRole('button', { name: "Cette formation m'intéresse" })
     await userEvent.click(buttons[0])
     await waitFor(() => expect(api.put).toHaveBeenCalledWith('/trainings/t1/interest'))
   })
@@ -156,6 +164,7 @@ describe('catalogue', () => {
         description: null,
         category: null,
         kind: 'formation',
+        link: null,
       }),
     )
   })
@@ -237,5 +246,24 @@ describe('fiche formation', () => {
       throw new Error('introuvable')
     })
     expect(await screen.findByText('Formation introuvable')).toBeInTheDocument()
+  })
+})
+
+/** Demandes de formations non programmées. */
+describe('demandes de formation', () => {
+  it('le staff voit les personnes en attente et peut planifier', async () => {
+    trainingOne = { ...excel, interested_count: 1 }
+    setup('/formations/t1', manager, [])
+    expect(await screen.findByText(/1 personne attend cette formation/)).toBeInTheDocument()
+    expect(await screen.findByText('Ada Lovelace')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Planifier une session' })).toBeInTheDocument()
+  })
+
+  it("un membre peut dire que la formation l'intéresse, pas voir les demandes", async () => {
+    setup('/formations/t1', member, [])
+    expect(
+      await screen.findByRole('button', { name: "Cette formation m'intéresse" }),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/attend cette formation/)).not.toBeInTheDocument()
   })
 })

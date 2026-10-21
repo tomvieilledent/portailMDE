@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bell } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 
 import { useToast } from '../../components/ui'
@@ -56,7 +57,9 @@ export default function NotificationsBell() {
     const close = (event) => {
       if (
         event.key === 'Escape' ||
-        (event.type === 'mousedown' && !root.current?.contains(event.target))
+        (event.type === 'mousedown' &&
+          !root.current?.contains(event.target) &&
+          !panel.current?.contains(event.target))
       ) {
         setOpen(false)
       }
@@ -90,7 +93,7 @@ export default function NotificationsBell() {
         aria-controls={open ? panelId : undefined}
         aria-label={unread ? `Notifications (${unread} non lues)` : 'Notifications'}
         aria-expanded={open}
-        className="relative rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="relative rounded-lg p-2 hover:bg-white/20"
       >
         <Bell size={18} />
         {unread > 0 && (
@@ -99,56 +102,58 @@ export default function NotificationsBell() {
           </span>
         )}
       </button>
-      {open && (
-        <div
-          ref={panel}
-          id={panelId}
-          role="dialog"
-          aria-label="Notifications"
-          tabIndex={-1}
-          className="absolute right-0 z-50 mt-2 w-80 max-w-[90vw] rounded-xl border border-slate-200 bg-white shadow-xl focus:outline-none dark:border-slate-700 dark:bg-slate-900"
-        >
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-            <h2 className="text-sm font-semibold">Notifications</h2>
-            {unread > 0 && (
-              <button
-                type="button"
-                onClick={() => readAll.mutate()}
-                className="text-brand-700 dark:text-brand-300 text-xs hover:underline"
-              >
-                Tout marquer comme lu
-              </button>
-            )}
-          </div>
-          <ul className="max-h-96 overflow-y-auto">
-            {list.data?.length === 0 && (
-              <li className="p-4 text-center text-sm text-slate-500">Aucune notification</li>
-            )}
-            {list.data?.map((notification) => (
-              <li key={notification.id}>
+      {open &&
+        createPortal(
+          <div
+            ref={panel}
+            id={panelId}
+            role="dialog"
+            aria-label="Notifications"
+            tabIndex={-1}
+            className="fixed inset-x-3 top-16 z-[60] rounded-xl border border-slate-200 bg-white text-slate-900 shadow-xl focus:outline-none sm:inset-x-auto sm:right-6 sm:w-96 dark:border-slate-700 dark:bg-slate-900"
+          >
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+              <h2 className="text-sm font-semibold">Notifications</h2>
+              {unread > 0 && (
                 <button
                   type="button"
-                  onClick={() => onSelect(notification)}
-                  className={cn(
-                    'block w-full border-b border-slate-100 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800',
-                    !notification.is_read && 'bg-brand-50/60 dark:bg-brand-900/20 font-medium',
-                  )}
+                  onClick={() => readAll.mutate()}
+                  className="text-brand-700 dark:text-brand-300 text-xs hover:underline"
                 >
-                  {notification.content}
-                  <time className="mt-1 block text-xs font-normal text-slate-500">
-                    {new Date(notification.created_at).toLocaleString('fr-FR', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </time>
+                  Tout marquer comme lu
                 </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+              )}
+            </div>
+            <ul className="max-h-96 overflow-y-auto">
+              {list.data?.length === 0 && (
+                <li className="p-4 text-center text-sm text-slate-500">Aucune notification</li>
+              )}
+              {list.data?.map((notification) => (
+                <li key={notification.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(notification)}
+                    className={cn(
+                      'block w-full border-b border-slate-100 px-4 py-3 text-left text-sm hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800',
+                      !notification.is_read && 'bg-brand-50/60 dark:bg-brand-900/20 font-medium',
+                    )}
+                  >
+                    {notification.content}
+                    <time className="mt-1 block text-xs font-normal text-slate-500">
+                      {new Date(notification.created_at).toLocaleString('fr-FR', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>,
+          document.body,
+        )}
     </div>
   )
 }

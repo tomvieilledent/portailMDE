@@ -1,6 +1,6 @@
 # portailMDE
 
-Portail de mise en relation des entreprises d'une pépinière d'entreprises : annuaire (trombinoscope) des personnes et des entreprises, chat, événements, formations, actualités.
+Portail de mise en relation des entreprises de la Maison de l'Économie : annuaire (trombinoscope) des personnes et des entreprises, chat, événements, formations, actualités.
 
 ## Stack
 

@@ -21,11 +21,11 @@ export default function MessagingPage() {
   const current = conversations?.find((c) => c.id === conversationId)
 
   return (
-    <div className="-m-4 grid h-[calc(100vh-3.5rem)] overflow-hidden bg-white sm:-m-6 lg:grid-cols-[22rem_1fr] dark:bg-slate-900">
+    <div className="grid h-full min-h-0 gap-4 lg:grid-cols-[21rem_1fr]">
       <section
         aria-label="Conversations"
         className={cn(
-          'border-r border-slate-200 dark:border-slate-800',
+          'min-h-0 overflow-hidden rounded-md border border-slate-200 bg-white',
           conversationId && 'hidden lg:block',
         )}
       >
@@ -44,7 +44,10 @@ export default function MessagingPage() {
 
       <section
         aria-label="Discussion"
-        className={cn('min-h-0', !conversationId && 'hidden lg:block')}
+        className={cn(
+          'min-h-0 overflow-hidden rounded-md border border-slate-200 bg-white',
+          !conversationId && 'hidden lg:block',
+        )}
       >
         {current ? (
           <MessageThread key={current.id} conversation={current} meId={user.id} />

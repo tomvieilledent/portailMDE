@@ -5,7 +5,8 @@ import { expect, test } from '@playwright/test'
 import { login } from './helpers'
 
 /** Zone de discussion de la page. */
-const thread = (page) => page.getByRole('region', { name: 'Discussion' })
+const thread = (page) =>
+  page.getByRole('region', { name: 'Discussion' }).getByRole('log', { name: 'Messages' })
 
 /** Deux utilisateurs échangent des messages reçus en direct, sans rechargement. */
 test('deux utilisateurs discutent en temps réel', async ({ browser }) => {
@@ -16,10 +17,11 @@ test('deux utilisateurs discutent en temps réel', async ({ browser }) => {
   await login(lea, 'lea@demo.fr')
   await login(hugo, 'hugo@demo.fr')
 
-  // Léa ouvre une conversation directe depuis la fiche de Hugo
+  // Léa ouvre une conversation directe depuis la carte de visite de Hugo
+  await lea.getByRole('link', { name: 'Annuaire' }).first().click()
   await lea.getByLabel('Rechercher').fill('Hugo')
-  await lea.getByRole('button', { name: 'Voir la fiche de Hugo Bernard' }).click()
-  await lea.getByRole('button', { name: /Envoyer un message/ }).click()
+  await lea.getByRole('button', { name: /Hugo Bernard : voir la carte de visite/ }).click()
+  await lea.getByRole('button', { name: /Écrire un message à Hugo Bernard/ }).click()
   await expect(lea).toHaveURL(/\/messagerie\/.+/)
 
   // Hugo ouvre la messagerie : la conversation apparaît puis les messages arrivent en direct

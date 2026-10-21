@@ -198,3 +198,44 @@ def test_picture_and_document_upload(client, manager):
         f"{url}/documents", headers=manager, files={"file": ("a.pdf", io.BytesIO(b"%PDF"))}
     )
     assert len(doc.json()["documents"]) == 1
+
+
+def test_training_link_and_validation(client, manager):
+    """Une formation accepte un lien http(s) valide et refuse les autres."""
+    ok = client.post(
+        f"{API}/trainings",
+        headers=manager,
+        json={"title": "Pitch", "link": "https://example.org/pitch", "description": "x" * 5000},
+    )
+    assert ok.status_code == 201
+    assert ok.json()["link"] == "https://example.org/pitch"
+    bad = client.post(
+        f"{API}/trainings", headers=manager, json={"title": "Pitch", "link": "javascript:alert(1)"}
+    )
+    assert bad.status_code == 422
+
+
+def test_planning_a_session_notifies_and_clears_requests(client, make_user, login, manager):
+    """Planifier une session prévient les intéressés et retire leur demande."""
+    make_user("a@x.fr")
+    make_user("b@x.fr")
+    training = new_training(client, manager)
+    for who in ("a@x.fr", "b@x.fr"):
+        assert (
+            client.put(f"{API}/trainings/{training['id']}/interest", headers=login(who)).status_code
+            == 204
+        )
+    listed = client.get(f"{API}/trainings", headers=manager).json()["items"][0]
+    assert listed["interested_count"] == 2
+    assert listed["upcoming_sessions"] == 0
+    member_view = client.get(f"{API}/trainings", headers=login("a@x.fr")).json()["items"][0]
+    assert member_view["interested_count"] == 0  # réservé aux gestionnaires
+
+    assert new_session(client, manager, training).status_code == 201
+
+    after = client.get(f"{API}/trainings", headers=manager).json()["items"][0]
+    assert after["interested_count"] == 0
+    assert client.get(f"{API}/trainings/mine", headers=login("a@x.fr")).json() == []
+    notes = client.get(f"{API}/notifications", headers=login("a@x.fr")).json()
+    assert [n["kind"] for n in notes] == ["training"]
+    assert notes[0]["data"]["training_id"] == training["id"]

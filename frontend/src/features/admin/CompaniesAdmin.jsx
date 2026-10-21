@@ -95,7 +95,7 @@ function CompanyFormModal({ company, onClose }) {
           onSelect={company ? logo.mutate : setLogoFile}
           preview={
             logoPreview ? (
-              <img src={logoPreview} alt="" className="h-14 w-14 rounded-lg object-contain" />
+              <img src={logoPreview} alt="" className="h-14 w-14 rounded-full object-cover" />
             ) : (
               <CompanyLogo company={company ?? {}} />
             )

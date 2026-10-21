@@ -1,7 +1,6 @@
 /** Fiche d'une entreprise de l'annuaire. */
 
 import { ArrowLeft, Globe, MapPin } from 'lucide-react'
-import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import PageHeader from '../../components/layout/PageHeader'
@@ -9,7 +8,6 @@ import { Badge, Card, EmptyState, Spinner } from '../../components/ui'
 import { safeHref } from '../../lib/safeUrl'
 import { CompanyLogo } from './CompaniesPage'
 import PersonCard from './PersonCard'
-import PersonModal from './PersonModal'
 import { COMPANY_KINDS } from './labels'
 import { useCompany, useCompanyMembers } from './queries'
 
@@ -18,7 +16,6 @@ export default function CompanyPage() {
   const { companyId } = useParams()
   const company = useCompany(companyId)
   const members = useCompanyMembers(companyId)
-  const [selected, setSelected] = useState(null)
 
   if (company.isLoading) return <Spinner />
   if (company.isError) {
@@ -67,14 +64,10 @@ export default function CompanyPage() {
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {members.data?.map((member) => (
           <li key={member.id}>
-            <PersonCard
-              person={{ ...member, company: { id: c.id, name: c.name } }}
-              onSelect={setSelected}
-            />
+            <PersonCard person={{ ...member, company: { id: c.id, name: c.name } }} />
           </li>
         ))}
       </ul>
-      {selected && <PersonModal person={selected} onClose={() => setSelected(null)} />}
     </>
   )
 }

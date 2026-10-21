@@ -23,7 +23,7 @@ DEFAULT_LANDING = {
             "highlight": "De l'idée à la création d'entreprise, étape par étape",
         },
         {
-            "title": "Pépinière d'entreprises",
+            "title": "Hébergement d'entreprises",
             "duration": "48 mois",
             "description": (
                 "Héberge les jeunes entreprises. Bureaux privatifs ou open-space, "
@@ -36,7 +36,7 @@ DEFAULT_LANDING = {
             "title": "Hôtel d'entreprises",
             "duration": "Jusqu'à 12 mois",
             "description": (
-                "Réservé aux entreprises en fin de parcours pépinière ou à l'accueil temporaire "
+                "Réservé aux entreprises en fin de parcours d'hébergement ou à l'accueil temporaire "
                 "d'entreprises exogènes. Bureaux fonctionnels et privatifs, services mutualisés, "
                 "hébergement simple sans accompagnement."
             ),

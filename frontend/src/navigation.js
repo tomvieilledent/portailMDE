@@ -1,31 +1,36 @@
-/** Définition du menu principal. */
+/** Définition du menu principal, organisé en rubriques. */
 
-import {
-  Briefcase,
-  Building2,
-  CalendarDays,
-  GraduationCap,
-  MessageSquare,
-  Newspaper,
-  Settings,
-  Store,
-  Users,
-} from 'lucide-react'
+/** Rubriques du menu, dans l'ordre d'affichage. */
+export const NAV_GROUPS = {
+  main: null,
+  community: 'Communauté',
+  life: 'Vie de la Maison',
+  manage: 'Gestion',
+}
 
-/** Entrées du menu principal. `staffOnly` : réservé au staff et au super admin ; `needsCompany` : membres rattachés à une entreprise ; `companyAdminOnly` : administrateurs de leur entreprise. */
+/**
+ * Entrées du menu principal. `group` : rubrique (cf. `NAV_GROUPS`) ; `staffOnly` : réservé au
+ * staff et au super admin ; `needsCompany` : membres rattachés à une entreprise ;
+ * `companyAdminOnly` : administrateurs de leur entreprise.
+ */
 export const navItems = [
-  { to: '/mon-entreprise', label: 'Mon entreprise', icon: Store, needsCompany: true },
-  { to: '/annuaire', label: 'Annuaire', icon: Users },
-  { to: '/entreprises', label: 'Entreprises', icon: Building2 },
-  { to: '/messagerie', label: 'Messagerie', icon: MessageSquare },
-  { to: '/agenda', label: 'Agenda', icon: CalendarDays },
-  { to: '/formations', label: 'Formations', icon: GraduationCap },
-  { to: '/actualites', label: 'Actualités', icon: Newspaper },
+  { to: '/accueil', label: 'Accueil', group: 'main' },
+  { to: '/annuaire', label: 'Annuaire', group: 'community' },
+  { to: '/entreprises', label: 'Entreprises', group: 'community' },
+  { to: '/messagerie', label: 'Messagerie', group: 'community' },
+  { to: '/formations', label: 'Formations', group: 'life' },
+  { to: '/agenda', label: 'Agenda', group: 'life' },
+  { to: '/actualites', label: 'Actualités', group: 'life' },
   {
     to: '/mon-entreprise/administration',
-    label: "Administration de l'entreprise",
-    icon: Settings,
+    label: 'Administrer mon entreprise',
+    group: 'manage',
     companyAdminOnly: true,
   },
-  { to: '/administration', label: 'Administration', icon: Briefcase, staffOnly: true },
+  {
+    to: '/administration',
+    label: 'Administration',
+    group: 'manage',
+    staffOnly: true,
+  },
 ]

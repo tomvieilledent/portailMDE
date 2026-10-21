@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const destination = location.state?.from?.pathname ?? '/annuaire'
+  const destination = location.state?.from?.pathname ?? '/accueil'
   if (user) return <Navigate to={destination} replace />
 
   async function onSubmit(event) {

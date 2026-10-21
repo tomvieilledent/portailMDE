@@ -20,7 +20,7 @@ export default function ChangePasswordPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  if (!user?.must_change_password) return <Navigate to="/annuaire" replace />
+  if (!user?.must_change_password) return <Navigate to="/accueil" replace />
 
   async function onSubmit(event) {
     event.preventDefault()
@@ -38,7 +38,7 @@ export default function ChangePasswordPage() {
       if (pair?.access_token) tokens.set(pair)
       setUser({ ...user, must_change_password: false })
       toast.success('Mot de passe modifié.')
-      navigate('/annuaire', { replace: true })
+      navigate('/accueil', { replace: true })
     } catch (err) {
       setError(
         err.status === 400 ? 'Mot de passe temporaire incorrect.' : 'Modification impossible.',
