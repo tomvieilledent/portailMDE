@@ -37,7 +37,7 @@ export default function HomePage() {
         </div>
         <Link
           to="/connexion"
-          className="border border-white/50 px-5 py-2 text-sm font-semibold transition hover:bg-white hover:text-[#4a7a1a]"
+          className="bg-[#7ec843] px-6 py-2.5 text-sm font-bold text-white transition hover:bg-[#5da020]"
         >
           Se connecter
         </Link>
@@ -57,17 +57,10 @@ export default function HomePage() {
               {content.subtitle}
             </p>
           )}
-          <Link
-            to="/connexion"
-            className="mt-7 inline-flex w-fit items-center gap-3 bg-[#7ec843] px-7 py-3.5 font-semibold text-white transition hover:bg-[#5da020]"
-          >
-            Accéder au portail
-            <span aria-hidden="true">→</span>
-          </Link>
           <a
             href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
             aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
-            className="mt-6 flex w-fit flex-col gap-1 border-l-4 border-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 sm:flex-row sm:items-baseline sm:gap-3"
+            className="mt-7 flex w-fit flex-col gap-1 border-l-4 border-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 sm:flex-row sm:items-baseline sm:gap-3"
           >
             <span className="text-base text-white/85">Pour plus de renseignements, appelez le</span>
             <strong className="text-2xl font-bold tracking-wide text-[#7ec843]">
