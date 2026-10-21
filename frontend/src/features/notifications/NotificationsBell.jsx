@@ -90,7 +90,7 @@ export default function NotificationsBell() {
         aria-controls={open ? panelId : undefined}
         aria-label={unread ? `Notifications (${unread} non lues)` : 'Notifications'}
         aria-expanded={open}
-        className="relative rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="relative rounded-lg p-2 hover:bg-white/20"
       >
         <Bell size={18} />
         {unread > 0 && (

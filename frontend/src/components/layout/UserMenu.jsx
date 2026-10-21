@@ -14,7 +14,7 @@ export default function UserMenu() {
       <Link
         to="/profil"
         aria-label="Mon profil"
-        className="flex items-center gap-2 rounded-lg p-1 hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="flex items-center gap-2 rounded-lg p-1 hover:bg-white/20"
       >
         <Avatar
           src={uploadUrl(user.avatar_path)}
@@ -30,7 +30,7 @@ export default function UserMenu() {
         type="button"
         onClick={logout}
         aria-label="Se déconnecter"
-        className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800"
+        className="rounded-lg p-2 hover:bg-white/20"
       >
         <LogOut size={18} />
       </button>
