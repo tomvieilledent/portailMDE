@@ -18,3 +18,4 @@ Non corrigé : pagination applicative de list_conversations et obligation start/
 - [mineur] frontend/src/features/trainings/TrainingsPage.jsx:127 et frontend/src/features/directory/CompaniesPage.jsx:17 — images de listes sans `loading="lazy"`/`decoding="async"` → ajouter l'attribut (idem TrainingPage.jsx:176, PersonModal.jsx:65, ProfilePage.jsx:114)
 - [mineur] backend/app/services/chat.py:195 — le plafond de 200 est appliqué après chargement et tri de toutes les conversations en Python → trier/limiter en SQL (ou pagination) si le volume grandit
 Corrigé depuis le tour précédent : gzip nginx, cache /uploads et /assets, lazy loading des routes (React.lazy + Suspense), list_conversations en requêtes agrégées (N+1 supprimé), list_events plafonné à 1000, lazy sur Avatar, dédoublonnage RSS en une requête IN.
+Corrections appliquées : lazy/async sur les 5 images, tri et plafond des conversations en SQL.
