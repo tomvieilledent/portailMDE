@@ -169,14 +169,13 @@ describe('utilisateurs', () => {
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith(
         '/users',
-        expect.objectContaining({
-          email: 'new@x.fr',
-          role: 'member',
-          permissions: [],
-          company_id: null,
-        }),
+        expect.objectContaining({ email: 'new@x.fr', password: 'temporaire1' }),
       ),
     )
+    // Pas de choix d'entreprise ni de rôle à la création d'un compte.
+    const sent = api.post.mock.calls.find(([url]) => url === '/users')[1]
+    expect(sent).not.toHaveProperty('company_id')
+    expect(sent).not.toHaveProperty('role')
   })
 })
 

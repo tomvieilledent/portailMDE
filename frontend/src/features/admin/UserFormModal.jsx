@@ -1,16 +1,14 @@
 /** Modale de création d'un compte utilisateur. */
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 
-import { useAuth } from '../../auth/AuthProvider'
-import { isSuperAdmin } from '../../auth/permissions'
-import { Button, Input, Modal, Select, useToast } from '../../components/ui'
+import { Button, Input, Modal, useToast } from '../../components/ui'
 import { api } from '../../lib/api'
-import { PERMISSION_LABELS, ROLES } from './labels'
+import { PERMISSION_LABELS } from './labels'
 
-/** Cases à cocher des droits du staff. */
-function PermissionCheckboxes({ value, onChange }) {
+/** Cases à cocher des droits du staff (réutilisées par la modale de rôle). */
+export function PermissionCheckboxes({ value, onChange }) {
   return (
     <fieldset className="space-y-1">
       <legend className="mb-1 text-sm font-medium">Droits du staff</legend>
@@ -30,25 +28,19 @@ function PermissionCheckboxes({ value, onChange }) {
   )
 }
 
-/** Création d'un compte (le staff choisit l'entreprise ; seul le super admin attribue un rôle). */
+/**
+ * Création d'un compte : identité, email et mot de passe temporaire. Le compte est un simple
+ * membre sans entreprise ; il est rattaché à une entreprise lors de la création de celle-ci
+ * (propriétaire) ou par l'administrateur de l'entreprise.
+ */
 export default function UserFormModal({ onClose }) {
-  const { user } = useAuth()
   const toast = useToast()
   const queryClient = useQueryClient()
-  const superAdmin = isSuperAdmin(user)
   const [values, setValues] = useState({
     email: '',
     password: '',
     first_name: '',
     last_name: '',
-    company_id: '',
-    role: 'member',
-    is_company_admin: false,
-    permissions: [],
-  })
-  const companies = useQuery({
-    queryKey: ['companies', 'options'],
-    queryFn: () => api.get('/companies', { limit: 200 }),
   })
 
   const create = useMutation({
@@ -58,13 +50,9 @@ export default function UserFormModal({ onClose }) {
         password: values.password,
         first_name: values.first_name.trim() || null,
         last_name: values.last_name.trim() || null,
-        company_id: values.company_id || null,
-        role: values.role,
-        is_company_admin: values.is_company_admin,
-        permissions: values.role === 'staff' ? values.permissions : [],
       }),
     onSuccess: () => {
-      toast.success('Compte créé : un email de bienvenue a été envoyé.')
+      toast.success('Compte créé : le mot de passe temporaire a été envoyé par email.')
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
       onClose()
     },
@@ -94,42 +82,9 @@ export default function UserFormModal({ onClose }) {
           label="Mot de passe temporaire"
           required
           minLength={8}
-          hint="8 caractères minimum, à communiquer à la personne."
+          hint="8 caractères minimum. Envoyé par email ; à changer à la première connexion."
           {...bind('password')}
         />
-        <Select label="Entreprise" {...bind('company_id')}>
-          <option value="">Aucune</option>
-          {companies.data?.items.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Select>
-        {values.company_id && (
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={values.is_company_admin}
-              onChange={(e) => setValues((v) => ({ ...v, is_company_admin: e.target.checked }))}
-            />
-            Administrateur de son entreprise
-          </label>
-        )}
-        {superAdmin && (
-          <Select label="Rôle" {...bind('role')}>
-            {Object.entries(ROLES).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </Select>
-        )}
-        {values.role === 'staff' && (
-          <PermissionCheckboxes
-            value={values.permissions}
-            onChange={(permissions) => setValues((v) => ({ ...v, permissions }))}
-          />
-        )}
         <div className="flex justify-end gap-2">
           <Button variant="secondary" onClick={onClose}>
             Annuler
@@ -142,5 +97,3 @@ export default function UserFormModal({ onClose }) {
     </Modal>
   )
 }
-
-export { PermissionCheckboxes }
