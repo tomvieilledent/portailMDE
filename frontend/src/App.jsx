@@ -10,6 +10,7 @@ import MyCompanyPage from './features/company/MyCompanyPage'
 import ProfilePage from './features/profile/ProfilePage'
 import CompaniesPage from './features/directory/CompaniesPage'
 import CompanyPage from './features/directory/CompanyPage'
+import AgendaPage from './features/agenda/AgendaPage'
 import MessagingPage from './features/messaging/MessagingPage'
 import PeoplePage from './features/directory/PeoplePage'
 import ComingSoonPage from './pages/ComingSoonPage'
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/annuaire" element={<PeoplePage />} />
           <Route path="/messagerie" element={<MessagingPage />} />
           <Route path="/messagerie/:conversationId" element={<MessagingPage />} />
+          <Route path="/agenda" element={<AgendaPage />} />
           <Route path="/profil" element={<ProfilePage />} />
           <Route path="/mon-entreprise" element={<MyCompanyPage />} />
           <Route path="/entreprises" element={<CompaniesPage />} />
@@ -55,7 +57,13 @@ export default function App() {
             .filter(
               (item) =>
                 !item.staffOnly &&
-                !['/annuaire', '/entreprises', '/mon-entreprise', '/messagerie'].includes(item.to),
+                ![
+                  '/annuaire',
+                  '/entreprises',
+                  '/mon-entreprise',
+                  '/messagerie',
+                  '/agenda',
+                ].includes(item.to),
             )
             .map(({ to, label }) => (
               <Route key={to} path={to} element={<ComingSoonPage title={label} />} />

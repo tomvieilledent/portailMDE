@@ -6,12 +6,14 @@ import { Link } from 'react-router-dom'
 import { Avatar, Button, Spinner, uploadUrl, useToast } from '../../components/ui'
 import { cn } from '../../lib/cn'
 import { api } from '../../lib/api'
+import { downloadFile } from '../../lib/download'
 import { useRealtime } from '../../realtime/useRealtime'
 import GroupSettingsModal from './GroupSettingsModal'
 import { conversationTitle, formatTime } from './helpers'
 import { useMessages } from './queries'
 
 function Bubble({ message, mine, onDelete }) {
+  const toast = useToast()
   return (
     <li className={cn('flex gap-2', mine && 'flex-row-reverse')}>
       {!mine && (
@@ -39,19 +41,12 @@ function Bubble({ message, mine, onDelete }) {
         {message.file_url && (
           <a
             href={message.file_url}
-            onClick={async (event) => {
-              // Le fichier exige l'en-tête Authorization : on le télécharge via fetch.
+            onClick={(event) => {
+              // Le fichier exige l'en-tête Authorization : téléchargement via fetch.
               event.preventDefault()
-              const { tokens } = await import('../../lib/tokens')
-              const response = await fetch(message.file_url, {
-                headers: { Authorization: `Bearer ${tokens.access}` },
-              })
-              const url = URL.createObjectURL(await response.blob())
-              const link = document.createElement('a')
-              link.href = url
-              link.download = message.file_name
-              link.click()
-              URL.revokeObjectURL(url)
+              downloadFile(message.file_url, message.file_name).catch(() =>
+                toast.error('Téléchargement impossible.'),
+              )
             }}
             className="mt-1 inline-flex items-center gap-1 underline"
           >
