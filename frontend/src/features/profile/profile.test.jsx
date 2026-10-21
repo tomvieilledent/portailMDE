@@ -141,6 +141,19 @@ describe('profil', () => {
     )
   })
 
+  it("affiche l'entreprise de rattachement", async () => {
+    renderAt('/profil', { ...me, company_id: 'c1' })
+    expect(await screen.findByRole('link', { name: 'Acme' })).toHaveAttribute(
+      'href',
+      '/entreprises/c1',
+    )
+  })
+
+  it("indique l'absence d'entreprise", async () => {
+    renderAt('/profil')
+    expect(await screen.findByText('Aucune entreprise rattachée.')).toBeInTheDocument()
+  })
+
   it('signale un mot de passe actuel incorrect', async () => {
     renderAt('/profil')
     api.post.mockRejectedValue(new ApiError(400, 'BAD_REQUEST', 'x'))

@@ -88,7 +88,9 @@ beforeEach(() => {
 describe('annuaire des personnes', () => {
   it('liste les personnes et ouvre la fiche', async () => {
     renderAt('/annuaire')
-    await userEvent.click(await screen.findByText('Ada Lovelace'))
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Voir la fiche de Ada Lovelace/ }),
+    )
     const dialog = await screen.findByRole('dialog', { name: 'Ada Lovelace' })
     expect(dialog).toHaveTextContent('ada@x.fr')
     expect(screen.getByRole('link', { name: 'Acme' })).toHaveAttribute('href', '/entreprises/c1')
@@ -106,10 +108,27 @@ describe('annuaire des personnes', () => {
     )
   })
 
+  it("affiche une pastille avec l'initiale ou le logo de l'entreprise", async () => {
+    renderAt('/annuaire')
+    await screen.findByRole('button', { name: /voir la carte de visite/ })
+    expect(document.querySelector('[aria-hidden="true"].rounded-full')).toHaveTextContent('A')
+  })
+
+  it('retourne la tuile sur une carte de visite générée et exportable', async () => {
+    renderAt('/annuaire')
+    await userEvent.click(await screen.findByRole('button', { name: /voir la carte de visite/ }))
+    expect(await screen.findByRole('button', { name: /vCard/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /PNG/ })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: /Retour/ }))
+    expect(screen.getByRole('button', { name: /voir la carte de visite/ })).toBeInTheDocument()
+  })
+
   it('démarre une conversation directe', async () => {
     api.post.mockResolvedValue({ id: 'conv1' })
     renderAt('/annuaire')
-    await userEvent.click(await screen.findByText('Ada Lovelace'))
+    await userEvent.click(
+      await screen.findByRole('button', { name: /Voir la fiche de Ada Lovelace/ }),
+    )
     await userEvent.click(await screen.findByRole('button', { name: /envoyer un message/i }))
     expect(api.post).toHaveBeenCalledWith('/conversations', { kind: 'direct', user_id: 'p1' })
     expect(await screen.findByText('messagerie ouverte')).toBeInTheDocument()

@@ -16,7 +16,7 @@ test.describe('annuaire', () => {
     await page.getByLabel('Rechercher').fill('Karim')
     await expect(page.getByText('Karim Roux')).toBeVisible()
     await expect(page.getByText('Hugo Bernard')).toHaveCount(0)
-    await page.getByText('Karim Roux').click()
+    await page.getByRole('button', { name: 'Voir la fiche de Karim Roux' }).click()
     const dialog = page.getByRole('dialog', { name: 'Karim Roux' })
     await expect(dialog).toContainText('karim@demo.fr')
     await expect(dialog.getByRole('link', { name: 'AgriTech Aveyron' })).toBeVisible()
