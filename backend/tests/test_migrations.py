@@ -1,13 +1,13 @@
 import pytest
+from alembic.autogenerate import compare_metadata
+from alembic.config import Config
+from alembic.migration import MigrationContext
 from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import IntegrityError
 
 import app.models  # noqa: F401
 from alembic import command
-from alembic.autogenerate import compare_metadata
-from alembic.config import Config
-from alembic.migration import MigrationContext
 from app.core.config import get_settings
 from app.db.base import Base
 
