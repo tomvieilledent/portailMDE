@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     upload_dir: str = "uploads"
     max_image_bytes: int = 5 * 1024 * 1024
     max_document_bytes: int = 15 * 1024 * 1024
+    news_sync_enabled: bool = True
+    news_sync_interval_minutes: int = 60
+    news_retention_days: int = 30
     cors_origins: list[str] = ["http://localhost:5290"]
 
 

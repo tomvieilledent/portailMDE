@@ -193,4 +193,6 @@ def complete(session_id: uuid.UUID, user_id: uuid.UUID, session: SessionDep, cur
 )
 def invite(session_id: uuid.UUID, body: InviteRequest, session: SessionDep, current: Manager):
     ts = service.get_session(session, session_id, current)
-    return invitations.invite(session, current, body.user_ids, session_id=ts.id)
+    return invitations.invite(
+        session, current, body.user_ids, session_id=ts.id, label=ts.training.title
+    )

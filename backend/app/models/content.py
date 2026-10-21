@@ -15,6 +15,9 @@ class Notification(UUIDPrimaryKeyMixin, Base):
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True
     )
     content: Mapped[str] = mapped_column(String(1000), nullable=False)
+    # Type (invitation, conversation, annonce...) et données de navigation pour le frontend.
+    kind: Mapped[str | None] = mapped_column(String(30))
+    data: Mapped[dict | None] = mapped_column(JSONB)
     is_read: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )

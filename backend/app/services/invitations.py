@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 from app.core.errors import AppError, NotFoundError
 from app.models import Event, Invitation, TrainingSession, User
 from app.models.enums import InvitationStatus
+from app.services import notifications
 
 
 def invite(
@@ -18,6 +19,7 @@ def invite(
     *,
     event_id: uuid.UUID | None = None,
     session_id: uuid.UUID | None = None,
+    label: str = "",
 ) -> list[Invitation]:
     """Invite des utilisateurs (ignore ceux déjà invités ou soi-même)."""
     wanted = {uid for uid in user_ids if uid != inviter.id}
@@ -42,6 +44,16 @@ def invite(
     ]
     session.add_all(created)
     session.commit()
+    notifications.notify(
+        session,
+        [i.invitee_id for i in created],
+        f"{notifications.display_name(inviter)} vous invite : {label}".strip(" :"),
+        kind="invitation",
+        data={
+            "event_id": str(event_id) if event_id else None,
+            "session_id": str(session_id) if session_id else None,
+        },
+    )
     return created
 
 
@@ -77,6 +89,14 @@ def respond(
     invitation.is_read = True
     invitation.responded_at = datetime.now(UTC)
     session.commit()
+    verb = "accepté" if status == InvitationStatus.ACCEPTED else "décliné"
+    notifications.notify(
+        session,
+        [invitation.inviter_id],
+        f"{notifications.display_name(user)} a {verb} votre invitation",
+        kind="invitation_response",
+        data={"invitation_id": str(invitation.id)},
+    )
     return invitation
 
 

@@ -35,3 +35,17 @@ class ConnectionManager:
 
 
 manager = ConnectionManager()
+
+
+def push(user_ids: list[uuid.UUID], event: dict) -> None:
+    """Pousse un événement depuis du code synchrone (route FastAPI exécutée en thread).
+
+    Sans boucle d'événements disponible (script, tâche planifiée), l'envoi est ignoré :
+    le client récupérera l'information via l'API REST.
+    """
+    import anyio.from_thread
+
+    try:
+        anyio.from_thread.run(manager.send_to_users, user_ids, event)
+    except RuntimeError:
+        pass
