@@ -1,0 +1,80 @@
+from app.core.security import create_token
+from app.models.enums import UserRole
+
+
+def _login(client, email="user@example.fr", password="password123"):
+    return client.post("/api/v1/auth/login", json={"email": email, "password": password})
+
+
+def test_login_success(client, make_user):
+    make_user()
+    response = _login(client)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["token_type"] == "bearer"
+    assert body["access_token"] and body["refresh_token"]
+
+
+def test_login_email_is_case_insensitive(client, make_user):
+    make_user(email="User@Example.fr")
+    assert _login(client, "user@example.FR").status_code == 200
+
+
+def test_login_wrong_password(client, make_user):
+    make_user()
+    response = _login(client, password="mauvais-mot-de-passe")
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+def test_login_unknown_user(client):
+    assert _login(client, "nobody@example.fr").status_code == 401
+
+
+def test_login_inactive_user(client, make_user):
+    make_user(is_active=False)
+    assert _login(client).status_code == 401
+
+
+def test_protected_route_requires_token(client):
+    response = client.post("/api/v1/auth/logout")
+    assert response.status_code == 401
+
+
+def test_refresh_rotates_tokens(client, make_user):
+    make_user()
+    pair = _login(client).json()
+    new_pair = client.post("/api/v1/auth/refresh", json={"refresh_token": pair["refresh_token"]})
+    assert new_pair.status_code == 200
+    # l'ancien refresh ne peut plus servir
+    again = client.post("/api/v1/auth/refresh", json={"refresh_token": pair["refresh_token"]})
+    assert again.status_code == 401
+
+
+def test_refresh_rejects_access_token(client, make_user):
+    make_user()
+    pair = _login(client).json()
+    response = client.post("/api/v1/auth/refresh", json={"refresh_token": pair["access_token"]})
+    assert response.status_code == 401
+
+
+def test_logout_revokes_tokens(client, make_user):
+    make_user()
+    pair = _login(client).json()
+    headers = {"Authorization": f"Bearer {pair['access_token']}"}
+    response = client.post(
+        "/api/v1/auth/logout", headers=headers, json={"refresh_token": pair["refresh_token"]}
+    )
+    assert response.status_code == 204
+    assert client.post("/api/v1/auth/logout", headers=headers).status_code == 401
+    refresh = client.post("/api/v1/auth/refresh", json={"refresh_token": pair["refresh_token"]})
+    assert refresh.status_code == 401
+
+
+def test_deleted_user_token_rejected(client, make_user, session):
+    user = make_user(role=UserRole.MEMBER)
+    token, _, _ = create_token(str(user.id), "access")
+    user.is_active = False
+    session.commit()
+    response = client.post("/api/v1/auth/logout", headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 401
