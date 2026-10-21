@@ -12,6 +12,29 @@ import { fullName } from './labels'
 const FACE =
   'absolute inset-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm [backface-visibility:hidden] dark:border-slate-700 dark:bg-slate-900'
 
+/** Pastille ronde avec le logo de l'entreprise (initiale à défaut), en haut à droite du recto. */
+function CompanyBadge({ company }) {
+  const logo = uploadUrl(company.logo_path)
+  return (
+    <span
+      aria-hidden="true"
+      className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-600 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+    >
+      {logo ? (
+        <img
+          src={logo}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-contain p-1"
+        />
+      ) : (
+        company.name.slice(0, 1).toUpperCase()
+      )}
+    </span>
+  )
+}
+
 /** Petit bouton d'action posé sur le verso de la tuile. */
 function CardAction({ icon: Icon, children, ...props }) {
   return (
@@ -74,6 +97,7 @@ export default function PersonCard({ person, onSelect }) {
                 className="focus-visible:ring-brand-500 absolute inset-0 rounded-2xl focus-visible:ring-2 focus-visible:outline-none"
               />
             )}
+            {person.company && <CompanyBadge company={person.company} />}
             <Avatar
               src={uploadUrl(person.avatar_path)}
               firstName={person.first_name}

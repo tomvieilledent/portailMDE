@@ -108,6 +108,12 @@ describe('annuaire des personnes', () => {
     )
   })
 
+  it("affiche une pastille avec l'initiale ou le logo de l'entreprise", async () => {
+    renderAt('/annuaire')
+    await screen.findByRole('button', { name: /voir la carte de visite/ })
+    expect(document.querySelector('[aria-hidden="true"].rounded-full')).toHaveTextContent('A')
+  })
+
   it('retourne la tuile sur une carte de visite générée et exportable', async () => {
     renderAt('/annuaire')
     await userEvent.click(await screen.findByRole('button', { name: /voir la carte de visite/ }))
