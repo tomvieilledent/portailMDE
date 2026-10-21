@@ -5,7 +5,8 @@ import { expect, test } from '@playwright/test'
 import { login } from './helpers'
 
 /** Zone de discussion de la page. */
-const thread = (page) => page.getByRole('region', { name: 'Discussion' })
+const thread = (page) =>
+  page.getByRole('region', { name: 'Discussion' }).getByRole('log', { name: 'Messages' })
 
 /** Deux utilisateurs échangent des messages reçus en direct, sans rechargement. */
 test('deux utilisateurs discutent en temps réel', async ({ browser }) => {

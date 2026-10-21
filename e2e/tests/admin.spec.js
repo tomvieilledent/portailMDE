@@ -15,6 +15,8 @@ test("le super admin crée un compte puis l'utilise", async ({ browser, page }) 
   await dialog.getByLabel('Email').fill(email)
   await dialog.getByLabel('Mot de passe temporaire').fill('temporaire-123')
   await dialog.getByRole('button', { name: 'Créer le compte' }).click()
+  // La liste est paginée (jeu de démo de ~50 comptes) : on cible le nouveau compte par recherche.
+  await page.getByLabel('Rechercher un compte').fill(email)
   await expect(page.getByText(email)).toBeVisible()
 
   const context = await browser.newContext()
