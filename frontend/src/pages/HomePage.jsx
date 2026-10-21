@@ -52,7 +52,9 @@ export default function HomePage() {
         </h1>
         <span className="mt-6 block h-1 w-20 bg-[#7ec843]" aria-hidden="true" />
         {content.subtitle && (
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/75">{content.subtitle}</p>
+          <p className="mt-6 max-w-xl border border-white/20 bg-black/35 px-5 py-4 text-lg leading-relaxed font-semibold text-white backdrop-blur-md">
+            {content.subtitle}
+          </p>
         )}
         <Link
           to="/connexion"
