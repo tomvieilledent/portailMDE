@@ -97,17 +97,19 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-0 flex-col gap-4 lg:h-full lg:overflow-hidden">
       <header className="flex flex-col items-center gap-4 text-center">
-        <div>
-          <p className="text-sm font-medium text-slate-500 capitalize">
+        <div className="flex flex-col items-center">
+          <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
             {new Date().toLocaleDateString('fr-FR', {
               weekday: 'long',
               day: 'numeric',
               month: 'long',
             })}
           </p>
-          <h1 className="text-2xl font-semibold">
-            Bonjour{user?.first_name ? ` ${user.first_name}` : ''}
+          <h1 className="mt-2 text-4xl leading-tight tracking-tight sm:text-5xl">
+            <span className="font-light">Bonjour</span>
+            {user?.first_name && <span className="font-bold"> {user.first_name}</span>}
           </h1>
+          <span className="mt-3 block h-1 w-12 bg-[#7ec843]" aria-hidden="true" />
         </div>
         <ul className="flex flex-wrap justify-center gap-3">
           {SHORTCUTS.map(({ to, label }) => (
