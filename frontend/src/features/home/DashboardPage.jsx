@@ -16,11 +16,11 @@ import {
 } from '../../lib/calendar'
 import { useEvents } from '../agenda/queries'
 
-/** Raccourcis vers les rubriques les plus utilisées. */
+/** Raccourcis de recherche, centrés sous l'accueil. */
 const SHORTCUTS = [
-  { to: '/annuaire', label: "Trouver quelqu'un", hint: 'Annuaire' },
-  { to: '/messagerie', label: 'Écrire un message', hint: 'Messagerie' },
-  { to: '/formations', label: 'Se former', hint: 'Formations' },
+  { to: '/annuaire', label: "Trouver quelqu'un" },
+  { to: '/entreprises', label: 'Trouver une entreprise' },
+  { to: '/formations', label: 'Trouver une formation' },
 ]
 
 /** Nombre de jours pris en compte pour « Prochains événements ». */
@@ -96,7 +96,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex min-h-0 flex-col gap-4 lg:h-full lg:overflow-hidden">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="flex flex-col items-center gap-4 text-center">
         <div>
           <p className="text-sm font-medium text-slate-500 capitalize">
             {new Date().toLocaleDateString('fr-FR', {
@@ -109,14 +109,14 @@ export default function DashboardPage() {
             Bonjour{user?.first_name ? ` ${user.first_name}` : ''}
           </h1>
         </div>
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap justify-center gap-3">
           {SHORTCUTS.map(({ to, label }) => (
             <li key={to}>
               <Link
                 to={to}
-                className="hover:border-brand-400 block rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium transition"
+                className="bg-brand-600 hover:bg-brand-700 block min-w-52 rounded-md px-5 py-2.5 text-center text-sm font-semibold text-white transition"
               >
-                {label} <span aria-hidden="true">→</span>
+                {label}
               </Link>
             </li>
           ))}
@@ -224,7 +224,7 @@ export default function DashboardPage() {
               <p className="text-sm text-slate-500">Aucun événement à venir</p>
             )}
             <Link to="/agenda" className="text-brand-700 mt-2 block text-xs hover:underline">
-              Voir tout l'agenda →
+              Voir tout l'agenda
             </Link>
           </section>
         </div>
