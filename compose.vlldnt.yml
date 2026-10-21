@@ -1,0 +1,62 @@
+# Runtime `compose` de l'orchestrateur vlldnt (portfolio/scripts/deploy-project.sh), projet `mde`
+# → https://mde.vlldnt.fr. Secrets dans /opt/vlldnt/config/mde.env (hors Git, cf. .env.vlldnt.example).
+# Seul le port loopback 8088 est exposé : nginx (VPS) fait le proxy TLS et les en-têtes de sécurité.
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-portail}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD est obligatoire}
+      POSTGRES_DB: ${POSTGRES_DB:-portail}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  api:
+    build:
+      context: ./backend
+      target: prod
+    restart: unless-stopped
+    env_file: /opt/vlldnt/config/mde.env
+    environment:
+      ENVIRONMENT: production
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-portail}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-portail}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  web:
+    build:
+      context: ./frontend
+      target: prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8088:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+volumes:
+  db_data:
+  uploads:
