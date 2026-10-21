@@ -44,6 +44,11 @@ body {
   overscroll-behavior-y: none;
 }
 
+/* Le titre reçoit le focus à chaque changement de page (lecteurs d'écran) : pas de cadre visible. */
+h1[tabindex='-1']:focus {
+  outline: none;
+}
+
 @layer base {
   h1,
   h2,
