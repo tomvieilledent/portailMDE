@@ -2,6 +2,7 @@
 
 import logging
 import re
+import threading
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
@@ -15,7 +16,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.errors import ConflictError, NotFoundError
 from app.models import NewsArticle, SavedArticle
-from app.services.search import contains
+from app.services.search import contains, fold
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,12 @@ RSS_SOURCES = [
         "category": "réglementation",
         "url": "https://travail-emploi.gouv.fr/rss.xml",
     },
-    {"name": "Douanes", "category": "réglementation", "url": "https://www.douane.gouv.fr/rss.xml"},
+    {
+        "name": "Douanes",
+        "category": "réglementation",
+        "url": "https://www.douane.gouv.fr/rss.xml",
+        "regulatory_only": True,  # uniquement la réglementation, pas les faits divers
+    },
     {"name": "INPI", "category": "réglementation", "url": "https://www.inpi.fr/rss.xml"},
     {
         "name": "Journal Officiel",
@@ -41,6 +47,20 @@ RSS_SOURCES = [
     {"name": "BOFiP", "category": "réglementation", "url": "https://bofip.impots.gouv.fr/rss.xml"},
 ]
 MAX_ENTRIES_PER_FEED = 20
+
+# Faits divers écartés de toutes les sources (comparaison sans accents ni casse).
+_OFF_TOPIC = (
+    "saisie", "saisi", "cocaine", "cannabis", "stupefiant", "drogue", "heroine", "trafic",
+    "contrebande", "interpell", "demantel", "garde a vue", "arme a feu", "cigarette",
+)  # fmt: skip
+# Pour les sources « réglementation uniquement » : au moins un de ces termes est exigé.
+_REGULATORY = (
+    "reglement", "decret", "arrete", "circulaire", "loi ", "directive", "tarif", "taxe",
+    "droit de douane", "droits de douane", "fiscal", "tva", "accise", "formalite", "procedure",
+    "declaration", "dedouan", "licence", "autorisation", "obligation", "nomenclature", "origine",
+    "importation", "exportation", "import ", "export ", "teledeclar", "dispositif", "guide",
+    "evolution", "nouveaute", "sanction", "conformite", "norme", "agrement", "certificat",
+)  # fmt: skip
 _HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; portailMDE/1.0)"}
 
 Fetcher = Callable[[str], str]
@@ -61,9 +81,14 @@ def list_articles(
     offset: int,
     search: str | None = None,
     category: str | None = None,
+    since: datetime | None = None,
 ) -> tuple[list[NewsArticle], int]:
-    """Liste les articles, du plus récent au plus ancien, avec recherche et filtre par catégorie."""
+    """Liste les articles, du plus récent au plus ancien, avec recherche, catégorie et date minimale."""
     query = select(NewsArticle)
+    if since:
+        query = query.where(
+            func.coalesce(NewsArticle.published_at, NewsArticle.created_at) >= since
+        )
     if search:
         query = query.where(
             or_(contains(NewsArticle.title, search), contains(NewsArticle.summary, search))
@@ -169,6 +194,16 @@ def _parse_date(parsed) -> datetime | None:
         return None
 
 
+def is_relevant(source: dict, title: str, summary: str) -> bool:
+    """Écarte les faits divers ; pour les sources réglementaires, exige un terme de réglementation."""
+    text = f"{fold(title)} {fold(summary)} "
+    if any(word in text for word in _OFF_TOPIC):
+        return False
+    if source.get("regulatory_only"):
+        return any(word in text for word in _REGULATORY)
+    return True
+
+
 def _import_feed(session: Session, source: dict, fetch: Fetcher) -> int:
     """Importe les nouveaux articles d'un flux ; retourne le nombre d'articles créés."""
     feed = feedparser.parse(fetch(source["url"]))
@@ -180,7 +215,7 @@ def _import_feed(session: Session, source: dict, fetch: Fetcher) -> int:
         url = str(entry.get("link") or "").strip()[:512]
         title = str(entry.get("title") or "").strip()
         summary = _strip_html(str(entry.get("summary") or entry.get("description") or ""))
-        if not url or not title or not summary:
+        if not url or not title or not summary or not is_relevant(source, title, summary):
             continue
         if url in known:
             continue
@@ -200,6 +235,20 @@ def _import_feed(session: Session, source: dict, fetch: Fetcher) -> int:
     return created
 
 
+def purge_off_topic(session: Session) -> int:
+    """Retire les articles déjà importés qui ne passent plus le filtre de pertinence de leur source."""
+    by_name = {s["name"]: s for s in RSS_SOURCES if s.get("regulatory_only")}
+    removed = 0
+    for article in session.scalars(
+        select(NewsArticle).where(NewsArticle.source.in_(by_name), NewsArticle.url.is_not(None))
+    ).all():
+        if not is_relevant(by_name[article.source], article.title, article.summary or ""):
+            session.delete(article)
+            removed += 1
+    session.commit()
+    return removed
+
+
 def purge_old(session: Session) -> int:
     """Supprime les articles plus anciens que la durée de conservation ; retourne leur nombre."""
     cutoff = datetime.now(UTC) - timedelta(days=get_settings().news_retention_days)
@@ -213,6 +262,7 @@ def sync_all(
 ) -> int:
     """Purge les vieux articles puis importe les flux. Une source en erreur n'arrête pas les autres."""
     purge_old(session)
+    purge_off_topic(session)
     total = 0
     for source in sources or RSS_SOURCES:
         try:
@@ -221,3 +271,25 @@ def sync_all(
             session.rollback()
             logger.warning("Synchronisation de %s impossible : %s", source["name"], exc)
     return total
+
+
+_sync_lock = threading.Lock()
+
+
+def is_empty(session: Session) -> bool:
+    """Vrai s'il n'y a aucun article en base."""
+    return session.scalar(select(NewsArticle.id).limit(1)) is None
+
+
+def sync_in_background() -> None:
+    """Synchronise les flux avec sa propre session ; ignorée si une synchronisation est en cours."""
+    from app.db.session import SessionLocal  # import tardif : évite un cycle au chargement
+
+    if not _sync_lock.acquire(blocking=False):
+        return
+    try:
+        with SessionLocal() as session:
+            created = sync_all(session)
+        logger.info("Synchronisation automatique des actualités : %d nouveaux articles", created)
+    finally:
+        _sync_lock.release()

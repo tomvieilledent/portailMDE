@@ -18,6 +18,14 @@ def run_news_sync() -> None:
     logger.info("Synchronisation des actualités : %d nouveaux articles", created)
 
 
+def run_news_sync_if_empty() -> None:
+    """Au démarrage : synchronise tout de suite les actualités si aucune n'est en base."""
+    with SessionLocal() as session:
+        empty = news.is_empty(session)
+    if empty:
+        news.sync_in_background()
+
+
 def run_retention_purge() -> None:
     """Tâche planifiée : purge les données personnelles échues."""
     with SessionLocal() as session:
@@ -34,6 +42,8 @@ def start_scheduler() -> BackgroundScheduler | None:
         scheduler.add_job(
             run_news_sync, "interval", minutes=settings.news_sync_interval_minutes, id="news_sync"
         )
+    if settings.news_sync_enabled:
+        scheduler.add_job(run_news_sync_if_empty, id="news_sync_initial")
     scheduler.add_job(run_retention_purge, "interval", hours=24, id="retention_purge")
     scheduler.start()
     return scheduler

@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     max_document_bytes: int = 15 * 1024 * 1024
     scheduler_enabled: bool = True
     news_sync_enabled: bool = True
-    news_sync_interval_minutes: int = 60
+    news_sync_interval_minutes: int = 1440  # une synchronisation par jour
     news_retention_days: int = 30
     frontend_url: str = "http://localhost:5290"
     mail_backend: str = "smtp"  # "smtp" | "console" | "memory" (tests)

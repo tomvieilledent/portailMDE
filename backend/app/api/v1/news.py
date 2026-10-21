@@ -1,11 +1,13 @@
 """Routes des actualités : articles, articles enregistrés et contenus éditoriaux du site."""
 
 import uuid
+from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, Query, Response
 
 from app.api.deps import CurrentUser, SessionDep, require_permission
+from app.core.config import get_settings
 from app.core.permissions import Permission
 from app.models import User
 from app.schemas.common import Page
@@ -28,15 +30,20 @@ NewsManager = Annotated[User, Depends(require_permission(Permission.MANAGE_NEWS)
 def list_news(
     session: SessionDep,
     _: CurrentUser,
+    background: BackgroundTasks,
     limit: Annotated[int, Query(ge=1, le=200)] = 30,
     offset: Annotated[int, Query(ge=0)] = 0,
     search: str | None = None,
     category: str | None = None,
+    since: datetime | None = None,
 ):
-    """Liste les actualités avec pagination, recherche et filtre par catégorie."""
+    """Liste les actualités ; une base vide déclenche d'elle-même une synchronisation des flux."""
     items, total = service.list_articles(
-        session, limit=limit, offset=offset, search=search, category=category
+        session, limit=limit, offset=offset, search=search, category=category, since=since
     )
+    if total == 0 and not (search or category or since or offset):
+        if get_settings().news_sync_enabled and service.is_empty(session):
+            background.add_task(service.sync_in_background)
     return Page(items=items, total=total, limit=limit, offset=offset)
 
 

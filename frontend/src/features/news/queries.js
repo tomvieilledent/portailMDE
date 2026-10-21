@@ -8,11 +8,12 @@ import { api } from '../../lib/api'
 export const NEWS_PAGE = 20
 
 /** Liste paginée des actualités. */
-export const useNews = (params) =>
+export const useNews = (params, options = {}) =>
   useQuery({
     queryKey: ['news', 'list', params],
     queryFn: () => api.get('/news', { limit: NEWS_PAGE, ...params }),
     placeholderData: keepPreviousData,
+    ...options,
   })
 
 /** Actualités mises en favori. */
