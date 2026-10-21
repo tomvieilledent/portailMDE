@@ -53,19 +53,21 @@ export default function HomePage() {
           </h1>
           <span className="mt-5 block h-1 w-20 bg-[#7ec843]" aria-hidden="true" />
           {/* Sous-titre et contact : deux blocs translucides côte à côte */}
-          <div className="mt-5 flex max-w-4xl flex-col gap-3 md:flex-row md:items-stretch">
+          <div className="mt-5 flex max-w-5xl flex-col gap-3 md:flex-row md:items-stretch">
             {content.subtitle && (
-              <p className="flex-1 border border-white/20 bg-black/35 px-5 py-4 text-lg leading-relaxed font-semibold text-white backdrop-blur-md">
+              <p className="flex flex-1 items-center border border-white/20 bg-black/35 px-5 py-4 text-lg leading-relaxed font-semibold text-white backdrop-blur-md">
                 {content.subtitle}
               </p>
             )}
             <a
               href={`tel:${CONTACT_PHONE.replaceAll(' ', '')}`}
               aria-label={`Pour plus de renseignements, appelez le ${CONTACT_PHONE}`}
-              className="flex shrink-0 flex-col justify-center border border-l-4 border-white/20 border-l-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 md:w-72"
+              className="flex shrink-0 flex-col justify-center border border-l-4 border-white/20 border-l-[#7ec843] bg-black/35 px-5 py-3 backdrop-blur-md transition hover:bg-black/50 md:w-80"
             >
-              <span className="text-sm text-white/80">Pour plus de renseignements, appelez le</span>
-              <strong className="mt-1 text-lg font-semibold tracking-[0.12em] text-[#7ec843]">
+              <span className="text-sm whitespace-nowrap text-white/85">
+                Pour plus de renseignements, appelez le
+              </span>
+              <strong className="mt-1.5 text-xl font-semibold tracking-[0.06em] text-[#7ec843] tabular-nums">
                 {CONTACT_PHONE}
               </strong>
             </a>
