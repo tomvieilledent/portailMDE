@@ -18,6 +18,7 @@ import {
 import { api } from '../../lib/api'
 import { useDebounce } from '../../lib/useDebounce'
 import { COMPANY_KINDS } from '../directory/labels'
+import UserPicker from '../messaging/UserPicker'
 
 const PAGE = 25
 
@@ -90,6 +91,49 @@ function CompanyFormModal({ company, onClose }) {
   )
 }
 
+/** Désigne, parmi les utilisateurs existants, l'administrateur d'une entreprise. */
+function CompanyAdminModal({ company, onClose }) {
+  const toast = useToast()
+  const queryClient = useQueryClient()
+  const [selected, setSelected] = useState([])
+  const assign = useMutation({
+    mutationFn: async () => {
+      const userId = selected[0]
+      // Rattache la personne à l'entreprise (même si elle appartenait à une autre), puis lui donne le rôle.
+      await api.put(`/companies/${company.id}/members/${userId}`)
+      return api.put(`/users/${userId}/company-admin`, { is_company_admin: true })
+    },
+    onSuccess: () => {
+      toast.success("Administrateur de l'entreprise désigné.")
+      queryClient.invalidateQueries({ queryKey: ['admin'] })
+      queryClient.invalidateQueries({ queryKey: ['companies'] })
+      onClose()
+    },
+    onError: () => toast.error('Désignation impossible.'),
+  })
+
+  return (
+    <Modal open onClose={onClose} title={`Administrateur de ${company.name}`}>
+      <p className="mb-3 text-sm text-slate-600 dark:text-slate-400">
+        Choisissez une personne déjà inscrite. Elle sera rattachée à cette entreprise si besoin.
+      </p>
+      <UserPicker selected={selected} onChange={setSelected} single />
+      <div className="mt-4 flex justify-end gap-2">
+        <Button variant="secondary" onClick={onClose}>
+          Annuler
+        </Button>
+        <Button
+          disabled={selected.length === 0}
+          loading={assign.isPending}
+          onClick={() => assign.mutate()}
+        >
+          Désigner
+        </Button>
+      </div>
+    </Modal>
+  )
+}
+
 /** Gestion des entreprises : création, modification, désactivation, suppression. */
 export default function CompaniesAdmin() {
   const toast = useToast()
@@ -97,6 +141,7 @@ export default function CompaniesAdmin() {
   const [search, setSearch] = useState('')
   const [offset, setOffset] = useState(0)
   const [form, setForm] = useState(null) // {company?}
+  const [adminFor, setAdminFor] = useState(null)
   const debounced = useDebounce(search)
   const companies = useQuery({
     queryKey: ['admin', 'companies', { search: debounced, offset }],
@@ -153,6 +198,14 @@ export default function CompaniesAdmin() {
               </Button>
               <Button
                 size="sm"
+                variant="secondary"
+                aria-label={`Administrateur de ${c.name}`}
+                onClick={() => setAdminFor(c)}
+              >
+                Administrateur
+              </Button>
+              <Button
+                size="sm"
                 variant="ghost"
                 onClick={() =>
                   act.mutate({
@@ -191,6 +244,7 @@ export default function CompaniesAdmin() {
         />
       )}
       {form && <CompanyFormModal company={form.company} onClose={() => setForm(null)} />}
+      {adminFor && <CompanyAdminModal company={adminFor} onClose={() => setAdminFor(null)} />}
     </>
   )
 }

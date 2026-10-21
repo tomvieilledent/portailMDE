@@ -60,6 +60,7 @@ function renderAt(path, me) {
     if (url === '/users')
       return { items: [ada, { ...base, ...me }], total: 2, limit: 25, offset: 0 }
     if (url === '/companies') return { items: [acme], total: 1, limit: 25, offset: 0 }
+    if (url === '/directory/people') return { items: [ada], total: 1, limit: 20, offset: 0 }
     if (url === '/content/landing') return { key: 'landing', value: { slogan: 'Mon slogan' } }
     if (url === '/notifications/unread-count') return { count: 0 }
     throw new Error(`appel inattendu ${url}`)
@@ -197,6 +198,19 @@ describe('entreprises', () => {
         expect.objectContaining({ name: 'Globex', kind: 'company' }),
       ),
     )
+  })
+
+  it("désigne un utilisateur existant comme administrateur de l'entreprise", async () => {
+    api.put.mockResolvedValue({})
+    renderAt('/administration/entreprises', root)
+    await userEvent.click(await screen.findByRole('button', { name: 'Administrateur de Acme' }))
+    const dialog = await screen.findByRole('dialog')
+    await userEvent.click(await within(dialog).findByRole('checkbox', { name: /Ada Lovelace/ }))
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Désigner' }))
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith('/companies/c1/members/u2')
+      expect(api.put).toHaveBeenCalledWith('/users/u2/company-admin', { is_company_admin: true })
+    })
   })
 
   it('désactive et supprime une entreprise', async () => {
