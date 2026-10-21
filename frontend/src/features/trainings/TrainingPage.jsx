@@ -58,7 +58,7 @@ function SessionRow({ session, trainingId, canManage, onManage }) {
               href={session.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-brand-700 hover:underline dark:text-brand-300"
+              className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 hover:underline"
             >
               <Link2 size={14} aria-hidden="true" /> Visio
             </a>
@@ -136,7 +136,7 @@ export default function TrainingPage() {
     <>
       <Link
         to="/formations"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-brand-700 hover:underline dark:text-brand-300"
+        className="text-brand-700 dark:text-brand-300 mb-4 inline-flex items-center gap-1 text-sm hover:underline"
       >
         <ArrowLeft size={14} aria-hidden="true" /> Catalogue
       </Link>
@@ -188,7 +188,7 @@ export default function TrainingPage() {
                   href={uploadUrl(path)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-sm text-brand-700 hover:underline dark:text-brand-300"
+                  className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-2 text-sm hover:underline"
                 >
                   <FileText size={14} aria-hidden="true" /> {path.split('/').pop()}
                 </a>

@@ -35,7 +35,7 @@ export default function Modal({ open, onClose, title, children, footer, classNam
         aria-labelledby={titleId}
         tabIndex={-1}
         className={cn(
-          'max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl focus:outline-none dark:bg-slate-900 sm:max-w-lg sm:rounded-2xl',
+          'max-h-[90vh] w-full overflow-y-auto rounded-t-2xl bg-white p-6 shadow-xl focus:outline-none sm:max-w-lg sm:rounded-2xl dark:bg-slate-900',
           className,
         )}
       >

@@ -37,7 +37,7 @@ export default function ConversationList({ conversations, loading, meId, onNew }
                 }
               >
                 {conversation.kind === 'group' ? (
-                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200">
+                  <span className="bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-200 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full">
                     <Users size={18} aria-hidden="true" />
                   </span>
                 ) : (

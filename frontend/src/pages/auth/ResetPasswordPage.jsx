@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
   if (!token) {
     return (
       <AuthShell title="Lien invalide">
-        <Link to="/mot-de-passe-oublie" className="text-sm text-brand-700 hover:underline">
+        <Link to="/mot-de-passe-oublie" className="text-brand-700 text-sm hover:underline">
           Demander un nouveau lien
         </Link>
       </AuthShell>

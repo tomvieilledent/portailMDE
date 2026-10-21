@@ -29,7 +29,7 @@ export default function CompanyPage() {
     <>
       <Link
         to="/entreprises"
-        className="mb-4 inline-flex items-center gap-1 text-sm text-brand-700 hover:underline dark:text-brand-300"
+        className="text-brand-700 dark:text-brand-300 mb-4 inline-flex items-center gap-1 text-sm hover:underline"
       >
         <ArrowLeft size={14} aria-hidden="true" /> Toutes les entreprises
       </Link>
@@ -49,7 +49,7 @@ export default function CompanyPage() {
                 href={c.website_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-brand-700 hover:underline dark:text-brand-300"
+                className="text-brand-700 dark:text-brand-300 inline-flex items-center gap-1 hover:underline"
               >
                 <Globe size={14} aria-hidden="true" /> {c.website_url}
               </a>

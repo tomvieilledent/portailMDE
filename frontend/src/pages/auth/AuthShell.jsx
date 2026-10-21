@@ -9,7 +9,7 @@ export default function AuthShell({ title, subtitle, children }) {
       <div className="w-full max-w-md space-y-6">
         <Link
           to="/"
-          className="block text-center text-2xl font-bold text-brand-700 dark:text-brand-300"
+          className="text-brand-700 dark:text-brand-300 block text-center text-2xl font-bold"
         >
           portailMDE
         </Link>

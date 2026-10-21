@@ -1,11 +1,7 @@
-from typing import Generic, TypeVar
-
 from pydantic import BaseModel, Field
 
-T = TypeVar("T")
 
-
-class Page(BaseModel, Generic[T]):
+class Page[T](BaseModel):
     """Réponse paginée standard."""
 
     items: list[T]

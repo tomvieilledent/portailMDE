@@ -79,7 +79,7 @@ export default function EventDetailModal({ event, onClose, onEdit }) {
           {event.is_public ? <Globe size={16} /> : <Lock size={16} />}
           {event.is_public ? 'Ouvert à tous les membres' : 'Sur invitation'}
         </p>
-        {event.description && <p className="whitespace-pre-wrap text-sm">{event.description}</p>}
+        {event.description && <p className="text-sm whitespace-pre-wrap">{event.description}</p>}
 
         {canEdit && (
           <section>

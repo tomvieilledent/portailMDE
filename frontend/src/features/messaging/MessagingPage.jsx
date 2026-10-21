@@ -19,7 +19,7 @@ export default function MessagingPage() {
   const current = conversations?.find((c) => c.id === conversationId)
 
   return (
-    <div className="-m-4 grid h-[calc(100vh-3.5rem)] overflow-hidden bg-white dark:bg-slate-900 sm:-m-6 lg:grid-cols-[22rem_1fr]">
+    <div className="-m-4 grid h-[calc(100vh-3.5rem)] overflow-hidden bg-white sm:-m-6 lg:grid-cols-[22rem_1fr] dark:bg-slate-900">
       <section
         aria-label="Conversations"
         className={cn(

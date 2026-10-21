@@ -41,8 +41,8 @@ export default function AppLayout({ items = navItems, actions = null }) {
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[16rem_1fr]">
-      <aside className="hidden border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 lg:block">
-        <p className="mb-6 px-3 text-xl font-bold text-brand-700 dark:text-brand-300">portailMDE</p>
+      <aside className="hidden border-r border-slate-200 bg-white p-4 lg:block dark:border-slate-800 dark:bg-slate-900">
+        <p className="text-brand-700 dark:text-brand-300 mb-6 px-3 text-xl font-bold">portailMDE</p>
         <NavList items={items} />
       </aside>
 
@@ -55,7 +55,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
           />
           <aside className="absolute inset-y-0 left-0 w-64 bg-white p-4 shadow-xl dark:bg-slate-900">
             <div className="mb-6 flex items-center justify-between px-3">
-              <p className="text-xl font-bold text-brand-700 dark:text-brand-300">portailMDE</p>
+              <p className="text-brand-700 dark:text-brand-300 text-xl font-bold">portailMDE</p>
               <button type="button" aria-label="Fermer le menu" onClick={() => setOpen(false)}>
                 <X size={20} />
               </button>
@@ -69,7 +69,7 @@ export default function AppLayout({ items = navItems, actions = null }) {
         <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
           <button
             type="button"
-            className="rounded-lg p-2 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            className="rounded-lg p-2 hover:bg-slate-100 lg:hidden dark:hover:bg-slate-800"
             aria-label="Ouvrir le menu"
             onClick={() => setOpen(true)}
           >

@@ -38,7 +38,7 @@ export default function PersonModal({ person, onClose }) {
               <Building2 size={16} aria-hidden="true" />
               <Link
                 to={`/entreprises/${person.company.id}`}
-                className="text-brand-700 hover:underline dark:text-brand-300"
+                className="text-brand-700 dark:text-brand-300 hover:underline"
               >
                 {person.company.name}
               </Link>

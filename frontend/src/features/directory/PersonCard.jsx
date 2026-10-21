@@ -5,7 +5,7 @@ import { fullName } from './labels'
 export default function PersonCard({ person, onSelect }) {
   return (
     <button type="button" onClick={() => onSelect(person)} className="text-left">
-      <Card className="flex h-full items-center gap-4 transition hover:border-brand-400 hover:shadow-md">
+      <Card className="hover:border-brand-400 flex h-full items-center gap-4 transition hover:shadow-md">
         <Avatar
           src={uploadUrl(person.avatar_path)}
           firstName={person.first_name}
@@ -20,7 +20,7 @@ export default function PersonCard({ person, onSelect }) {
             </p>
           )}
           {person.company && (
-            <p className="truncate text-sm text-brand-700 dark:text-brand-300">
+            <p className="text-brand-700 dark:text-brand-300 truncate text-sm">
               {person.company.name}
             </p>
           )}

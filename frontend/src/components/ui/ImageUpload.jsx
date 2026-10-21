@@ -22,7 +22,7 @@ export default function ImageUpload({ label, preview, onSelect, loading = false,
             if (file) onSelect(file)
             event.target.value = ''
           }}
-          className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-50 file:px-3 file:py-2 file:text-sm file:font-medium file:text-brand-700 hover:file:bg-brand-100 dark:text-slate-300 dark:file:bg-brand-900 dark:file:text-brand-200"
+          className="file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100 dark:file:bg-brand-900 dark:file:text-brand-200 block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:px-3 file:py-2 file:text-sm file:font-medium dark:text-slate-300"
         />
         {loading && <Spinner className="h-5 w-5" />}
       </div>

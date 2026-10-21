@@ -103,7 +103,7 @@ export default function AgendaPage() {
                 key={day.iso}
                 role="gridcell"
                 className={cn(
-                  'min-h-20 border-b border-r border-slate-100 p-1 dark:border-slate-800 sm:min-h-28',
+                  'min-h-20 border-r border-b border-slate-100 p-1 sm:min-h-28 dark:border-slate-800',
                   !day.inMonth && 'bg-slate-50 text-slate-400 dark:bg-slate-950/40',
                 )}
               >
@@ -113,7 +113,7 @@ export default function AgendaPage() {
                   onClick={() => setForm({ defaultDate: day.iso })}
                   className={cn(
                     'mb-1 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs hover:bg-slate-100 dark:hover:bg-slate-800',
-                    day.iso === today && 'bg-brand-700 font-bold text-white hover:bg-brand-800',
+                    day.iso === today && 'bg-brand-700 hover:bg-brand-800 font-bold text-white',
                   )}
                 >
                   {day.date.getDate()}
@@ -124,7 +124,7 @@ export default function AgendaPage() {
                       <button
                         type="button"
                         onClick={() => setDetail(event)}
-                        className="block w-full truncate rounded bg-brand-100 px-1 py-0.5 text-left text-xs text-brand-800 hover:bg-brand-200 dark:bg-brand-900 dark:text-brand-100"
+                        className="bg-brand-100 text-brand-800 hover:bg-brand-200 dark:bg-brand-900 dark:text-brand-100 block w-full truncate rounded px-1 py-0.5 text-left text-xs"
                       >
                         {shortTime(event.event_time) && <span>{shortTime(event.event_time)} </span>}
                         {event.title}
