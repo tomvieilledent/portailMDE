@@ -84,7 +84,11 @@ def list_articles(
     since: datetime | None = None,
 ) -> tuple[list[NewsArticle], int]:
     """Liste les articles, du plus récent au plus ancien, avec recherche, catégorie et date minimale."""
-    query = select(NewsArticle)
+    # Fenêtre glissante : seules les actualités du dernier mois sont listées.
+    window = datetime.now(UTC) - timedelta(days=get_settings().news_retention_days)
+    query = select(NewsArticle).where(
+        func.coalesce(NewsArticle.published_at, NewsArticle.created_at) >= window
+    )
     if since:
         query = query.where(
             func.coalesce(NewsArticle.published_at, NewsArticle.created_at) >= since

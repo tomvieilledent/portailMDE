@@ -193,3 +193,18 @@ def test_customs_feed_keeps_only_regulation(session):
     assert [a.title for a in session.query(NewsArticle).all()] == [
         "Nouvelle procédure de dédouanement à l'import"
     ]
+
+
+def test_list_is_limited_to_the_last_month(client, make_user, login, session):
+    """Les actualités de plus d'un mois glissant ne sont pas listées."""
+    make_user("m@x.fr")
+    now = datetime.now(UTC)
+    session.add_all(
+        [
+            NewsArticle(title="Récent", published_at=now - timedelta(days=10)),
+            NewsArticle(title="Trop vieux", published_at=now - timedelta(days=45)),
+        ]
+    )
+    session.commit()
+    found = client.get(f"{API}/news", headers=login("m@x.fr")).json()
+    assert [a["title"] for a in found["items"]] == ["Récent"]

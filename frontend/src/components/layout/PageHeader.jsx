@@ -32,7 +32,7 @@ export default function PageHeader({ title, description, actions }) {
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
         <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">{section}</p>
-        <h1 className="mt-1 text-3xl leading-tight tracking-tight sm:text-4xl">
+        <h1 aria-label={title} className="mt-1 text-3xl leading-tight tracking-tight sm:text-4xl">
           <StyledTitle title={title} />
         </h1>
         <span className="mt-2 block h-1 w-12 bg-[#7ec843]" aria-hidden="true" />

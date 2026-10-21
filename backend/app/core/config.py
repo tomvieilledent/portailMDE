@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     scheduler_enabled: bool = True
     news_sync_enabled: bool = True
     news_sync_interval_minutes: int = 1440  # une synchronisation par jour
-    news_retention_days: int = 30
+    news_retention_days: int = 30  # un mois glissant
     frontend_url: str = "http://localhost:5290"
     mail_backend: str = "smtp"  # "smtp" | "console" | "memory" (tests)
     mail_host: str = "mailpit"

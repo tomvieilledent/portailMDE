@@ -210,7 +210,11 @@ export default function NewsPage() {
               <p className="text-xs font-semibold tracking-[0.2em] text-slate-500 uppercase">
                 À la une
               </p>
-              <h2 id="news-today" className="mb-4 text-2xl tracking-tight">
+              <h2
+                id="news-today"
+                aria-label="Nouvelles infos du jour"
+                className="mb-4 text-2xl tracking-tight"
+              >
                 <span className="font-light">Nouvelles infos </span>
                 <span className="font-bold">du jour</span>
               </h2>
