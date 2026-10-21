@@ -145,7 +145,7 @@ describe('catalogue', () => {
     api.post.mockResolvedValue({})
     setup('/formations', manager)
     await userEvent.click(await screen.findByRole('button', { name: /Nouvelle formation/ }))
-    await userEvent.type(await screen.findByLabelText('Titre'), 'Compta')
+    await userEvent.type(await screen.findByLabelText(/^Titre( \*)?( \(obligatoire\))?$/), 'Compta')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
     await waitFor(() =>
       expect(api.post).toHaveBeenCalledWith('/trainings', {
@@ -201,7 +201,10 @@ describe('fiche formation', () => {
     setup('/formations/t1', manager, [])
     await userEvent.click(await screen.findByRole('button', { name: /Session/ }))
     const dialog = await screen.findByRole('dialog', { name: 'Nouvelle session' })
-    await userEvent.type(within(dialog).getByLabelText('Début'), '2026-11-10T09:00')
+    await userEvent.type(
+      within(dialog).getByLabelText(/^Début( \*)?( \(obligatoire\))?$/),
+      '2026-11-10T09:00',
+    )
     await userEvent.type(within(dialog).getByLabelText('Fin'), '2026-11-10T17:00')
     await userEvent.click(within(dialog).getByRole('button', { name: 'Créer' }))
     await waitFor(() => {

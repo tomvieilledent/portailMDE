@@ -117,8 +117,14 @@ describe('profil', () => {
   it('change le mot de passe', async () => {
     renderAt('/profil')
     api.post.mockResolvedValue(null)
-    await userEvent.type(await screen.findByLabelText('Mot de passe actuel'), 'password123')
-    await userEvent.type(screen.getByLabelText('Nouveau mot de passe'), 'brandnewpass1')
+    await userEvent.type(
+      await screen.findByLabelText(/^Mot de passe actuel( \*)?( \(obligatoire\))?$/),
+      'password123',
+    )
+    await userEvent.type(
+      screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
     await userEvent.type(screen.getByLabelText('Confirmation'), 'brandnewpass1')
     await userEvent.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
     await waitFor(() =>
@@ -132,8 +138,14 @@ describe('profil', () => {
   it('signale un mot de passe actuel incorrect', async () => {
     renderAt('/profil')
     api.post.mockRejectedValue(new ApiError(400, 'BAD_REQUEST', 'x'))
-    await userEvent.type(await screen.findByLabelText('Mot de passe actuel'), 'wrong')
-    await userEvent.type(screen.getByLabelText('Nouveau mot de passe'), 'brandnewpass1')
+    await userEvent.type(
+      await screen.findByLabelText(/^Mot de passe actuel( \*)?( \(obligatoire\))?$/),
+      'wrong',
+    )
+    await userEvent.type(
+      screen.getByLabelText(/^Nouveau mot de passe( \*)?( \(obligatoire\))?$/),
+      'brandnewpass1',
+    )
     await userEvent.type(screen.getByLabelText('Confirmation'), 'brandnewpass1')
     await userEvent.click(screen.getByRole('button', { name: 'Changer le mot de passe' }))
     expect(await screen.findByText('Mot de passe actuel incorrect.')).toBeInTheDocument()
@@ -149,7 +161,7 @@ describe('mon entreprise', () => {
 
   it('est en lecture seule pour un simple membre', async () => {
     renderAt('/mon-entreprise', { ...me, company_id: 'c1' })
-    expect(await screen.findByLabelText('Nom')).toBeDisabled()
+    expect(await screen.findByLabelText(/^Nom( \*)?( \(obligatoire\))?$/)).toBeDisabled()
     expect(
       screen.queryByRole('button', { name: 'Ajouter un collaborateur' }),
     ).not.toBeInTheDocument()
@@ -160,7 +172,7 @@ describe('mon entreprise', () => {
     api.patch.mockResolvedValue(acme)
     api.put.mockResolvedValue(null)
     api.post.mockResolvedValue(null)
-    const name = await screen.findByLabelText('Nom')
+    const name = await screen.findByLabelText(/^Nom( \*)?( \(obligatoire\))?$/)
     expect(name).toBeEnabled()
     await userEvent.type(screen.getByLabelText('Localisation'), 'Rodez')
     await userEvent.click(screen.getByRole('button', { name: 'Enregistrer' }))
@@ -184,7 +196,7 @@ describe('mon entreprise', () => {
     api.post.mockResolvedValue({})
     await userEvent.click(await screen.findByRole('button', { name: 'Ajouter un collaborateur' }))
     const dialog = await screen.findByRole('dialog')
-    await userEvent.type(screen.getByLabelText('Email'), 'new@x.fr')
+    await userEvent.type(screen.getByLabelText(/^Email( \*)?( \(obligatoire\))?$/), 'new@x.fr')
     await userEvent.type(screen.getByLabelText('Mot de passe temporaire'), 'temporaire1')
     await userEvent.click(screen.getByRole('button', { name: 'Créer le compte' }))
     await waitFor(() =>

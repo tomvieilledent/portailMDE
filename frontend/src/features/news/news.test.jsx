@@ -124,7 +124,7 @@ describe('actualités', () => {
     api.post.mockResolvedValue({})
     setup(<NewsPage />, editor)
     await userEvent.click(await screen.findByRole('button', { name: /Publier/ }))
-    await userEvent.type(await screen.findByLabelText('Titre'), 'Info')
+    await userEvent.type(await screen.findByLabelText(/^Titre( \*)?( \(obligatoire\))?$/), 'Info')
     const dialog = screen.getByRole('dialog', { name: 'Publier un article' })
     await userEvent.click(within(dialog).getByRole('button', { name: 'Publier' }))
     await waitFor(() =>

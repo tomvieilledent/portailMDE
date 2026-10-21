@@ -20,7 +20,10 @@ def test_production_refuses_short_secret():
 
 def test_production_accepts_strong_secret():
     """La production accepte un secret JWT robuste."""
-    assert Settings(environment="production", jwt_secret="x" * 40).environment == "production"
+    assert (
+        Settings(environment="production", jwt_secret="x" * 40, mail_backend="smtp").environment
+        == "production"
+    )
 
 
 def test_development_keeps_default_secret():
