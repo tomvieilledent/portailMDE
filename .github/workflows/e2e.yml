@@ -26,7 +26,7 @@ jobs:
           docker compose exec -T api python -m app.cli seed-demo
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: e2e/package-lock.json
       - name: Installer Playwright
