@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query, Response, UploadFile
 
 from app.api.deps import CurrentUser, SessionDep, require_permission
 from app.core.errors import NotFoundError
@@ -90,3 +90,8 @@ def remove_member(
 ):
     service.remove_member(session, current, company_id, user_id)
     return Response(status_code=204)
+
+
+@router.put("/{company_id}/logo", response_model=CompanyRead)
+def upload_logo(company_id: uuid.UUID, session: SessionDep, current: CurrentUser, file: UploadFile):
+    return service.set_logo(session, current, company_id, file)

@@ -1,7 +1,7 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query, Response
+from fastapi import APIRouter, Depends, Query, Response, UploadFile
 
 from app.api.deps import CurrentUser, SessionDep, require_permission, require_super_admin
 from app.core.permissions import Permission
@@ -91,3 +91,21 @@ def set_company_admin(
     user_id: uuid.UUID, body: CompanyAdminUpdate, session: SessionDep, current: CurrentUser
 ):
     return service.set_company_admin(session, current, user_id, body.is_company_admin)
+
+
+@router.put("/me/avatar", response_model=UserRead)
+def upload_my_avatar(session: SessionDep, current: CurrentUser, file: UploadFile):
+    return service.set_image(session, current, current, "avatar_path", file, "avatars")
+
+
+@router.put("/me/business-card", response_model=UserRead)
+def upload_my_business_card(session: SessionDep, current: CurrentUser, file: UploadFile):
+    return service.set_image(
+        session, current, current, "business_card_path", file, "business-cards"
+    )
+
+
+@router.put("/{user_id}/avatar", response_model=UserRead)
+def upload_avatar(user_id: uuid.UUID, session: SessionDep, current: CurrentUser, file: UploadFile):
+    target = service.get_user(session, user_id)
+    return service.set_image(session, current, target, "avatar_path", file, "avatars")

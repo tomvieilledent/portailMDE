@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_minutes: int = 15
     refresh_token_days: int = 7
+    upload_dir: str = "uploads"
+    max_image_bytes: int = 5 * 1024 * 1024
+    max_document_bytes: int = 15 * 1024 * 1024
     cors_origins: list[str] = ["http://localhost:5290"]
 
 
