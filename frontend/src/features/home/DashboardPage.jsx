@@ -6,15 +6,8 @@ import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../auth/AuthProvider'
 import { cn } from '../../lib/cn'
-import {
-  WEEKDAYS,
-  buildMonthGrid,
-  formatLongDate,
-  monthLabel,
-  shortTime,
-  toISODate,
-} from '../../lib/calendar'
-import { useEvents } from '../agenda/queries'
+import { WEEKDAYS, buildMonthGrid, formatLongDate, monthLabel, toISODate } from '../../lib/calendar'
+import { KIND_STYLES, useAgendaItems } from '../agenda/useAgendaItems'
 
 /** Raccourcis de recherche, centrés sous l'accueil. */
 const SHORTCUTS = [
@@ -26,19 +19,21 @@ const SHORTCUTS = [
 /** Nombre de jours pris en compte pour « Prochains événements ». */
 const UPCOMING_DAYS = 90
 
-/** Ligne d'événement : pastille, titre et heure. */
+/** Ligne d'élément d'agenda : pastille de la couleur de son type, titre et heure. */
 function EventRow({ event, withDate = false }) {
-  const time = shortTime(event.event_time)
   return (
     <li className="flex items-start gap-3">
-      <span className="bg-brand-400 mt-1.5 h-2 w-2 shrink-0 rounded-full" aria-hidden="true" />
+      <span
+        className={`${KIND_STYLES[event.kind].dot} mt-1.5 h-2 w-2 shrink-0 rounded-full`}
+        aria-hidden="true"
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{event.title}</p>
         <p className="flex items-center gap-1 text-xs text-slate-500">
           <Clock size={11} aria-hidden="true" />
-          {withDate && <span className="capitalize">{formatLongDate(event.event_date)}</span>}
-          {withDate && time && ' · '}
-          {time}
+          {withDate && <span className="capitalize">{formatLongDate(event.date)}</span>}
+          {withDate && event.time && ' · '}
+          {event.time}
         </p>
       </div>
     </li>
@@ -56,36 +51,14 @@ export default function DashboardPage() {
   const [selected, setSelected] = useState(today)
 
   const weeks = useMemo(() => buildMonthGrid(cursor.year, cursor.month), [cursor])
-  const month = useEvents(weeks[0][0].iso, weeks[weeks.length - 1][6].iso)
-  const events = useMemo(() => (Array.isArray(month.data) ? month.data : []), [month.data])
-  const isError = month.isError
+  const { byDay, isError } = useAgendaItems(weeks[0][0].iso, weeks[weeks.length - 1][6].iso)
   const upcomingEnd = useMemo(() => {
     const d = new Date()
     d.setDate(d.getDate() + UPCOMING_DAYS)
     return toISODate(d)
   }, [])
-  const aheadQuery = useEvents(today, upcomingEnd)
-  const ahead = useMemo(
-    () => (Array.isArray(aheadQuery.data) ? aheadQuery.data : []),
-    [aheadQuery.data],
-  )
-
-  const byDay = useMemo(() => {
-    const map = new Map()
-    events.forEach((e) => map.set(e.event_date, [...(map.get(e.event_date) ?? []), e]))
-    return map
-  }, [events])
-  const upcoming = useMemo(
-    () =>
-      [...ahead]
-        .sort((a, b) =>
-          `${a.event_date}${a.event_time ?? ''}`.localeCompare(
-            `${b.event_date}${b.event_time ?? ''}`,
-          ),
-        )
-        .slice(0, 5),
-    [ahead],
-  )
+  const { items: ahead } = useAgendaItems(today, upcomingEnd)
+  const upcoming = useMemo(() => ahead.slice(0, 5), [ahead])
   const selectedEvents = byDay.get(selected) ?? []
 
   const move = (delta) =>
@@ -181,15 +154,30 @@ export default function DashboardPage() {
                 >
                   {day.date.getDate()}
                   {byDay.has(day.iso) && !isSelected && (
-                    <span
-                      className="absolute bottom-0.5 h-1 w-1 rounded-full bg-orange-400"
-                      aria-hidden="true"
-                    />
+                    <span className="absolute bottom-0.5 flex gap-0.5" aria-hidden="true">
+                      {[...new Set(byDay.get(day.iso).map((i) => i.kind))].map((kind) => (
+                        <span
+                          key={kind}
+                          className={`h-1 w-1 rounded-full ${KIND_STYLES[kind].dot}`}
+                        />
+                      ))}
+                    </span>
                   )}
                 </button>
               )
             })}
           </div>
+          <ul
+            aria-label="Légende"
+            className="mt-2 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500"
+          >
+            {Object.entries(KIND_STYLES).map(([kind, style]) => (
+              <li key={kind} className="flex items-center gap-1.5">
+                <span className={`${style.dot} h-2 w-2 rounded-full`} aria-hidden="true" />
+                {style.label}
+              </li>
+            ))}
+          </ul>
         </section>
 
         <div className="flex min-h-0 flex-col gap-4 lg:col-span-2">

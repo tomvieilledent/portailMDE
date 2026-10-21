@@ -7,20 +7,12 @@ import { useNavigate } from 'react-router-dom'
 import PageHeader from '../../components/layout/PageHeader'
 import { Button, useToast } from '../../components/ui'
 import { cn } from '../../lib/cn'
-import { WEEKDAYS, buildMonthGrid, monthLabel, shortTime, toISODate } from '../../lib/calendar'
+import { WEEKDAYS, buildMonthGrid, monthLabel, toISODate } from '../../lib/calendar'
 import { downloadFile } from '../../lib/download'
 import EventDetailModal from './EventDetailModal'
 import EventFormModal from './EventFormModal'
 import InvitationsPanel from './InvitationsPanel'
-import { useTrainings } from '../trainings/queries'
-import { useEvents, useSessions } from './queries'
-
-/** Couleurs des pastilles : événements, formations proposées, formations où l'on est inscrit. */
-const CHIP = {
-  event: 'bg-brand-100 text-brand-800 hover:bg-brand-200',
-  session: 'bg-violet-100 text-violet-800 hover:bg-violet-200',
-  enrolled: 'bg-orange-100 text-orange-800 ring-1 ring-orange-400 hover:bg-orange-200',
-}
+import { KIND_STYLES, useAgendaItems } from './useAgendaItems'
 
 /** Agenda mensuel : événements publics et ceux auxquels on est invité. */
 export default function AgendaPage() {
@@ -39,43 +31,8 @@ export default function AgendaPage() {
   const end = weeks[weeks.length - 1][6].iso
   const monthStart = toISODate(new Date(cursor.year, cursor.month, 1))
   const monthEnd = toISODate(new Date(cursor.year, cursor.month + 1, 0))
-  const { data: events = [], isError } = useEvents(start, end)
 
-  const sessionsQuery = useSessions(start, end)
-  const trainings = useTrainings({})
-  const titleById = useMemo(
-    () => new Map((trainings.data?.items ?? []).map((t) => [t.id, t.title])),
-    [trainings.data],
-  )
-
-  // Événements et sessions de formation fusionnés par jour, avec leur couleur.
-  const byDay = useMemo(() => {
-    const map = new Map()
-    const add = (day, item) => map.set(day, [...(map.get(day) ?? []), item])
-    events.forEach((e) =>
-      add(e.event_date, {
-        key: e.id,
-        kind: 'event',
-        title: e.title,
-        time: shortTime(e.event_time),
-        event: e,
-      }),
-    )
-    const sessions = Array.isArray(sessionsQuery.data) ? sessionsQuery.data : []
-    sessions
-      .filter((s) => s.status !== 'cancelled')
-      .forEach((s) => {
-        const startDate = new Date(s.start_at)
-        add(toISODate(startDate), {
-          key: `session-${s.id}`,
-          kind: s.is_enrolled ? 'enrolled' : 'session',
-          title: titleById.get(s.training_id) ?? 'Formation',
-          time: startDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-          trainingId: s.training_id,
-        })
-      })
-    return map
-  }, [events, sessionsQuery.data, titleById])
+  const { byDay, isError } = useAgendaItems(start, end)
 
   const move = (delta) =>
     setCursor(({ year, month }) => {
@@ -130,9 +87,11 @@ export default function AgendaPage() {
         </Button>
       </div>
       <ul aria-label="Légende" className="mb-3 flex flex-wrap gap-2 text-xs">
-        <li className={cn('rounded px-2 py-1', CHIP.event)}>Événements</li>
-        <li className={cn('rounded px-2 py-1', CHIP.session)}>Formations proposées</li>
-        <li className={cn('rounded px-2 py-1', CHIP.enrolled)}>Mes formations (inscrit·e)</li>
+        {Object.entries(KIND_STYLES).map(([kind, style]) => (
+          <li key={kind} className={cn('rounded px-2 py-1', style.chip)}>
+            {style.label}
+          </li>
+        ))}
       </ul>
       {isError && <p role="alert">Impossible de charger l'agenda.</p>}
 
@@ -194,7 +153,7 @@ export default function AgendaPage() {
                         }
                         className={cn(
                           'block w-full truncate rounded px-1 py-0.5 text-left text-xs',
-                          CHIP[item.kind],
+                          KIND_STYLES[item.kind].chip,
                         )}
                       >
                         {item.time && <span>{item.time} </span>}
